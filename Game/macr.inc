@@ -55,6 +55,7 @@ DisplayString_AT_position_TEXTMODE MACRO STR, pos
     mov ah,3
     int 10h ;; get cursor in dh-dl  
     mov si , dx ; save it To set it back at the end
+    mov bh,0       ;page number
 
     mov dx,pos
     mov ah,2
@@ -73,6 +74,7 @@ ENDM DisplayString_AT_position_TEXTMODE
 UPDATE_notification_bar MACRO new_msg
     ;; updates the notification bar with a new message
     ;; put the second int the first
+    ;; TODO: Should be done using Scrolling
     mov SI,offset Second_msg_in_notification_bar
     mov DI,offset First_msg_in_notification_bar
     mov cx,80d
@@ -83,11 +85,24 @@ UPDATE_notification_bar MACRO new_msg
     mov cx,80d
     REP MOVSb;Copies the 80 bytes from SI to DI
     ;; prints The two messages in The notification bar
-    DisplayString_AT_position_TEXTMODE First_msg_in_notification_bar , 1505h
-    DisplayString_AT_position_TEXTMODE Second_msg_in_notification_bar ,1705h ;print in the next row
+    DisplayString_AT_position_TEXTMODE First_msg_in_notification_bar , 1705h
+    DisplayString_AT_position_TEXTMODE Second_msg_in_notification_bar ,1805h ;print in the next row
 endm UPDATE_notification_bar
 
+UPDATE_notification_bar2 MACRO new_msg
+    ;; updates the notification bar with a new message
+    ;; put the second int the first
+    ;; TODO: Should be done using Scrolling
+    ;scroll the screen
+    mov ax, 0701h                ;Scroll Screen AH=06 (Scroll), AL=1 one line
+	mov bh, 0Eh                   ;Normal attributes -> 07 ;; 0E-> yellow
+	mov cx, 1700h                    ;from 0, 0
+	mov dx, 1850H                ;To 02h, 4fh
+	int 10h                      ;Clear the first line
 
+
+    DisplayString_AT_position_TEXTMODE new_msg ,1705h ;print in the next row
+endm UPDATE_notification_bar2
 
 
 ;;There should be another clear with scrolling 
