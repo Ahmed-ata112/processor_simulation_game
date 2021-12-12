@@ -1,0 +1,35 @@
+       cmp op1,5Bh                   ;op1=[]
+       je ItsMeMoryToRegister
+        
+       cmp op1+1,58h                  ;op1=_X
+       je IsOp2_16BitRegister  
+       
+                                      ;IsIt8Bit_RegisterToRegister?
+       cmp op2+1,58h                  ;op2=_X?
+       je NOTvalid
+       cmp op2,5Bh                    ;op2=[]? 
+       jne valid
+       je  NOTvalid
+        
+       ItsMeMoryToRegister:
+       cmp op2+1,58h                  ;op2=_X
+       je valid
+       jne NOTvalid
+       
+       IsOp2_16BitRegister:
+       cmp op2+1,58h                  ;op2=_X
+       je valid
+       jne IsOp2_MeMoryLocation
+       
+       IsOp2_MeMoryLocation:         ;op2=[]
+       cmp op2,5Bh
+       je valid
+       jne NOTvalid 
+       
+       NOTvalid:
+       mov result,0
+       jmp end
+       
+       valid:
+       mov result,1 
+       end:
