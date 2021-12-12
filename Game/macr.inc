@@ -4,6 +4,42 @@ DisplayString MACRO STR
             int 21h
 ENDM DisplayString   
 
+split_operands MACRO source des1 des2 ; to split the two operand (des1->first oper && des2->second oper) 
+	    
+	mov SI,offset source
+	mov DI,offset des1
+	mov al,','
+moving1:	
+	MOVSB
+	cmp al,[SI]
+	jnz moving1
+	
+	inc SI ;; to skip (,)
+	mov DI,offset des2
+	mov al,'$'
+moving2:	
+	MOVSB
+	cmp al,[SI]
+	jnz moving2
+	
+	dec di ; to remove enter
+    mov [DI],al
+
+ENDM split_operands
+
+	Check_memorytomemory MACRO des1 des2 Result_2  ;; check if it iss memory to memory --  Result_2 = 1 if it is not valid and 0 for valid  
+	    
+	cmp [des1],'['
+	jnz no_bracket
+	cmp [des2],'['
+	jnz no_bracket
+	mov [Result_2],1
+	jmp return
+	no_bracket:
+	mov [Result_2],0
+    return:
+	    
+	ENDM Check_memorytomemory
 
 ReadString MACRO PromptMessage
     mov ah, 0AH                  ;Read from keyboard
