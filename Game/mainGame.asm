@@ -2,8 +2,10 @@
 	;.286
 	.model small
 	.stack 64
-	.data
-	Enter_Name_message db 'Please enter Your Name: ', '$'
+	.data  
+	Enter_Name_message0 db 'Press Enter key to continue ', '$'
+	Enter_Name_message db 'Please enter Your Name: ', '$' 
+	Enter_Name_message2 db 'Name MUST start with a letter (No digits or special characters)$'
 	Enter_Points_message db 'Please enter Initial Points: ', '$'  
 	MAIN_Screen_message1 db 'To Start Chatting press F1','$'
 	MAIN_Screen_message2 db 'To Start Game press F2$'  
@@ -14,13 +16,13 @@
 	duummy1 db 'F1 is pressed','$'
 	duummy2 db 'F2 is pressed','$'
 
-	nl db 10,13
+	nl db 10,13,'$'
     My_Initial_points dw ?
 
     FirstName LABEL BYTE ; named the next it the same name 
-	FirstNameSize db 30
+	FirstNameSize db 16
 	ActualFirstNameSize db ?
-	FirstNameData db 30 dup('$')
+	FirstNameData db 17 dup('$')
 
 
 
@@ -32,13 +34,35 @@
 	mov ds, ax
 	mov ES,AX ;; for string operations
 	
-    DisplayString Enter_Name_message
+	
+	DisplayAgain:
+	DisplayString_AT_position_TEXTMODE Enter_Name_message0 1018h  
+	
+    DisplayString_AT_position_TEXTMODE Enter_Name_message 0318h 
+    MoveCursorTo 0421h
     ReadString FirstName
-
+    
+    cmp FirstNameData,41h
+    jl  ClearScreen
+    cmp FirstNameData,7Ah
+    jg  ClearScreen
+    cmp FirstNameData,60h
+    jg  FirstIsLetter
+    cmp FirstNameData,5Bh
+    jl  FirstIsLetter
+    ClearScreen:
+    CLR_Screen_with_text_mode
+   
+      
+    DisplayString_AT_position_TEXTMODE Enter_Name_message2 0000
     DisplayString nl    ;print newline
+    jmp DisplayAgain
+    
+    FirstIsLetter:
 
-    DisplayString Enter_Points_message ; show mes
 
+    DisplayString_AT_position_TEXTMODE Enter_Points_message 0818h ; show mes
+    MoveCursorTo 0921h
     ReadNumberdec_in_ax ;; Read points and put it in ax
     mov My_Initial_points,ax ;; initialize initial points
 

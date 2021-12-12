@@ -4,6 +4,15 @@ DisplayString MACRO STR
             int 21h
 ENDM DisplayString   
 
+MoveCursorTo MACRO pos
+push ax
+push dx
+mov ah,2h
+mov dx,pos
+int 10h
+pop dx
+pop ax
+ENDM MoveCursorTo
 
 ReadString MACRO PromptMessage
     mov ah, 0AH                  ;Read from keyboard
