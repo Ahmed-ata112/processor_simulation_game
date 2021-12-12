@@ -1,35 +1,40 @@
-       cmp op1,5Bh                   ;op1=[]
-       je ItsMeMoryToRegister
-        
-       cmp op1+1,58h                  ;op1=_X
-       je IsOp2_16BitRegister  
+SizeMismatchValidation MACRO op1,op2,result    
+
+CheckOP op1,op2,result
+cmp result,0
+je finish
+CheckOP op2,op1,result       
+finish:       
        
-                                      ;IsIt8Bit_RegisterToRegister?
-       cmp op2+1,58h                  ;op2=_X?
-       je NOTvalid
-       cmp op2,5Bh                    ;op2=[]? 
-       jne valid
+       ENDM SizeMismatchValidation
+
+CheckOP MACRO op1, op2, result
+ Local valid,NOTvalid,end,CheckL   
+       cmp op1+1,48h                  ;op1=_H
+       jne CheckL
+       cmp op2+1,58h                  ;op2=_X
        je  NOTvalid
-        
-       ItsMeMoryToRegister:
+       cmp op2+1,49h                  ;_H,SI/_H,DI
+       je NOTvalid
+       cmp op2+1,50h                  ;_H,BP/_H,SP
+       je NOTvalid
+       
+       CheckL:  
+       cmp op1+1,4Ch                  ;op1=_L
+       jne valid
        cmp op2+1,58h                  ;op2=_X
-       je valid
-       jne NOTvalid
-       
-       IsOp2_16BitRegister:
-       cmp op2+1,58h                  ;op2=_X
-       je valid
-       jne IsOp2_MeMoryLocation
-       
-       IsOp2_MeMoryLocation:         ;op2=[]
-       cmp op2,5Bh
-       je valid
-       jne NOTvalid 
-       
-       NOTvalid:
-       mov result,0
-       jmp end
+       je  NOTvalid
+       cmp op2+1,49h                  ;_L,SI/_L,DI
+       je NOTvalid
+       cmp op2+1,50h                  ;_L,BP/_L,SP
+       je NOTvalid 
        
        valid:
        mov result,1 
+       jmp end
+    
+       NOTvalid:
+       mov result,0
        end:
+    
+    ENDM CheckOP
