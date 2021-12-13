@@ -77,6 +77,7 @@ DisplayString_AT_position_TEXTMODE MACRO STR, pos
 
     mov dx,si ; get the initial Cursor position
     mov ah,2
+    mov bh,0
     int 10h ;; mov cursor 
 ENDM DisplayString_AT_position_TEXTMODE  
 
@@ -126,26 +127,26 @@ endm CLR_Screen_with_text_mode
 
 Display_with_Color macro offset_str , len , color
 ;;display the string given an offset to it
-local lp
-mov si, offset_str
-mov di, len
-mov bl,color
+    local lp
+    mov si, offset_str
+    mov di, len
+    mov bl,color
 
-mov bh,0
-    lp:
-    mov cx,1 ; # of prints
-    mov al, [si]
-    mov ah, 9  
     mov bh,0
-    int 10h
-    mov ah,3
-    int 10h ;; get cursor in dh-dl  
-    inc dx     ;; to move it
-    mov ah,2
-    int 10h    ; set cursor position 
+    lp:
+        mov cx,1 ; # of prints
+        mov al, [si]
+        mov ah, 9  
+        mov bh,0
+        int 10h
+        mov ah,3
+        int 10h ;; get cursor in dh-dl  
+        inc dx     ;; to move it
+        mov ah,2
+        int 10h    ; set cursor position 
 
-    inc si
-    dec di
+        inc si
+        dec di
 jnz lp
 Endm Display_with_Color
 
