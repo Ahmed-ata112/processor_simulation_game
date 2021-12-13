@@ -38,8 +38,7 @@
 	
 	
 	DisplayAgain:
-	CLR_Screen_with_text_mode
-	DisplayString_AT_position_TEXTMODE Enter_Name_message0 1018h  
+	CLR_Screen_with_text_mode 
 	
     DisplayString_AT_position_TEXTMODE Enter_Name_message 0318h 
     MoveCursorTo 0421h
@@ -75,9 +74,9 @@
 
 	; now enter the main Screen
 	DisplayString nl
-	DisplayString Press_any_Key_message
+	DisplayString_AT_position_TEXTMODE Press_any_Key_message 1018h 
 	mov ah,0
-	int 16h
+	int 16h 	; waits for a key to be pressed
 
 	Main_Screen:
 		CLR_Screen_with_text_mode
