@@ -1,5 +1,5 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;just a File to Contain All the Validation Macros To use it later;;;;;;
+;;; just a File to Contain All the Validation Macros To use it later;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -90,6 +90,18 @@ check_op_size_mismatch MACRO op1, op2, result
         finish:
 
     check_if_in_array endm
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
