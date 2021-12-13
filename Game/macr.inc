@@ -67,6 +67,7 @@ DisplayString_AT_position_TEXTMODE MACRO STR, pos
 
     mov dx,pos
     mov ah,2
+    mov bh,0
     int 10h ;; mov cursor 
 
     mov ah,9h

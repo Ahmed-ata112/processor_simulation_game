@@ -37,6 +37,7 @@
 	
 	
 	DisplayAgain:
+	CLR_Screen_with_text_mode
 	DisplayString_AT_position_TEXTMODE Enter_Name_message0 1018h  
 	
     DisplayString_AT_position_TEXTMODE Enter_Name_message 0318h 
@@ -64,8 +65,7 @@
     jmp DisplayAgain             ;Display first screen again
     
     FirstIsLetter:               ;jmp here if first character is a letter
-
-
+	
     DisplayString_AT_position_TEXTMODE Enter_Points_message 0818h ; show mes
     MoveCursorTo 0921h
     ReadNumberdec_in_ax ;; Read points and put it in ax
