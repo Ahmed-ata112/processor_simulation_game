@@ -7,6 +7,7 @@
 	Enter_Name_message db 'Please enter Your Name: ', '$' 
 	Enter_Name_message2 db 'Name MUST start with a letter (No digits or special characters)$'
 	Enter_Points_message db 'Please enter Initial Points: ', '$'  
+	Press_any_Key_message db 'press any key to continue...$'
 	MAIN_Screen_message1 db 'To Start Chatting press F1','$'
 	MAIN_Screen_message2 db 'To Start Game press F2$'  
 	MAIN_Screen_message3 db 'To end Program press ESC$'   
@@ -73,7 +74,10 @@
     mov My_Initial_points,ax ;; initialize initial points
 
 	; now enter the main Screen
-
+	DisplayString nl
+	DisplayString Press_any_Key_message
+	mov ah,0
+	int 16h
 
 	Main_Screen:
 		CLR_Screen_with_text_mode
@@ -90,7 +94,9 @@
 			;; esc -> SC 01
 			;; F2 -> 3C   
 			;; F1 -> 3B
-
+			;UPDATE_notification_bar2 duummy1
+			;UPDATE_notification_bar2 duummy2
+			;UPDATE_notification_bar2 duummy1
 			check_key_pressed1: mov ah, 1
 			int 16h                      ;Get key pressed (do not wait for a key - AH:scancode, AL:ASCII)
 			jnz .continue ;; something is clicked
@@ -106,14 +112,14 @@
 			cmp ah,3bh ;f1
 			jne check_f2
 			;in case of F1
-			UPDATE_notification_bar duummy1
+			UPDATE_notification_bar2 duummy1
 			
 			
 			check_f2:
 			cmp ah,3ch ; F2
 			jne no_valid_key
 			;in case of F2
-			UPDATE_notification_bar duummy2
+			UPDATE_notification_bar2 duummy2
 			
 			no_valid_key:
 			;; delete it from buffer
