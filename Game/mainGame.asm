@@ -23,6 +23,7 @@
 	FirstNameSize db 16
 	ActualFirstNameSize db ?
 	FirstNameData db 17 dup('$')
+	Cpystring db 17 dup('$')
 
 
 
@@ -33,32 +34,36 @@
 	mov ax, @data
 	mov ds, ax
 	mov ES,AX ;; for string operations
-	CLR_Screen_with_text_mode
+	
 	
 	DisplayAgain:
-	DisplayString_AT_position_TEXTMODE Enter_Name_message0 1018h
+	DisplayString_AT_position_TEXTMODE Enter_Name_message0 1018h  
 	
     DisplayString_AT_position_TEXTMODE Enter_Name_message 0318h 
     MoveCursorTo 0421h
     ReadString FirstName
     
-    cmp FirstNameData,41h ;A
-    jl  ClearScreen
-    cmp FirstNameData,7Ah ;Z
+    cmp FirstNameData,'A'   ;check if first character is letter
+    jl  ClearScreen       
+    cmp FirstNameData,'z'
     jg  ClearScreen
-    cmp FirstNameData,60h ;0
+    cmp FirstNameData,'`'
     jg  FirstIsLetter
-    cmp FirstNameData,5Bh ;[ ;;TODO: WHAT IS THIS?????
+    cmp FirstNameData,'['
     jl  FirstIsLetter
-    ClearScreen:
+    ClearScreen:            ; if first character isn't a letter, clear screen and display a message to user
     CLR_Screen_with_text_mode
    
       
     DisplayString_AT_position_TEXTMODE Enter_Name_message2 0000
     DisplayString nl    ;print newline
-    jmp DisplayAgain
+    mov si,offset Cpystring      ;SI points to the source
+    mov di,offset FirstNameData  ;DI points to the target
+    mov cx,17                    ;count
+    rep movsb                    ;copy $ into FirstNameData 
+    jmp DisplayAgain             ;Display first screen again
     
-    FirstIsLetter:
+    FirstIsLetter:               ;jmp here if first character is a letter
 
 
     DisplayString_AT_position_TEXTMODE Enter_Points_message 0818h ; show mes
