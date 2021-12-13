@@ -60,12 +60,13 @@
     DisplayString nl    ;print newline
     mov si,offset Cpystring      ;SI points to the source
     mov di,offset FirstNameData  ;DI points to the target
-    mov cx,17                    ;count
+    mov cx,0                     ;count
+	mov cl,ActualFirstNameSize	 ; no need to reset The whole String
     rep movsb                    ;copy $ into FirstNameData 
     jmp DisplayAgain             ;Display first screen again
     
     FirstIsLetter:               ;jmp here if first character is a letter
-	
+
     DisplayString_AT_position_TEXTMODE Enter_Points_message 0818h ; show mes
     MoveCursorTo 0921h
     ReadNumberdec_in_ax ;; Read points and put it in ax
