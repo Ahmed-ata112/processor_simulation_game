@@ -45,9 +45,10 @@ check_if_in_array endm
 
 
 checkOperandsRegistersNames macro FirstOperandData,SecondOperandData,result     
-                                
+      local finish                          
       check_if_in_array  validRegNamesArr,validRegNamesArrSize,ActualfirstOperandSize, FirstOperandData,result
-      
+      cmp result,0
+      je finish
       check_if_in_array  validRegNamesArr,validRegNamesArrSize,ActualSecondOperandSize, SecondOperandData,result
-                          
-           checkOperandsRegistersNames    endm
+      finish:                          
+      checkOperandsRegistersNames    endm
