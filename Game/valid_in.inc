@@ -14,7 +14,7 @@ check_op_size_mismatch op2,op1,result
 finish:       
        
 ENDM SizeMismatchValidation
-
+;; Menna
 check_op_size_mismatch MACRO op1, op2, result
  Local valid,NOTvalid,end,CheckL   
        cmp op1+1,'H'                  ;op1=_H 
@@ -52,7 +52,7 @@ check_op_size_mismatch MACRO op1, op2, result
 
 
 
-
+    ;   Ahmed
     check_if_in_array macro arr, arr_len, element_size , op ,result
         local L1 ,finish,found,skip
         lea si,arr
@@ -90,7 +90,7 @@ check_op_size_mismatch MACRO op1, op2, result
 
     check_if_in_array endm
 
-
+    ;;  Hany
 split_operands MACRO source des1 des2 ; to split the two operand (des1->first oper && des2->second oper) 
 	    
 	mov SI,offset source
@@ -131,7 +131,15 @@ ENDM split_operands
 
 
 
-
+;;sarah
+checkOperandsRegistersNames macro FirstOperandData,SecondOperandData,result     
+      local finish                          
+      check_if_in_array  validRegNamesArr,validRegNamesArrSize,ActualfirstOperandSize, FirstOperandData,result
+      cmp result,0
+      je finish
+      check_if_in_array  validRegNamesArr,validRegNamesArrSize,ActualSecondOperandSize, SecondOperandData,result
+      finish:                          
+      checkOperandsRegistersNames    endm
 
 
 
