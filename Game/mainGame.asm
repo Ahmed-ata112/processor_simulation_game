@@ -33,22 +33,22 @@
 	mov ax, @data
 	mov ds, ax
 	mov ES,AX ;; for string operations
-	
+	CLR_Screen_with_text_mode
 	
 	DisplayAgain:
-	DisplayString_AT_position_TEXTMODE Enter_Name_message0 1018h  
+	DisplayString_AT_position_TEXTMODE Enter_Name_message0 1018h
 	
     DisplayString_AT_position_TEXTMODE Enter_Name_message 0318h 
     MoveCursorTo 0421h
     ReadString FirstName
     
-    cmp FirstNameData,41h
+    cmp FirstNameData,41h ;A
     jl  ClearScreen
-    cmp FirstNameData,7Ah
+    cmp FirstNameData,7Ah ;Z
     jg  ClearScreen
-    cmp FirstNameData,60h
+    cmp FirstNameData,60h ;0
     jg  FirstIsLetter
-    cmp FirstNameData,5Bh
+    cmp FirstNameData,5Bh ;[
     jl  FirstIsLetter
     ClearScreen:
     CLR_Screen_with_text_mode
