@@ -48,7 +48,7 @@
     jg  ClearScreen
     cmp FirstNameData,60h ;0
     jg  FirstIsLetter
-    cmp FirstNameData,5Bh ;[
+    cmp FirstNameData,5Bh ;[ ;;WHAT IS THIS?????
     jl  FirstIsLetter
     ClearScreen:
     CLR_Screen_with_text_mode
