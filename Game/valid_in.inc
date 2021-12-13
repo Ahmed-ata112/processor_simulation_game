@@ -39,7 +39,6 @@ check_op_size_mismatch MACRO op1, op2, result
        je NOTvalid
        cmp op2+1,'P'                  ;_L,BP/_L,SP
        je NOTvalid 
-       
        valid:
        mov result,1 
        jmp end
