@@ -157,6 +157,7 @@ Display_with_Color_at_pos macro pos ,str , len  ,color
     mov si, offset str
     mov di, len
     mov bl, color
+    mov bh,0
 
     mov ah,3
     int 10h ;; get cursor in dh-dl  
@@ -166,9 +167,8 @@ Display_with_Color_at_pos macro pos ,str , len  ,color
     mov ah,2
     int 10h    ; set cursor position 
 
-    mov bh,0
     lp:
-        mov cx,1 ; # of prints
+    mov cx,1 ; # of prints
         mov al, [si]
         mov ah, 9  
         mov bh,0
@@ -181,9 +181,9 @@ Display_with_Color_at_pos macro pos ,str , len  ,color
 
         inc si
         dec di
-jnz lp
+        jnz lp
 
-     pop dx
+    pop dx
     mov ah,2
     int 10h    ; Restore The cursor position (not changed)
 Endm Display_with_Color_at_pos
