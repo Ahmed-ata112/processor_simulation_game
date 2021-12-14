@@ -150,4 +150,50 @@ Display_with_Color macro offset_str , len , color
 jnz lp
 Endm Display_with_Color
 
+Display_with_Color_at_pos macro pos ,str , len  ,color 
+ local lp
+;;display the string given an offset to it
+;; only supports Foreground
+    mov si, offset str
+    mov di, len
+    mov bl, color
 
+    mov ah,3
+    int 10h ;; get cursor in dh-dl  
+    push dx ;; to restore it at the end
+    
+    mov dx,pos
+    mov ah,2
+    int 10h    ; set cursor position 
+
+    mov bh,0
+    lp:
+        mov cx,1 ; # of prints
+        mov al, [si]
+        mov ah, 9  
+        mov bh,0
+        int 10h
+        mov ah,3
+        int 10h ;; get cursor in dh-dl  
+        inc dx     ;; to move it
+        mov ah,2
+        int 10h    ; set cursor position 
+
+        inc si
+        dec di
+jnz lp
+
+     pop dx
+    mov ah,2
+    int 10h    ; Restore The cursor position (not changed)
+Endm Display_with_Color_at_pos
+
+
+
+
+
+    ChangeVideoMode macro M ;-> 03h text ----  13h video  
+        mov ah, 00h
+        mov al, M
+        int 10h
+    endm ChangeVideoMode
