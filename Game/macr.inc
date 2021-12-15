@@ -58,9 +58,9 @@ ENDM ReadNumberdec_in_ax
 
 
 DisplayString_AT_position_TEXTMODE MACRO STR, pos
-    ; assumes Text mode
-    ; returns The cursor to its initial position before it ends
-    ;; pos is row-col
+    ;assumes Text mode
+    ;returns The cursor to its initial position before it ends
+    ;pos is row-col
     mov ah,3
     int 10h ;; get cursor in dh-dl  
     mov si , dx ; save it To set it back at the end
@@ -126,7 +126,7 @@ endm CLR_Screen_with_text_mode
 
 
 Display_with_Color macro offset_str , len , color
-;;display the string given an offset to it
+    ;;display the string given an offset to it
     local lp
     mov si, offset_str
     mov di, len
@@ -147,13 +147,13 @@ Display_with_Color macro offset_str , len , color
 
         inc si
         dec di
-jnz lp
+    jnz lp
 Endm Display_with_Color
 
 Display_with_Color_at_pos macro pos ,str , len  ,color 
- local lp
-;;display the string given an offset to it
-;; only supports Foreground
+    local lp
+    ;;display the string given an offset to it
+    ;; only supports Foreground
     mov si, offset str
     mov di, len
     mov bl, color
@@ -188,12 +188,20 @@ Display_with_Color_at_pos macro pos ,str , len  ,color
     int 10h    ; Restore The cursor position (not changed)
 Endm Display_with_Color_at_pos
 
-
-
-
-
-    ChangeVideoMode macro M ;-> 03h text ----  13h video  
+ChangeVideoMode macro M ;-> 03h text ----  13h video  
         mov ah, 00h
         mov al, M
         int 10h
-    endm ChangeVideoMode
+endm ChangeVideoMode
+
+
+
+
+
+
+
+
+
+
+
+
