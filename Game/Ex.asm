@@ -12,9 +12,9 @@
 
 command_splited db 5 dup('$') 
 
-HASH DB ?
+HASH DW ?
 
-command DB 'MOV AX,13'
+command DB 'MUL AX,13'
 
 .code 
 DisplayString MACRO STR
@@ -32,11 +32,23 @@ HASHING MACRO STR
     mov SI,offset STR
     mov DI, offset HASH
     mov al,'$' ;; to check END
-    MOV [DI],0H
+    MOV [DI],0H 
+                  
+    MOV BX,[DI]
+    MOV CL,[SI]
+    MOV CH,00H
+    ADD BX,CX 
+    
+    MOV [DI],BX 
+    
 moving11:
-    MOV AH,[DI]
-    ADD AH,[SI]
-    MOV [DI],AH
+    MOV BX,[DI]
+    MOV CL,[SI]
+    MOV CH,00H
+    ADD BX,CX  
+    ADD BX,CX
+    ADD BX,CX
+    MOV [DI],BX
     INC SI	
 	cmp al,[SI]
 	jnz moving11
@@ -87,7 +99,7 @@ check_command                PROC
      
     ;; ADD
     
-    CMP [SI],0C9H
+    CMP [SI],29CH
     JNZ CHECK1
     
     ;; CODE
@@ -98,7 +110,7 @@ check_command                PROC
     
     ;; ADC
     
-    CMP [SI],0C8H
+    CMP [SI],299H
      JNZ CHECK2
     
     ;; CODE
@@ -108,7 +120,7 @@ check_command                PROC
     
     ;; SUB  
     
-    CMP [SI],0EAH
+    CMP [SI],311H
      JNZ CHECK3
     
     ;; CODE                    
@@ -118,7 +130,7 @@ check_command                PROC
     
     ;; SBB   
     
-    CMP [SI],0D7H
+    CMP [SI],2D8H
      JNZ CHECK4
     
     ;; CODE
@@ -128,7 +140,7 @@ check_command                PROC
     
     ;; DIV   
     
-    CMP [SI],0E3H
+    CMP [SI],2EDH
      JNZ CHECK5
     
     ;; CODE
@@ -138,7 +150,7 @@ check_command                PROC
     
     ;; MUL   
     
-    CMP [SI],0EEH
+    CMP [SI],317H
      JNZ CHECK6
     
     ;; CODE
@@ -148,7 +160,7 @@ check_command                PROC
     
     ;; MOV   
     
-    CMP [SI],0F2H
+    CMP [SI],323H
      JNZ CHECK7
     
     ;; CODE
@@ -158,7 +170,7 @@ check_command                PROC
     
     ;; XOR   
     
-    CMP [SI],0F9H
+    CMP [SI],343H
      JNZ CHECK8
     
     ;; CODE
@@ -168,7 +180,7 @@ check_command                PROC
     
     ;; AND   
     
-    CMP [SI],0D3H
+    CMP [SI],2BAH
      JNZ CHECK9
     
     ;; CODE
@@ -178,7 +190,7 @@ check_command                PROC
     
     ;; OR    
     
-    CMP [SI],0A1H
+    CMP [SI],232H
      JNZ CHECK10
     
     ;; CODE
@@ -188,11 +200,9 @@ check_command                PROC
     
     ;; NOP   
     
-    CMP [SI],0EDH
+    CMP [SI],315H
      JNZ CHECK11
-     CMP [DI],'N'
-    JNZ CHECK11
-    
+   
     ;; CODE
     DisplayString command_splited
     
@@ -200,10 +210,8 @@ check_command                PROC
     
     ;; SHR   
     
-    CMP [SI],0EDH      
+    CMP [SI],31AH      
      JNZ CHECK15
-    CMP [DI],'S'
-    JNZ CHECK15
     
     ;; CODE
     DisplayString command_splited
@@ -213,7 +221,7 @@ check_command                PROC
     
     ;; INC   
     
-    CMP [SI],0DAH
+    CMP [SI],2D7H
      JNZ CHECK12
     
     ;; CODE
@@ -223,7 +231,7 @@ check_command                PROC
     
     ;; DEC   
     
-    CMP [SI],0CCH
+    CMP [SI],2A8H
      JNZ CHECK13
     
     ;; CODE
@@ -233,7 +241,7 @@ check_command                PROC
     
     ;; CLC   
     
-    CMP [SI],0D2H
+    CMP [SI],2B9H
      JNZ CHECK14
     
     ;; CODE
@@ -243,7 +251,7 @@ check_command                PROC
     
     ;; SHL   
     
-    CMP [SI],0E7H 
+    CMP [SI],308H 
      JNZ CHECK16
     
     ;; CODE 
