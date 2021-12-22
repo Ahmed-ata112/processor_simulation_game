@@ -1,10 +1,10 @@
 ;; Hany-> command;
 ;; Mena -> second; 
 
-EXTRN mainGame:_AX, _BX, _CX, _DX, _SI, _DI, _SP, _BP,_AL, _BL, _CL, _DL, _AH, _BH, _CH, _DH
-EXTRN mainGame:command
-EXTRN mainGame:_01,_02,_03,_04,_05,_06,_07,_08,_09,_A,_B,_C,_D,_E,_F
-PUBLIC result
+;EXTRN mainGame:_AX, _BX, _CX, _DX, _SI, _DI, _SP, _BP,_AL, _BL, _CL, _DL, _AH, _BH, _CH, _DH
+;EXTRN mainGame:command
+;EXTRN mainGame:_01,_02,_03,_04,_05,_06,_07,_08,_09,_A,_B,_C,_D,_E,_F
+;PUBLIC result
 
 .MODEL SMALL
 .STACK 64
@@ -33,7 +33,7 @@ ENDM DisplayString
 ; Hany
 ;; HASHING
 HASHING MACRO STR HASH
-            
+    local moving111        
     mov SI,offset STR
     mov DI, offset HASH
     mov al,'$' ;; to check END
@@ -46,7 +46,7 @@ HASHING MACRO STR HASH
     
     MOV [DI],BX 
     
-moving11:
+moving111:
     MOV BX,[DI]
     MOV CL,[SI]
     MOV CH,00H
@@ -56,7 +56,7 @@ moving11:
     MOV [DI],BX
     INC SI	
 	cmp al,[SI]
-	jnz moving11
+	jnz moving111
             
 ENDM HASHING 
 
@@ -98,10 +98,10 @@ moving1:
 ;; Mena	
 	mov DI, offset Two_Operands_Together_splited
 	mov al,'$' ;; to check end
-moving11:
+moving2:
     MOVSB
     cmp al,[SI]
-    jnz moving11	
+    jnz moving2	
 
     ret
 
@@ -775,7 +775,7 @@ check_Operand2                PROC
     ;; CODE 
  DisplayString Operand2
  
-    
+    end:
             
     RET
 
