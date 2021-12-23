@@ -7,20 +7,6 @@
 ;PUBLIC result
 include valid_in.inc
 
-Store_operand2_Value MACRO Operand2
-        
-    mov al,Operand2 
-    sub al,30h
-    mov bl,10
-    mul bl  
-    mov ah,0
-    mov dx,ax
-    
-    mov al,Operand2+1
-    sub al,30h
-    add ax,dx
-
-ENDM Store_operand2_Value
 
 .MODEL SMALL
 .STACK 64
@@ -30,7 +16,7 @@ _AX dw ?
 _BX dw ?
 _CX dw ?
 _DX dw ?
-_SI dw '01'/1
+_SI dw '01'
 _DI dw ?
 _SP dw ?
 _BP dw ?
@@ -42,7 +28,7 @@ _AH dw ?
 _BH dw ?
 _CH dw ?
 _DH dw ?
-_01 dw 55
+_01 dw '55'
 _02 dw ?
 _03 dw ?
 _04 dw ?
@@ -374,7 +360,7 @@ check_Operand2                PROC
     CHECKDX:
     
     ;; DX   
-    
+                                    
     CMP [SI],218H
      JNZ CHECKSI
     
@@ -732,35 +718,35 @@ check_Operand2                PROC
     CMP [SI],42aH 
     JNZ CHECKmlSP
     
-    cmp _DI,1
+    cmp _DI,'01'
     jz movml1
-    cmp _DI,2
+    cmp _DI,'02'
     jz movml2
-    cmp _DI,3
+    cmp _DI,'03'
     jz movml3
-    cmp _DI,4
+    cmp _DI,'04'
     jz movml4
-    cmp _DI,5
+    cmp _DI,'05'
     jz movml5
-    cmp _DI,6
+    cmp _DI,'06'
     jz movml6
-    cmp _DI,7
+    cmp _DI,'07'
     jz movml7
-    cmp _DI,8
+    cmp _DI,'08'
     jz movml8
-    cmp _DI,9
+    cmp _DI,'09'
     jz movml9
-    cmp _DI,0Ah
+    cmp _DI,'A'
     jz movmlA
-    cmp _DI,0Bh
+    cmp _DI,'B'
     jz movmlB
-    cmp _DI,0Ch
+    cmp _DI,'C'
     jz movmlC
-    cmp _DI,0Dh
+    cmp _DI,'D'
     jz movmlD
-    cmp _DI,0Eh
+    cmp _DI,'E'
     jz movmlE
-    cmp _DI,0Fh
+    cmp _DI,'F'
     jz movmlF 
     ;; CODE
      mov Operand2_Value,ax 
@@ -773,35 +759,35 @@ check_Operand2                PROC
     CMP [SI],46cH 
      JNZ CHECKmlBP
     
-    cmp _SP,1
+    cmp _SP,'01'
     jz movml1
-    cmp _SP,2
+    cmp _SP,'02'
     jz movml2
-    cmp _SP,3
+    cmp _SP,'03'
     jz movml3
-    cmp _SP,4
+    cmp _SP,'04'
     jz movml4
-    cmp _SP,5
+    cmp _SP,'05'
     jz movml5
-    cmp _SP,6
+    cmp _SP,'06'
     jz movml6
-    cmp _SP,7
+    cmp _SP,'07'
     jz movml7
-    cmp _SP,8
+    cmp _SP,'08'
     jz movml8
-    cmp _SP,9
+    cmp _SP,'09'
     jz movml9
-    cmp _SP,0Ah
+    cmp _SP,'A'
     jz movmlA
-    cmp _SP,0Bh
+    cmp _SP,'B'
     jz movmlB
-    cmp _SP,0Ch
+    cmp _SP,'C'
     jz movmlC
-    cmp _SP,0Dh
+    cmp _SP,'D'
     jz movmlD
-    cmp _SP,0Eh
+    cmp _SP,'E'
     jz movmlE
-    cmp _SP,0Fh
+    cmp _SP,'F'
     jz movmlF
     ;; CODE 
      mov Operand2_Value,ax
@@ -814,35 +800,35 @@ check_Operand2                PROC
     CMP [SI],439H 
      JNZ CHECKdata
     
-    cmp _BP,1
+    cmp _BP,'01'
     jz movml1
-    cmp _BP,2
+    cmp _BP,'02'
     jz movml2
-    cmp _BP,3
+    cmp _BP,'03'
     jz movml3
-    cmp _BP,4
+    cmp _BP,'04'
     jz movml4
-    cmp _BP,5
+    cmp _BP,'05'
     jz movml5
-    cmp _BP,6
+    cmp _BP,'06'
     jz movml6
-    cmp _BP,7
+    cmp _BP,'07'
     jz movml7
-    cmp _BP,8
+    cmp _BP,'08'
     jz movml8
-    cmp _BP,9
+    cmp _BP,'09'
     jz movml9
-    cmp _BP,0Ah
+    cmp _BP,'A'
     jz movmlA
-    cmp _BP,0Bh
+    cmp _BP,'B'
     jz movmlB
-    cmp _BP,0Ch
+    cmp _BP,'C'
     jz movmlC
-    cmp _BP,0Dh
+    cmp _BP,'D'
     jz movmlD
-    cmp _BP,0Eh
+    cmp _BP,'E'
     jz movmlE
-    cmp _BP,0Fh
+    cmp _BP,'F'
     jz movmlF
     ;; CODE
      mov Operand2_Value,ax 
