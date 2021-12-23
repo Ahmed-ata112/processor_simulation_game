@@ -5,21 +5,69 @@
 ;EXTRN mainGame:command
 ;EXTRN mainGame:_01,_02,_03,_04,_05,_06,_07,_08,_09,_A,_B,_C,_D,_E,_F
 ;PUBLIC result
+include valid_in.inc
+
+Store_operand2_Value MACRO Operand2
+        
+    mov al,Operand2 
+    sub al,30h
+    mov bl,10
+    mul bl  
+    mov ah,0
+    mov dx,ax
+    
+    mov al,Operand2+1
+    sub al,30h
+    add ax,dx
+
+ENDM Store_operand2_Value
 
 .MODEL SMALL
 .STACK 64
-.DATA
+.DATA 
+
+_AX dw ?
+_BX dw ?
+_CX dw ?
+_DX dw ?
+_SI dw '01'/1
+_DI dw ?
+_SP dw ?
+_BP dw ?
+_AL dw ?
+_BL dw ?
+_CL dw ?
+_DL dw ?
+_AH dw ?
+_BH dw ?
+_CH dw ?
+_DH dw ?
+_01 dw 55
+_02 dw ?
+_03 dw ?
+_04 dw ?
+_05 dw ?
+_06 dw ?
+_07 dw ?
+_08 dw ?
+_09 dw ?
+_A  dw ?
+_B  dw ?
+_C  dw ?
+_D  dw ?
+_E  dw ?
+_F  dw ?
 
 command_splited db 5 dup('$') 
 Operand1 db 5 dup('$')
 Operand2 db 5 dup('$')
 Two_Operands_Together_splited db 10 dup('$') 
-Operand2_Value db ?
+Operand2_Value dw ?
                
 HASH DW ?
-HASH_Operand2 DW ?
+HASH_Operand2 DW ? 
 
-command DB 'MUL AX,13'
+command DB 'MUL AX,[SI]e','$'
 
 .code 
 DisplayString MACRO STR
@@ -74,7 +122,7 @@ MAIN PROC far
     split_operands Two_Operands_Together_splited Operand1 Operand2
     
     HASHING command_splited HASH
-    HASHING command_splited HASH_Operand2
+    HASHING Operand2 HASH_Operand2
     
     CALL check_command
     CALL check_Operand2                 
@@ -91,17 +139,18 @@ split_command               PROC
     mov SI, offset command
     mov DI, offset command_splited
     mov al,' ' ;; to check space
-moving1:	
+moving11:	
 	MOVSB
 	cmp al,[SI]
-	jnz moving1
+	jnz moving11
 ;; Mena	
 	mov DI, offset Two_Operands_Together_splited
-	mov al,'$' ;; to check end
-moving2:
+	mov al,'$' ;; to check end 
+	inc SI     ;; to skip space
+moving22:
     MOVSB
     cmp al,[SI]
-    jnz moving2	
+    jnz moving22	
 
     ret
 
@@ -279,7 +328,7 @@ check_command                PROC
 
 check_command                ENDP  
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-END MAIN   
+   
 
 
 ;;Mena
@@ -291,10 +340,11 @@ check_Operand2                PROC
      
     ;; AX
     
-    CMP [SI],2ocH
+    CMP [SI],20cH
     JNZ CHECKBX
     
     mov ax,_AX;; CODE
+     mov Operand2_Value,ax
     DisplayString Operand2 
     jmp end
 
@@ -307,6 +357,7 @@ check_Operand2                PROC
      JNZ CHECKCX
     
     mov ax,_BX;; CODE
+     mov Operand2_Value,ax
     DisplayString Operand2
     jmp end
 
@@ -328,6 +379,7 @@ check_Operand2                PROC
      JNZ CHECKSI
     
     mov ax,_DX;; CODE
+     mov Operand2_Value,ax
     DisplayString Operand2
     jmp end
     CHECKSI:
@@ -338,6 +390,7 @@ check_Operand2                PROC
      JNZ CHECKDI
     
     mov ax,_SI;; CODE
+     mov Operand2_Value,ax
     DisplayString Operand2
     jmp end
     CHECKDI:
@@ -348,6 +401,7 @@ check_Operand2                PROC
      JNZ CHECKSP
     
     mov ax,_DI;; CODE
+     mov Operand2_Value,ax
     DisplayString Operand2
     jmp end
     CHECKSP:
@@ -358,6 +412,7 @@ check_Operand2                PROC
      JNZ CHECKBP
     
     mov ax,_SP;; CODE
+     mov Operand2_Value,ax
     DisplayString Operand2
     jmp end
     CHECKBP:
@@ -368,6 +423,7 @@ check_Operand2                PROC
      JNZ CHECKAL
     
     mov ax,_BP;; CODE
+     mov Operand2_Value,ax
     DisplayString Operand2
     jmp end
     CHECKAL:
@@ -380,6 +436,7 @@ check_Operand2                PROC
      JNZ CHECKDH 
     
     mov ax,_AL;; CODE
+     mov Operand2_Value,ax
     DisplayString Operand2
     jmp end
     CHECKBL:
@@ -389,7 +446,8 @@ check_Operand2                PROC
     CMP [SI],1ecH
      JNZ CHECKCL
     
-    mov ax,_BL;; CODE
+    mov ax,_BL;; CODE 
+     mov Operand2_Value,ax
     DisplayString Operand2
     jmp end
     CHECKCL:
@@ -400,6 +458,7 @@ check_Operand2                PROC
      JNZ CHECKDL
    
     mov ax,_CL;; CODE
+     mov Operand2_Value,ax
     DisplayString Operand2
     jmp end
     CHECKDL:
@@ -410,6 +469,7 @@ check_Operand2                PROC
      JNZ CHECKAH
     
     mov ax,_DL;; CODE
+     mov Operand2_Value,ax
     DisplayString Operand2
     jmp end
     CHECKAH:
@@ -421,6 +481,7 @@ check_Operand2                PROC
      JNZ CHECKBH
     
     mov ax,_AH;; CODE
+     mov Operand2_Value,ax
     DisplayString Operand2
     jmp end
     CHECKBH:
@@ -431,6 +492,7 @@ check_Operand2                PROC
      JNZ CHECKCH
     
     mov ax,_BH;; CODE
+     mov Operand2_Value,ax
     DisplayString Operand2
     jmp end
     CHECKCH:
@@ -441,6 +503,7 @@ check_Operand2                PROC
      JNZ CHECKDH
     
     mov ax,_CH;; CODE
+     mov Operand2_Value,ax
     DisplayString Operand2
     jmp end
     CHECKDH:
@@ -451,6 +514,7 @@ check_Operand2                PROC
      JNZ CHECK01
      
     mov ax,_DH;; CODE
+     mov Operand2_Value,ax
     DisplayString Operand2
     jmp end
     CHECK01:
@@ -460,7 +524,8 @@ check_Operand2                PROC
     CMP [SI],3a6H 
     JNZ CHECK02
      movml1:
-    mov ax,_01;; CODE 
+    mov ax,_01;; CODE
+     mov Operand2_Value,ax 
  DisplayString Operand2
     jmp end
     CHECK02:
@@ -471,6 +536,7 @@ check_Operand2                PROC
      JNZ CHECK03
       movml2:
     mov ax,_02;; CODE 
+     mov Operand2_Value,ax
  DisplayString Operand2 
     jmp end
     CHECK03:
@@ -480,7 +546,8 @@ check_Operand2                PROC
     CMP [SI],3acH 
      JNZ CHECK04
       movml3:
-    mov ax,_03;; CODE 
+    mov ax,_03;; CODE
+     mov Operand2_Value,ax 
  DisplayString Operand2
      jmp end
     CHECK04:
@@ -490,7 +557,8 @@ check_Operand2                PROC
     CMP [SI],3afH 
      JNZ CHECK05
        movml4:
-    mov ax,_04;; CODE 
+    mov ax,_04;; CODE
+     mov Operand2_Value,ax 
  DisplayString Operand2
  jmp end    
     CHECK05:
@@ -501,6 +569,7 @@ check_Operand2                PROC
      JNZ CHECK06
       movml5:
     mov ax,_05;; CODE 
+     mov Operand2_Value,ax
  DisplayString Operand2
  jmp end    
     CHECK06:
@@ -511,6 +580,7 @@ check_Operand2                PROC
      JNZ CHECK07
       movml6:
     mov ax,_06;; CODE 
+     mov Operand2_Value,ax
  DisplayString Operand2
  jmp end    
     CHECK07:
@@ -521,6 +591,7 @@ check_Operand2                PROC
      JNZ CHECK08
       movml7:
     mov ax,_07;; CODE 
+     mov Operand2_Value,ax
  DisplayString Operand2 
  jmp end   
     CHECK08:
@@ -530,7 +601,8 @@ check_Operand2                PROC
     CMP [SI],3bbH 
      JNZ CHECK09
       movml8:
-    mov ax,_08;; CODE 
+    mov ax,_08;; CODE
+     mov Operand2_Value,ax 
  DisplayString Operand2
  jmp end       
     CHECK09:
@@ -541,6 +613,7 @@ check_Operand2                PROC
      JNZ CHECKA
       movml9:
     mov ax,_09;; CODE 
+     mov Operand2_Value,ax
  DisplayString Operand2
  jmp end    
     CHECKA:
@@ -551,6 +624,7 @@ check_Operand2                PROC
      JNZ CHECKB
       movmlA:
     mov ax,_A;; CODE 
+     mov Operand2_Value,ax
  DisplayString Operand2
  jmp end     
     CHECKB:
@@ -561,6 +635,7 @@ check_Operand2                PROC
      JNZ CHECKC
       movmlB:
     mov ax,_B;; CODE 
+     mov Operand2_Value,ax
  DisplayString Operand2
  jmp end     
     CHECKC:
@@ -570,7 +645,8 @@ check_Operand2                PROC
     CMP [SI],34cH 
      JNZ CHECKD
       movmlC:
-    mov ax,_C;; CODE 
+    mov ax,_C;; CODE
+     mov Operand2_Value,ax 
  DisplayString Operand2
  jmp end     
     CHECKD:
@@ -580,7 +656,8 @@ check_Operand2                PROC
     CMP [SI],34fH 
      JNZ CHECKE
       movmlD:
-    mov ax,_D;; CODE 
+    mov ax,_D;; CODE
+     mov Operand2_Value,ax 
  DisplayString Operand2
  jmp end     
     CHECKE:
@@ -590,7 +667,8 @@ check_Operand2                PROC
     CMP [SI],352H 
      JNZ CHECKF
       movmlE:
-    mov ax,_E;; CODE 
+    mov ax,_E;; CODE
+     mov Operand2_Value,ax 
  DisplayString Operand2
  jmp end         
     CHECKF:
@@ -600,7 +678,8 @@ check_Operand2                PROC
     CMP [SI],355H 
      JNZ CHECKmlSI 
       movmlF:
-    mov ax,_F;; CODE 
+    mov ax,_F;; CODE
+     mov Operand2_Value,ax 
  DisplayString Operand2
  jmp end          
     CHECKmlSI:
@@ -611,36 +690,37 @@ check_Operand2                PROC
     JNZ CHECKmlDI
             
              
-    cmp _SI,1
+    cmp _SI,'01'
     jz movml1
-    cmp _SI,2
+    cmp _SI,'02'
     jz movml2
-    cmp _SI,3
+    cmp _SI,'03'
     jz movml3
-    cmp _SI,4
+    cmp _SI,'04'
     jz movml4
-    cmp _SI,5
+    cmp _SI,'05'
     jz movml5
-    cmp _SI,6
+    cmp _SI,'06'
     jz movml6
-    cmp _SI,7
+    cmp _SI,'07'
     jz movml7
-    cmp _SI,8
+    cmp _SI,'08'
     jz movml8
-    cmp _SI,9
+    cmp _SI,'09'
     jz movml9
-    cmp _SI,A
+    cmp _SI,'0A'
     jz movmlA
-    cmp _SI,B
+    cmp _SI,'0B'
     jz movmlB
-    cmp _SI,C
+    cmp _SI,'0C'
     jz movmlC
-    cmp _SI,D
+    cmp _SI,'0D'
     jz movmlD
-    cmp _SI,E
+    cmp _SI,'0E'
     jz movmlE
-    cmp _SI,F
+    cmp _SI,'0F'
     jz movmlF
+     mov Operand2_Value,ax
     ;; CODE 
     
  DisplayString Operand2
@@ -670,19 +750,20 @@ check_Operand2                PROC
     jz movml8
     cmp _DI,9
     jz movml9
-    cmp _DI,A
+    cmp _DI,0Ah
     jz movmlA
-    cmp _DI,B
+    cmp _DI,0Bh
     jz movmlB
-    cmp _DI,C
+    cmp _DI,0Ch
     jz movmlC
-    cmp _DI,D
+    cmp _DI,0Dh
     jz movmlD
-    cmp _DI,E
+    cmp _DI,0Eh
     jz movmlE
-    cmp _DI,F
+    cmp _DI,0Fh
     jz movmlF 
-    ;; CODE 
+    ;; CODE
+     mov Operand2_Value,ax 
  DisplayString Operand2
  jmp end               
     CHECKmlSP:
@@ -710,19 +791,20 @@ check_Operand2                PROC
     jz movml8
     cmp _SP,9
     jz movml9
-    cmp _SP,A
+    cmp _SP,0Ah
     jz movmlA
-    cmp _SP,B
+    cmp _SP,0Bh
     jz movmlB
-    cmp _SP,C
+    cmp _SP,0Ch
     jz movmlC
-    cmp _SP,D
+    cmp _SP,0Dh
     jz movmlD
-    cmp _SP,E
+    cmp _SP,0Eh
     jz movmlE
-    cmp _SP,F
+    cmp _SP,0Fh
     jz movmlF
     ;; CODE 
+     mov Operand2_Value,ax
  DisplayString Operand2    
     jmp end               
     CHECKmlBP:
@@ -750,37 +832,49 @@ check_Operand2                PROC
     jz movml8
     cmp _BP,9
     jz movml9
-    cmp _BP,A
+    cmp _BP,0Ah
     jz movmlA
-    cmp _BP,B
+    cmp _BP,0Bh
     jz movmlB
-    cmp _BP,C
+    cmp _BP,0Ch
     jz movmlC
-    cmp _BP,D
+    cmp _BP,0Dh
     jz movmlD
-    cmp _BP,E
+    cmp _BP,0Eh
     jz movmlE
-    cmp _BP,F
+    cmp _BP,0Fh
     jz movmlF
-    ;; CODE 
+    ;; CODE
+     mov Operand2_Value,ax 
  DisplayString Operand2                                 
     jmp end               
     CHECKdata:
     
     ;; data 
     
-     
-    JNZ end
+    mov al,Operand2 
+    sub al,30h
+    mov bl,10
+    mul bl  
+    mov ah,0
+    mov dx,ax
+    
+    mov al,Operand2+1
+    sub al,30h
+    add ax,dx
+
     
     ;; CODE 
+    mov Operand2_Value,ax
  DisplayString Operand2
  
     end:
             
     RET
 
-check_command                ENDP
+check_Operand2                ENDP 
 
+END MAIN
                                                     
                                                     
                                                     
