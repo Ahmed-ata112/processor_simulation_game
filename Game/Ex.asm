@@ -674,37 +674,36 @@ check_Operand2                PROC
     
     CMP [SI],457H 
     JNZ CHECKmlDI
-            
-             
-    cmp _SI,'01'
+                      
+    cmp _SI,'10'
     jz movml1
-    cmp _SI,'02'
+    cmp _SI,'20'
     jz movml2
-    cmp _SI,'03'
+    cmp _SI,'30'
     jz movml3
-    cmp _SI,'04'
+    cmp _SI,'40'
     jz movml4
-    cmp _SI,'05'
+    cmp _SI,'50'
     jz movml5
-    cmp _SI,'06'
+    cmp _SI,'60'
     jz movml6
-    cmp _SI,'07'
+    cmp _SI,'70'
     jz movml7
-    cmp _SI,'08'
+    cmp _SI,'80'
     jz movml8
-    cmp _SI,'09'
+    cmp _SI,'90'
     jz movml9
-    cmp _SI,'0A'
+    cmp _SI,'A'
     jz movmlA
-    cmp _SI,'0B'
+    cmp _SI,'B'
     jz movmlB
-    cmp _SI,'0C'
+    cmp _SI,'C'
     jz movmlC
-    cmp _SI,'0D'
+    cmp _SI,'D'
     jz movmlD
-    cmp _SI,'0E'
+    cmp _SI,'E'
     jz movmlE
-    cmp _SI,'0F'
+    cmp _SI,'F'
     jz movmlF
      mov Operand2_Value,ax
     ;; CODE 
@@ -718,23 +717,23 @@ check_Operand2                PROC
     CMP [SI],42aH 
     JNZ CHECKmlSP
     
-    cmp _DI,'01'
+    cmp _DI,'10'
     jz movml1
-    cmp _DI,'02'
+    cmp _DI,'20'
     jz movml2
-    cmp _DI,'03'
+    cmp _DI,'30'
     jz movml3
-    cmp _DI,'04'
+    cmp _DI,'40'
     jz movml4
-    cmp _DI,'05'
+    cmp _DI,'50'
     jz movml5
-    cmp _DI,'06'
+    cmp _DI,'60'
     jz movml6
-    cmp _DI,'07'
+    cmp _DI,'70'
     jz movml7
-    cmp _DI,'08'
+    cmp _DI,'80'
     jz movml8
-    cmp _DI,'09'
+    cmp _DI,'90'
     jz movml9
     cmp _DI,'A'
     jz movmlA
@@ -759,23 +758,23 @@ check_Operand2                PROC
     CMP [SI],46cH 
      JNZ CHECKmlBP
     
-    cmp _SP,'01'
+    cmp _SP,'10'
     jz movml1
-    cmp _SP,'02'
+    cmp _SP,'20'
     jz movml2
-    cmp _SP,'03'
+    cmp _SP,'30'
     jz movml3
-    cmp _SP,'04'
+    cmp _SP,'40'
     jz movml4
-    cmp _SP,'05'
+    cmp _SP,'50'
     jz movml5
-    cmp _SP,'06'
+    cmp _SP,'60'
     jz movml6
-    cmp _SP,'07'
+    cmp _SP,'70'
     jz movml7
-    cmp _SP,'08'
+    cmp _SP,'80'
     jz movml8
-    cmp _SP,'09'
+    cmp _SP,'90'
     jz movml9
     cmp _SP,'A'
     jz movmlA
@@ -800,23 +799,23 @@ check_Operand2                PROC
     CMP [SI],439H 
      JNZ CHECKdata
     
-    cmp _BP,'01'
+    cmp _BP,'10'
     jz movml1
-    cmp _BP,'02'
+    cmp _BP,'20'
     jz movml2
-    cmp _BP,'03'
+    cmp _BP,'30'
     jz movml3
-    cmp _BP,'04'
+    cmp _BP,'40'
     jz movml4
-    cmp _BP,'05'
+    cmp _BP,'50'
     jz movml5
-    cmp _BP,'06'
+    cmp _BP,'60'
     jz movml6
-    cmp _BP,'07'
+    cmp _BP,'70'
     jz movml7
-    cmp _BP,'08'
+    cmp _BP,'80'
     jz movml8
-    cmp _BP,'09'
+    cmp _BP,'90'
     jz movml9
     cmp _BP,'A'
     jz movmlA
