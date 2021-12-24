@@ -123,6 +123,13 @@ CLR_Screen_with_text_mode macro
 	mov al, 03h
 	int 10h
 endm CLR_Screen_with_text_mode
+CLR_Screen_with_Scrolling macro
+  	mov ax, 0600h                ;Scroll Screen AH=06 (Scroll), AL=0 Entire Page
+	mov bh, 07                   ;Normal attributes
+	mov cx, 0                    ;from 0, 0
+	mov dx, 184FH                ;To 18h, 4fh
+	int 10h                      ;Clear Screen
+endm CLR_Screen_with_Scrolling
 
 
 Display_with_Color macro offset_str , len , color
