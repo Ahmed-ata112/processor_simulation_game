@@ -207,6 +207,13 @@ endm ChangeVideoMode
 
 
 
+READ_KEY macro            ;waits until a key is pressed in the keyboard buffer: AH:SC AL:ASCII
+        mov ah, 0
+        int 16h
+endm READ_KEY
+
+
+
 
 
 

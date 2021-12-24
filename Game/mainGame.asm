@@ -51,8 +51,7 @@
 	; now enter the main Screen
 	DisplayString nl
 	DisplayString_AT_position_TEXTMODE Press_any_Key_message 1018h 
-	mov ah,0
-	int 16h 	; waits for a key to be pressed
+	Read_KEY
 
 	Main_Screen:
 		CLR_Screen_with_text_mode
@@ -124,29 +123,28 @@
 
 	;description
 	NAME_VALIDATION PROC
-		DisplayString_AT_position_TEXTMODE Enter_Name_message 0318h 
+	
+	DisplayString_AT_position_TEXTMODE Enter_Name_message 0318h 
     MoveCursorTo 0421h
     ReadString FirstName
     
-    cmp FirstNameData,'A'   ;check if first character is letter
-    jl  ClearScreen       
+    cmp FirstNameData,'A'   ;check if first character is letter ;;we only allow range (A-Z and a-z)
+    jl  TRY_AGAIN_INPUT       
     cmp FirstNameData,'z'
-    jg  ClearScreen
+    jg  TRY_AGAIN_INPUT
     cmp FirstNameData,'`'
     jg  NAME_IS_VALID
     cmp FirstNameData,'['
     jl  NAME_IS_VALID
-    ClearScreen:            ; if first character isn't a letter, clear screen and display a message to user
-    CLR_Screen_with_text_mode
-   
-      
-    DisplayString_AT_position_TEXTMODE Enter_Name_message2 0000
-    DisplayString nl    ;print newline
-    mov si,offset Cpystring      ;SI points to the source
+    TRY_AGAIN_INPUT:            ; if first character isn't a letter, clear screen and display a message to user
+    DisplayString_AT_position_TEXTMODE Enter_Name_message2 0a04h
+	DisplayString_AT_position_TEXTMODE Press_any_Key_message 0b04h 
+    mov al,'$'
     mov di,offset FirstNameData  ;DI points to the target
     mov cx,0                     ;count
 	mov cl,ActualFirstNameSize	 ; no need to reset The whole String
-    rep movsb                    ;copy $ into FirstNameData 
+    rep stosb                    ;copy $ into FirstNameData to reset it to all $
+	Read_KEY
     jmp DisplayAgain             ;Display first screen again
 
 	NAME_IS_VALID:
