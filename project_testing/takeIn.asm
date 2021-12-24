@@ -15,8 +15,6 @@ ENDM DisplayString
 main proc far
     mov ax, @data
     mov ds, ax
-
-
     MAINLOOP:
 
 
