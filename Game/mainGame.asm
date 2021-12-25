@@ -64,9 +64,9 @@
 	DisplayString_AT_position_TEXTMODE Press_any_Key_message 1018h 
 	Read_KEY
 
-	Main_Screen:
+	MAIN_LOOP:
 
-		MAIN_LOOP:
+		Main_Screen:
 			;; it shouldn't wait untill the user enters the KeY
 			;; 2 loops in the main
 			;; The first is to check if the user clicked any key
@@ -121,7 +121,7 @@
 					int 21h
 					mov ah, 1
 					int 16h           ;Get key pressed (do not wait for a key - AH:scancode, AL:ASCII)
-					jne buffer_not_empty_yet  ;; to make sure its empty
+				jne buffer_not_empty_yet  ;; to make sure its empty
 				no_thing_clicked:
 				;; the second loop is here but nothing to display now
 			jmp check_key_pressed1
