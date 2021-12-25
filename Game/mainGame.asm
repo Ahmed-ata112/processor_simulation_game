@@ -115,7 +115,7 @@
 				mov is_player_2_ready_for_game,1 ;; TODO: temproraly in PHASE 1 -> Pressing Twice Starts THE GAME
 
 				remove_key_from_buffer:
-				;; delete THe key from buffer
+				;; delete The key from buffer
 					buffer_not_empty_yet:
 					mov ah,07
 					int 21h
