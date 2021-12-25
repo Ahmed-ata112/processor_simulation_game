@@ -14,8 +14,8 @@
 	First_msg_in_notification_bar db 80 dup('$')
 	Second_msg_in_notification_bar db 80 dup('$')
 
-	duummy1 db 'F1 is pressed','$'
-	duummy2 db 'F2 is pressed','$'
+	duummy1 db 'You sent a chat Invitation','$'
+	duummy2 db 'You sent a Game Invitation','$'
 
 	nl db 10,13,'$'
     My_Initial_points dw ?
@@ -24,7 +24,6 @@
 	FirstNameSize db 16
 	ActualFirstNameSize db ?
 	FirstNameData db 17 dup('$')
-	Cpystring db 17 dup('$')
 
 
 
@@ -36,7 +35,6 @@
 	mov ds, ax
 	mov ES,AX ;; for string operations
 	
-	
 	DisplayAgain:
 	CLR_Screen_with_Scrolling 
 	
@@ -45,7 +43,7 @@
 
     DisplayString_AT_position_TEXTMODE Enter_Points_message 0818h ; show mes
     MoveCursorTo 0921h
-    ReadNumberdec_in_ax ;; Read points and put it in ax
+    ReadNumberdec_in_ax ;; Read points and put it in ax ;; TODO: See if you want this in hexa
     mov My_Initial_points,ax ;; initialize initial points
 
 	; now enter the main Screen
@@ -54,7 +52,7 @@
 	Read_KEY
 
 	Main_Screen:
-		CLR_Screen_with_text_mode
+		CLR_Screen_with_Scrolling
 		DisplayString_AT_position_TEXTMODE MAIN_Screen_message1 ,0C16h
 		DisplayString_AT_position_TEXTMODE MAIN_Screen_message2 ,0D16h
 		DisplayString_AT_position_TEXTMODE MAIN_Screen_message3 ,0E16h
@@ -68,37 +66,40 @@
 			;; esc -> SC 01
 			;; F2 -> 3C   
 			;; F1 -> 3B
-			;UPDATE_notification_bar2 duummy1
-			;UPDATE_notification_bar2 duummy2
-			;UPDATE_notification_bar2 duummy1
-			check_key_pressed1: mov ah, 1
-			int 16h                      ;Get key pressed (do not wait for a key - AH:scancode, AL:ASCII)
-			jnz .continue ;; something is clicked
+
+			check_key_pressed1:
+			mov ah, 1
+			int 16h           ;Get key pressed (do not wait for a key - AH:scancode, AL:ASCII)
+
+			jnz _continue ;; something is clicked
 			jmp no_thing_clicked
-			.continue:
-			
+			_continue:
 			
 			;; check the type of the key
-			cmp ah,01 ; esc
-			jne continue2 
+			cmp ah,1h ; esc
+			jne check_f1 
 			jmp QUIT_THIS_GAME
-			continue2:
+			check_f1:
 			cmp ah,3bh ;f1
 			jne check_f2
 			;in case of F1
 			UPDATE_notification_bar2 duummy1
-			
+			jmp remove_key_from_buffer
 			
 			check_f2:
 			cmp ah,3ch ; F2
-			jne no_valid_key
+			jne remove_key_from_buffer
 			;in case of F2
 			UPDATE_notification_bar2 duummy2
 			
-			no_valid_key:
+			remove_key_from_buffer:
 			;; delete it from buffer
+			buffer_not_empty_yet:
 			mov ah,07
 			int 21h
+			mov ah, 1
+			int 16h           ;Get key pressed (do not wait for a key - AH:scancode, AL:ASCII)
+			jne buffer_not_empty_yet  ;; to make sure its empty
 			no_thing_clicked:
 
 			;; the second loop is here but nothing to display now
@@ -108,10 +109,6 @@
 			jmp check_key_pressed1
 			
 			
-
-
-
-
 
 
 

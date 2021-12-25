@@ -102,12 +102,11 @@ endm UPDATE_notification_bar
 
 UPDATE_notification_bar2 MACRO new_msg
     ;; updates the notification bar with a new message
-    ;; put the second int the first
-    ;; TODO: Should be done using Scrolling
+    ;; done using Scrolling
     ;scroll the screen
     mov ax, 0701h                ;Scroll Screen AH=06 (Scroll), AL=1 one line
-	mov bh, 0Eh                   ;Normal attributes -> 07 ;; 0E-> yellow
-	mov cx, 1700h                    ;from row 17h col 0
+	mov bh, 0Eh                   ;Normal attributes -> 07 ;; 0E-> yellow text
+	mov cx, 1700h                  ;from row 17h col 0
 	mov dx, 1850H                ;To end of screen
 	int 10h                      ;Clear the first line
 
