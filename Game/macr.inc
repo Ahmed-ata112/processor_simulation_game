@@ -102,12 +102,11 @@ endm UPDATE_notification_bar
 
 UPDATE_notification_bar2 MACRO new_msg
     ;; updates the notification bar with a new message
-    ;; put the second int the first
-    ;; TODO: Should be done using Scrolling
+    ;; done using Scrolling
     ;scroll the screen
     mov ax, 0701h                ;Scroll Screen AH=06 (Scroll), AL=1 one line
-	mov bh, 0Eh                   ;Normal attributes -> 07 ;; 0E-> yellow
-	mov cx, 1700h                    ;from row 17h col 0
+	mov bh, 0Eh                   ;Normal attributes -> 07 ;; 0E-> yellow text
+	mov cx, 1700h                  ;from row 17h col 0
 	mov dx, 1850H                ;To end of screen
 	int 10h                      ;Clear the first line
 
@@ -123,13 +122,24 @@ CLR_Screen_with_text_mode macro
 	mov al, 03h
 	int 10h
 endm CLR_Screen_with_text_mode
-CLR_Screen_with_Scrolling macro
+
+;;had to split modes as the color to fill the space is different 07-TM and 00-GM
+CLR_Screen_with_Scrolling_TEXT_MODE macro
   	mov ax, 0600h                ;Scroll Screen AH=06 (Scroll), AL=0 Entire Page
 	mov bh, 07                   ;Normal attributes
 	mov cx, 0                    ;from 0, 0
 	mov dx, 184FH                ;To 18h, 4fh
 	int 10h                      ;Clear Screen
-endm CLR_Screen_with_Scrolling
+endm CLR_Screen_with_Scrolling_TEXT_MODE
+
+;;not TESTED -> TRY TO TEST THE LIMITS IF YOU WANNA TRY IT
+CLR_Screen_with_Scrolling_GRAPHICS_MODE macro
+  	mov ax, 0600h                ;Scroll Screen AH=06 (Scroll), AL=0 Entire Page
+	mov bh, 00                   ;Normal attributes
+	mov cx, 0                    ;from 0, 0
+	mov dx, 1828H                ;To 18h, 28h ;;end of screen
+	int 10h                      ;Clear Screen
+endm CLR_Screen_with_Scrolling_GRAPHICS_MODE
 
 
 Display_with_Color macro offset_str , len , color
