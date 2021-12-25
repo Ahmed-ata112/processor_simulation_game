@@ -21,7 +21,8 @@
 	level1_msg db 'LEVEL 1 -- PRESS F1$' 
 	level2_msg db 'LEVEL 2 -- PRESS F2$' 
 	
-
+	choose_hidden_char db 'Choose a hidden char: $'
+	hidden_char db 0		;; The hiddden char chosen by current player
 
 	
 	
@@ -33,7 +34,7 @@
 	is_player_2_ready_for_chat db 0
     My_Initial_points dw ?
 	Game_Level db 0
-	
+
     FirstName LABEL BYTE ; named the next it the same name 
 	FirstNameSize db 16
 	ActualFirstNameSize db ?
@@ -170,13 +171,14 @@
 ;THE GAME AND LEVEL SELECTION
 GAME_WELCOME_PAGE PROC
 
-	ChangeVideoMode 13h ;;clears screen and starts Video mode	
+		ChangeVideoMode 3h ;;clears screen and starts Video mode	
 
-		DisplayString_AT_position_TEXTMODE level1_msg 0a0bh
-		DisplayString_AT_position_TEXTMODE level2_msg 0c0bh
+		DisplayString_AT_position_TEXTMODE level1_msg 0a20h
+		DisplayString_AT_position_TEXTMODE level2_msg 0c20h
 
 		;;LEVEL SELECTION  -> keep looping till a F1 or F2 Is Pressed
-		LEVEL_SELECTION 
+		LEVEL_SELECTION 	; just you choose the the level
+		LEVEL_PROCESSING	; according to the chosen -> you do that shit
 		;; just to stop the program
 		;sis: jmp sis
 

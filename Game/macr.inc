@@ -40,7 +40,7 @@ ReadNumberdec_in_ax MACRO
 
 
     mov bx,1
-    mov di,0 ; to store resu
+    mov di,0 ; to store result
      l2:
     ; pop and multi then add to dx
     pop ax
@@ -80,6 +80,23 @@ DisplayString_AT_position_TEXTMODE MACRO STR, pos
     mov bh,0
     int 10h ;; mov cursor 
 ENDM DisplayString_AT_position_TEXTMODE  
+
+DisplayString_AT_position_GraphicsMODE MACRO STR, pos
+    ;assumes Graphics mode
+    ;returns The cursor to its initial position before it ends
+    ;pos is row-col
+    mov bh,0       ;page number
+    mov dx,pos
+    mov ah,2
+    mov bh,0
+    int 10h ;; mov cursor 
+
+    mov ah,9h
+    mov dx,offset STR
+    int 21h ;; print string
+
+
+ENDM DisplayString_AT_position_GraphicsMODE  
 
 
 UPDATE_notification_bar MACRO new_msg
@@ -232,14 +249,13 @@ LEVEL_SELECTION macro
 				cmp ah,3bh ;f1
 				jne check_f2_
 				;in case of F1
-				UPDATE_notification_bar2 Sent_CHAT_INV_msg
-                
+				mov Game_Level,1     ;;level 1 is selected
                 jmp LEVEL_IS_SELECTED
 				check_f2_:
 				cmp ah,3ch ; F2
 				jne remove_key_from_buffer2
 				;in case of F2
-				UPDATE_notification_bar2 Sent_Game_INV_msg
+				mov Game_Level,2    ;;level 2 is selected
                 jmp LEVEL_IS_SELECTED
 				remove_key_from_buffer2:
 				;; delete The key from buffer
@@ -269,4 +285,13 @@ endm empitify_buffer
 
 
 
+LEVEL_PROCESSING macro
+    ChangeVideoMode 13h ;;CLR Screen
+    DisplayString_AT_position_GraphicsMODE choose_hidden_char 0a0ah
+    Read_KEY
+    mov dl,al
+	mov ah,2     ;; to display the the char into screen (echo)
+	int 21h
 
+    Read_KEY
+endm LEVEL_PROCESSING
