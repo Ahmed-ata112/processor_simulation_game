@@ -178,6 +178,7 @@ GAME_WELCOME_PAGE PROC
 		DisplayString_AT_position_TEXTMODE level2_msg 0c0bh
 
 
+		;; just to stop the program
 		sis: jmp sis
 
 	ret
