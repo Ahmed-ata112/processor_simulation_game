@@ -18,7 +18,8 @@
 	Sent_CHAT_INV_msg db 'You sent a chat Invitation','$'
 	Sent_Game_INV_msg db 'You sent a Game Invitation','$'
 	
-	level1 db 'l' 
+	level1_msg db 'LEVEL 1 -- PRESS F1$' 
+	level2_msg db 'LEVEL 2 -- PRESS F2$' 
 	
 
 
@@ -173,7 +174,11 @@ GAME_WELCOME_PAGE PROC
 
 	ChangeVideoMode 13h ;;clears screen and starts Video mode	
 
+		DisplayString_AT_position_TEXTMODE level1_msg 0a0bh
+		DisplayString_AT_position_TEXTMODE level2_msg 0c0bh
 
+
+		sis: jmp sis
 
 	ret
 GAME_WELCOME_PAGE ENDP

@@ -137,7 +137,7 @@ CLR_Screen_with_Scrolling_GRAPHICS_MODE macro
   	mov ax, 0600h                ;Scroll Screen AH=06 (Scroll), AL=0 Entire Page
 	mov bh, 00                   ;Normal attributes
 	mov cx, 0                    ;from 0, 0
-	mov dx, 184FH                ;To 18h, 4fh
+	mov dx, 1828H                ;To 18h, 28h ;;end of screen
 	int 10h                      ;Clear Screen
 endm CLR_Screen_with_Scrolling_GRAPHICS_MODE
 
