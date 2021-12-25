@@ -211,20 +211,61 @@ ChangeVideoMode macro M ;-> 03h text ----  13h video
         int 10h
 endm ChangeVideoMode
 
-
-
-
-
-
-
 READ_KEY macro            ;waits until a key is pressed in the keyboard buffer: AH:SC AL:ASCII
-        mov ah, 0
-        int 16h
+    mov ah, 0
+    int 16h
 endm READ_KEY
 
 
 
+LEVEL_SELECTION macro
+;local something_clicked, check_key_pressed2 , something_clicked,check_f2_, buffer_not_empty_yett, remove_key_from_buffer2, LEVEL_IS_SELECTED
+    check_key_pressed2:
+				mov ah, 1
+				int 16h           ;Get key pressed (do not wait for a key - AH:scancode, AL:ASCII)
 
+				jnz something_clicked ;; something is clicked
+				jmp check_key_pressed2
+				something_clicked:
+				
+				;; check the type of the key
+				cmp ah,3bh ;f1
+				jne check_f2_
+				;in case of F1
+				UPDATE_notification_bar2 Sent_CHAT_INV_msg
+                
+                jmp LEVEL_IS_SELECTED
+				check_f2_:
+				cmp ah,3ch ; F2
+				jne remove_key_from_buffer2
+				;in case of F2
+				UPDATE_notification_bar2 Sent_Game_INV_msg
+                jmp LEVEL_IS_SELECTED
+				remove_key_from_buffer2:
+				;; delete The key from buffer
+				buffer_not_empty_yett:
+					mov ah,07
+					int 21h
+					mov ah, 1
+					int 16h           ;Get key pressed (do not wait for a key - AH:scancode, AL:ASCII)
+				jne buffer_not_empty_yett  ;; to make sure its empty
+				;; the second loop is here but nothing to display now
+			jmp check_key_pressed2
+            LEVEL_IS_SELECTED:
+            empitify_buffer  ;; Just To Be make Sure
+endm LEVEL_SELECTION
+
+
+empitify_buffer macro
+local buffer_not_empty_yet, IT_IS_EMPTY
+    buffer_not_empty_yet:
+        mov ah, 1
+        int 16h           ;Get key pressed (do not wait for a key - AH:scancode, AL:ASCII)
+        jz IT_IS_EMPTY
+        Read_KEY
+        jmp buffer_not_empty_yet  ;; to make sure its empty
+        IT_IS_EMPTY:
+endm empitify_buffer
 
 
 

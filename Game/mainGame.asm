@@ -32,11 +32,12 @@
 	is_player_1_ready_for_chat db 0
 	is_player_2_ready_for_chat db 0
     My_Initial_points dw ?
+	Game_Level db 0
+	
     FirstName LABEL BYTE ; named the next it the same name 
 	FirstNameSize db 16
 	ActualFirstNameSize db ?
 	FirstNameData db 17 dup('$')
-
 
 
 
@@ -116,21 +117,18 @@
 
 				remove_key_from_buffer:
 				;; delete The key from buffer
-					buffer_not_empty_yet:
-					mov ah,07
-					int 21h
-					mov ah, 1
-					int 16h           ;Get key pressed (do not wait for a key - AH:scancode, AL:ASCII)
-				jne buffer_not_empty_yet  ;; to make sure its empty
+				empitify_buffer
 				no_thing_clicked:
 				;; the second loop is here but nothing to display now
 			jmp check_key_pressed1
 			
 			LETS_PLAY:
+			empitify_buffer			;; To make Sure That no bat chars are saved in Buffer
 			CALL GAME_WELCOME_PAGE 	;; For level selection and continue To GAME
 			jmp QUIT_THIS_GAME
 
 			LETS_Chat:
+				empitify_buffer   ;; To make Sure That no bat chars are saved in Buffer
 				CAll CHAT_ROOM 		;;should BE THE CHAT.ASM but just For now 
 			jmp QUIT_THIS_GAME
 
@@ -177,9 +175,10 @@ GAME_WELCOME_PAGE PROC
 		DisplayString_AT_position_TEXTMODE level1_msg 0a0bh
 		DisplayString_AT_position_TEXTMODE level2_msg 0c0bh
 
-
+		;;LEVEL SELECTION  -> keep looping till a F1 or F2 Is Pressed
+		LEVEL_SELECTION 
 		;; just to stop the program
-		sis: jmp sis
+		;sis: jmp sis
 
 	ret
 GAME_WELCOME_PAGE ENDP
@@ -189,10 +188,6 @@ GAME_WELCOME_PAGE ENDP
 CHAT_ROOM PROC
 	ret
 CHAT_ROOM ENDP
-
-
-
-
 
 
 	end main
