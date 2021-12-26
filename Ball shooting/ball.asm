@@ -62,15 +62,21 @@ endm	DRAW_FIRE_BALL
 
 clearScreen macro
 
-    ;set video mode
+   ; set video mode
     mov ah,0
     mov al,13h
     int 10h
     ;choose background color
-    mov ah,0bh
-    mov bh,1Eh
-    mov bl,0fh
-    int 10h    
+    ; mov ah,0bh
+    ; mov bh,1Eh
+    ; mov bl,0fh
+    ; int 10h    
+
+    ; mov ax, 0600h                ;Scroll Screen AH=06 (Scroll), AL=0 Entire Page
+	; mov bh, 0Eh              ;Normal attributes
+	; mov cx, 0                    ;from 0, 0
+	; mov dx, 1828H                ;To 18h, 28h ;;end of screen
+	; int 10h                      ;Clear Screen
 endm clearScreen
 
 
@@ -93,7 +99,7 @@ local finish
     mov ax,velocity
     sub yCoordinate,ax
     cmp yCoordinate,10
-    jg finish
+    ja finish
     mov ifPressed,0
     finish:
 endm moveFireBall
@@ -118,7 +124,7 @@ checkXBoundaries macro
         MOV AX,WINDOW_WIDTH
         sub ax,8 ;subtract ball width
 		cmp ball_x,ax ;check if the x coordinate of the ball is stil within the range
-        jge finish ;jump to finish lable in main if it's done passing the whole width
+        jae finish ;jump to finish lable in main if it's done passing the whole width
 endm checkXBoundaries      
 
 
@@ -207,7 +213,7 @@ movePaddle macro
     mov bx,paddle_x
     add bx,ax
     cmp bx,128
-    jg exitmacro
+    ja exitmacro
     add paddle_x,ax ;increases the paddle x-coordinate with the corresponding velocity --> moves it to the right
     jmp exitMacro
 checkLeft:
@@ -217,7 +223,7 @@ checkLeft:
     mov bx,paddle_x
     sub bx,ax
     cmp bx,0
-    je exitMacro
+    jle exitMacro
     sub paddle_x,ax ;decreases the paddle x-coordinate with the corresponding velocity --> moves it to the left
     jmp exitMacro
 
@@ -230,7 +236,7 @@ checkRightPaddleRightControl: ;-> s is pressed
     mov bx,right_paddle_x
     add bx,ax
     cmp bx,288
-    jg exitmacro
+    ja exitmacro
     add right_paddle_x,ax ;increases the paddle x-coordinate with the corresponding velocity --> moves it to the right
     jmp exitMacro
 
@@ -300,32 +306,65 @@ checkForFire macro
 
 endm checkForFire
 
-compareBirdWithBall macro ball_x,fireBall_x,fireBall_y,BALL_SIZE,points,startOfBird
+compareBirdWithBall macro ball_x,fireBall_x,fireBall_y,BALL_SIZE,startOfBird,birdStatus,playerPoints,birdPoints
 local notInTheRangeOfTheBird
     
     cmp fireBall_y,20
-    jg notInTheRangeOfTheBird
+    ja notInTheRangeOfTheBird
     ;still haven't reached top of the screen
 
     mov ax,ball_x
     sub ax,5
     cmp ax,fireBall_x
 
-    jg notInTheRangeOfTheBird
+    ja notInTheRangeOfTheBird
     ;not in the same row --> behind it
     add ax,BALL_SIZE
     add ax,5
     cmp ax,fireBall_x
     ;checks if the fire ball is in the same row as the flying ball, with some error -> ball size
     jb notInTheRangeOfTheBird
-    add points,5
+    mov ah,birdPoints
+    add playerPoints,ah
     mov ball_x,startOfBird
-  ;  jmp finish
+    mov birdStatus,0
     notInTheRangeOfTheBird:
 
 endm compareBirdWithBall
 
+randomBirdColor macro birdStatus,birdColor,colorIndex
+local exitMacro
+    cmp birdStatus,0
+    jne exitMacro
+    ;dx has the seconds and 1/100 seconds from the previous "check time" macro
+    mov  ax, dx
+    xor  dx, dx
+    mov  cx, 5    
+    div  cx       ; here dx contains the remainder of the division - from 0 to 4
+    mov di,dx
+    mov colorIndex,dl
+    mov ah,colors[di]  
+    mov birdcolor,ah
+    mov birdStatus,1
+    exitMacro:
+endm randomBirdColor
 
+setBirdPointsWithTheCorrespondingColor macro colorIndex,birdPoints,pointsOfColorsArray
+;moving colorIndex to bx first to avoid size mismatch
+; bl-> color index [0..4], bh-> 0
+mov bl,colorIndex
+mov bh,0 
+
+mov di,bx
+mov al,pointsOfColorsArray[di]
+mov birdPoints,al
+
+endm setBirdPointsWithTheCorrespondingColor
+
+
+
+;;fire ball status 
+;;xor -> colors 
 .286
 .model small
 .stack 64
@@ -335,32 +374,32 @@ time_aux db 0  ;variable used when checking if the time has changed
 ball_x dw 0 ;x position (column) of the ball
 ball_y dw 0Ah  ;y position (row) of the ball
 ball_size dw 0Ah ;size of the ball
-ball_velocity_x dw 1h ;x velocity of the ball (horizontal axis) 
+ball_velocity_x dw 2h ;x velocity of the ball (horizontal axis) 
 WINDOW_WIDTH DW 140h  
 
 right_ball_x dw 160  ;x position (column) of the ball
 right_ball_y dw 0Ah  ;y position (row) of the ball
 right_ball_size dw 0Ah ;size of the ball
-right_ball_velocity_x dw 1h ;x velocity of the ball (horizontal axis) 
+right_ball_velocity_x dw 2h ;x velocity of the ball (horizontal axis) 
 ;WINDOW_WIDTH DW 140h  
 
 paddle_x dw 5
 paddle_y dw 192 ;at the bottom of the 320*200 pixels screen
 paddle_width dw 20h
 paddle_height dw 08h
-paddle_velocity dw 5
+paddle_velocity dw 10
 
 right_paddle_x dw 165
 right_paddle_y dw 192 ;at the bottom of the 320*200 pixels screen
 right_paddle_width dw 20h
 right_paddle_height dw 08h
-right_paddle_velocity dw 5
+right_paddle_velocity dw 10
 
 
 
 fireBall_x dw ?
 fireBall_y dw 190
-fireBall_velocity_y dw 0ah
+fireBall_velocity_y dw 20
 fireBall_size dw 5
 ifFireIsPressed db 0
 
@@ -368,16 +407,31 @@ ifFireIsPressed db 0
 
 right_fireBall_x dw ?
 right_fireBall_y dw 190
-right_fireBall_velocity_y dw 0ah
+right_fireBall_velocity_y dw 20
 right_fireBall_size dw 5
 right_ifFireIsPressed db 0
 
-green db 2h 
+
+        ;green, light magenta, red, blue, yellow
+colors db  02h,           0dh, 04h,  01h,    0Eh
+        
+                  ;green, light magenta, red, blue, yellow
+pointsOfColors db       1,            2,   3,    4,      5  
+
+colorIndex db 0
+birdColor db 2
+birdStatus db 1
+birdPoints db 1
+
+right_colorIndex db 0
+right_birdColor db 2
+right_birdStatus db 1
+right_birdPoints db 1
 
 
-points db 0
+playerPoints db 0
+right_playerPoints db 0
 
-right_Points db 0
 
 .code
 
@@ -385,47 +439,56 @@ main proc far
 
     mov ax,@data
     mov ds,ax
+    
     clearScreen
 
     draw:
 
-   
     drawPaddle
     movePaddle
+
     checkTime
+
+    randomBirdColor birdStatus,birdColor,colorIndex
+    setBirdPointsWithTheCorrespondingColor colorIndex,birdPoints,pointsOfColors
+
+    randomBirdColor right_birdStatus,right_birdColor,right_colorIndex
+    setBirdPointsWithTheCorrespondingColor right_colorIndex,right_birdPoints,pointsOfColors
+
     clearScreen 
     ;left bird
     moveBird 150,10,ball_velocity_x,ball_x;; the 140'th column is the limit 
-    DRAW_Bird ball_x,ball_y,BALL_SIZE,green;;draws left bird
+    DRAW_Bird ball_x,ball_y,BALL_SIZE,birdColor;;draws left bird
 
     ;right bird
     moveBird 310,160,right_ball_velocity_x,right_ball_x
-    DRAW_Bird right_ball_x,right_ball_y,right_ball_size,green
+    DRAW_Bird right_ball_x,right_ball_y,right_ball_size,right_birdColor
 
     checkForFire ifFireIsPressed
  
     cmp ifFireIsPressed,0
-     
-    je jjjj
+    je checkRight
 
     moveFireBall fireBall_velocity_y,fireBall_y,ifFireIsPressed
     DRAW_FIRE_BALL fireBall_x,fireBall_y,fireBall_size
-    compareBirdWithBall ball_x,fireBall_x,fireBall_y,BALL_SIZE,points,0
+    compareBirdWithBall ball_x,fireBall_x,fireBall_y,BALL_SIZE,0,birdStatus,playerPoints,birdPoints
 
-  ;  finishhh: jmp finish
-    jjjj: cmp right_ifFireIsPressed,0
-    je dddraw
-     moveFireBall right_fireBall_velocity_y,right_fireBall_y,right_ifFireIsPressed
-     DRAW_FIRE_BALL right_fireBall_x,right_fireBall_y,right_fireBall_size
-     compareBirdWithBall right_ball_x,right_fireBall_x,right_fireBall_y,BALL_SIZE,right_Points,140
-dddraw:
-    cmp points,20
-    jge finish
-    cmp right_Points,20
-    jge finish
+    checkRight: cmp right_ifFireIsPressed,0
+    je midDraw
+
+    moveFireBall right_fireBall_velocity_y,right_fireBall_y,right_ifFireIsPressed
+    DRAW_FIRE_BALL right_fireBall_x,right_fireBall_y,right_fireBall_size
+    compareBirdWithBall right_ball_x,right_fireBall_x,right_fireBall_y,BALL_SIZE,140,right_birdStatus,right_playerPoints,right_birdPoints
+
+midDraw: ;for jumping out of boundaries error
+    ; cmp playerpoints,10
+    ; jae finish
+    ; cmp right_Points,20
+    ; jae finish
     jmp draw
     finish:
-    clearScreen
+    ;clearScreen
+
     
      
     hlt
