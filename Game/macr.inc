@@ -437,21 +437,21 @@ WAIT_seconds_TIME MACRO n_SECONDS
     int 21h ;; Get System Time
     cmp dh,bl ;;didn't reach our time yet
     jne L1
-ENDM
+ENDM WAIT_seconds_TIME
 
-WAIT_centi_seconds_TIME MACRO cm_SECONDS
+WAIT_One_centi_second_TIME MACRO 
     local L1
     mov AH,2Ch
     int 21h ;; Get System Time
-    mov bl,dl ;;current seconds
-    add bl,cm_SECONDS
+    mov bl, dl ;;current seconds ; 0-99
+    
 
     L1:
     mov AH,2Ch
     int 21h ;; Get System Time
     cmp dl,bl ;;didn't reach our time yet
-    jne L1
-ENDM
+    je L1
+endm WAIT_centi_seconds_TIME
 
 
 INSTRUCTIONS_PAGE macro
@@ -549,6 +549,231 @@ Convert_OP_TO_HEXA MACRO OPERAND
     mov ax,di
 
 ENDM Convert_OP_TO_HEXA
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;--------------------------;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;SARAH;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+moveBird macro limit,start,x_velocity,x_coordinate
+local finish
+    mov ax,x_velocity
+    add x_coordinate,ax
+    cmp x_coordinate,limit
+    jb finish
+    mov x_coordinate,start
+    
+   finish:
+endm moveBird
+
+
+
+moveFireBall macro velocity,yCoordinate,ifPressed
+local finish
+    mov ax,velocity
+    sub yCoordinate,ax
+    cmp yCoordinate,15
+    ja finish
+    mov ifPressed,0
+    finish:
+endm moveFireBall
+
+
+
+checkTime macro
+ local check_time
+ check_time:
+    mov ah,2ch ;get the system time
+    int 21h    ;ch=hour  cl=minute  dh=seconds  dl=1/100seconds
+    
+    cmp dl,time_aux  ;is the current time equal to the prev one?
+    je check_time    ;if it's the same, check again
+                     ;if different --> draw, move...               
+    mov time_aux,dl  ;update time
+endm checkTime 
+
+
+movePaddle macro 
+    local exitMacro,checkLeft,semiExitMacro,vvvv,checkRightPaddleRightControl,checkRightPaddleLeftControl
+    ;check if any key is being pressed (if not, exit this macro) [int ah 01/16]
+    ;zf =0 -> a key is pressed  
+    mov ah,1
+    int 16h
+    jz exitMacro ;exists the macro since no key is pressed
+    
+    mov ah,0 
+    int 16h
+    ; ah -> scan code  al -> ascii
+
+    ;right arrow-> move right   left arrow-> move left
+    cmp ah,77 ;77 -> scan code of right arrow
+    jne checkLeft ;checks if it's the left arrow
+    mov ax,paddle_velocity
+    mov bx,paddle_x
+    add bx,ax
+    cmp bx,135
+    ja exitmacro
+    add paddle_x,ax ;increases the paddle x-coordinate with the corresponding velocity --> moves it to the right
+    jmp exitMacro
+checkLeft:
+    cmp ah,75 ;75 -> scan code of left arrow
+    jne checkRightPaddleRightControl ;if
+    mov ax,paddle_velocity
+    mov bx,paddle_x
+    sub bx,ax
+    cmp bx,0
+    jle exitMacro
+    sub paddle_x,ax ;decreases the paddle x-coordinate with the corresponding velocity --> moves it to the left
+    jmp exitMacro
+
+
+checkRightPaddleRightControl: ;-> s is pressed
+
+    cmp al,'d' ;77 -> scan code of right arrow
+    jne checkRightPaddleLeftControl ;checks if it's the left arrow
+    mov ax,right_paddle_velocity
+    mov bx,right_paddle_x
+    add bx,ax
+    cmp bx,300
+    ja exitmacro
+    add right_paddle_x,ax ;increases the paddle x-coordinate with the corresponding velocity --> moves it to the right
+    jmp exitMacro
+
+ checkRightPaddleLeftControl: ;-> a is pressed
+    cmp al,'a' ;77 -> scan code of right arrow
+    jne exitMacro ;checks if it's the left arrow
+    mov ax,right_paddle_velocity
+    mov bx,right_paddle_x
+    sub bx,ax
+    cmp bx,160
+    jb exitmacro
+    sub right_paddle_x,ax
+exitMacro:
+  
+endm movePaddle
+
+
+checkForFire macro 
+    local exitMacro,ro7Henak,rightPaddleFire
+    ;check if any key is being pressed (if not, exit this macro) [int ah 01/16]
+    mov ah,1
+    int 16h
+    jz exitMacro
+    cmp ah,80 ;80 -> scan code of down arrow
+    je ro7Henak
+
+    cmp al,'s'
+    jne exitmacro
+
+    ;if a key is being pressed -> check which one it is
+    ro7Henak:
+    mov ah,0 
+    int 16h
+    ; ah -> scan code  al -> ascii
+
+    ;we reached here, meaning the key pressed is down arrow
+    cmp ah,80 ;80 -> scan code of down arrow
+    jne rightPaddleFire
+    ;we need to get the center x coordinate of the paddle, make the ball fire starting from that point 
+    ;using the y coordinte of the paddle (192) to avoid the ball touching the paddle
+    mov ax,paddle_x
+    mov bx,paddle_width
+    shr bx,1
+    add ax,bx
+    mov bx,Ballsize
+    shr bx,2
+    sub ax,bx
+  
+    mov fireBall_x,ax
+    mov fireBall_y,190
+    mov ifFireIsPressed,1
+    jmp exitMacro
+
+    rightPaddleFire:
+    mov ax,right_paddle_x
+    mov bx,right_paddle_width
+    shr bx,1
+    add ax,bx
+    mov bx,BallSize
+    shr bx,2
+    sub ax,bx
+  
+    mov right_fireBall_x,ax
+    mov right_fireBall_y,190
+    mov right_ifFireIsPressed,1
+    exitMacro:
+
+endm checkForFire
+
+compareBirdWithBall macro ball_x,fireBall_x,fireBall_y,BALL_SIZE,startOfBird,birdStatus,playerPoints,birdPoints
+local notInTheRangeOfTheBird
+    
+    cmp fireBall_y,20
+    ja notInTheRangeOfTheBird
+    ;still haven't reached top of the screen
+
+    mov ax,ball_x
+    sub ax,8
+    cmp ax,fireBall_x
+
+    ja notInTheRangeOfTheBird
+    ;not in the same row --> behind it
+    add ax,BALL_SIZE
+    add ax,8
+    cmp ax,fireBall_x
+    ;checks if the fire ball is in the same row as the flying ball, with some error -> ball size
+    jb notInTheRangeOfTheBird
+    mov ah,birdPoints
+    add playerPoints,ah
+    mov ball_x,startOfBird
+    mov birdStatus,0
+    notInTheRangeOfTheBird:
+
+endm compareBirdWithBall
+
+
+
+randomBirdColor macro birdStatus,birdColor,colorIndex
+local exitMacro
+    cmp birdStatus,0
+    jne exitMacro
+    ;dx has the seconds and 1/100 seconds from the previous "check time" macro
+    mov  ax, dx
+    xor  dx, dx
+    mov  cx, 5    
+    div  cx       ; here dx contains the remainder of the division - from 0 to 4
+    mov di,dx
+    mov colorIndex,dl
+    mov ah,colors[di]  
+    mov birdcolor,ah
+    mov birdStatus,1
+    exitMacro:
+endm randomBirdColor
+
+
+setBirdPointsWithTheCorrespondingColor macro colorIndex,birdPoints,pointsOfColorsArray
+;moving colorIndex to bx first to avoid size mismatch
+; bl-> color index [0..4], bh-> 0
+mov bl,colorIndex
+mov bh,0 
+
+mov di,bx
+mov al,pointsOfColorsArray[di]
+mov birdPoints,al
+
+endm setBirdPointsWithTheCorrespondingColor
+
+
+
+
+
+
+
+
+
 
 
 

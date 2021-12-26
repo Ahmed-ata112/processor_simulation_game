@@ -384,6 +384,92 @@ backGround_right db 45,6,53,46,6,53,47,6,53,48,6,53,49,6,53,50,6,53,51,6,53,52,6
     db 137,160,53,138,160,53,139,160,53,140,160,53,141,160,53,142,160,53,143,160,53,144,160,53,145,160,53,146,160,53,147,160,53,148,160,53,149,160,53,150,160,53,151,160,53,152,160,53,153,160,53,154,160,53,155,160,53,156,160,53,157,160,53,158,160,53,159,160,53
     back_rightSize dw 200 
  
+;;;;;;---------------SARAHHHHHHHHHHHHHHH;;;;;;;;;;;;;;;;;;;;;;;
+time_aux db 0  ;variable used when checking if the time has changed
+
+
+BirdImg db 1,0,73,2,0,73,10,0,73,11,0,73,2,1,73,10,1,73,1,2,73,2,2,73,3,2,73,4,2,73,8,2,73,9,2,73,10,2,73,11,2,73,1,3,73,2,3,73,3,3,73,4,3,73,5,3,73,7,3,73,8,3,73,9,3,73,10,3,73,11,3,73,0,4,73,1,4,73,2,4,73,3,4,73,5,4,73,6,4,73
+        db 7,4,73,9,4,73,10,4,73,11,4,73,12,4,73,0,5,73,2,5,73,3,5,73,4,5,73,5,5,73,6,5,73,7,5,73,8,5,73,9,5,73,10,5,73,12,5,73,0,6,73,3,6,73,4,6,73,5,6,73,6,6,73,7,6,73,8,6,73,9,6,73,12,6,73,4,7,73,8,7,73,3,8,73,4,8,73,8,8,73
+        db 9,8,73,3,9,73,9,9,73
+BirdSize dw 10 
+birdX dw 0
+birdY dw 0Ah
+BirdWidth dw 13
+birdVelocity dw 2
+
+
+
+right_BirdImg db 1,0,73,2,0,73,10,0,73,11,0,73,2,1,73,10,1,73,1,2,73,2,2,73,3,2,73,4,2,73,8,2,73,9,2,73,10,2,73,11,2,73,1,3,73,2,3,73,3,3,73,4,3,73,5,3,73,7,3,73,8,3,73,9,3,73,10,3,73,11,3,73,0,4,73,1,4,73,2,4,73,3,4,73,5,4,73,6,4,73
+        db 7,4,73,9,4,73,10,4,73,11,4,73,12,4,73,0,5,73,2,5,73,3,5,73,4,5,73,5,5,73,6,5,73,7,5,73,8,5,73,9,5,73,10,5,73,12,5,73,0,6,73,3,6,73,4,6,73,5,6,73,6,6,73,7,6,73,8,6,73,9,6,73,12,6,73,4,7,73,8,7,73,3,8,73,4,8,73,8,8,73
+        db 9,8,73,3,9,73,9,9,73
+right_BirdSize dw 10 
+right_birdX dw 147
+right_birdY dw 0Ah
+right_BirdWidth dw 13
+right_birdVelocity dw 2
+
+
+paddleImg db 6,0,73,7,0,73,12,0,73,13,0,73,6,1,73,7,1,73,12,1,73,13,1,73,6,2,73,7,2,73,12,2,73,13,2,73,6,3,73,7,3,73,12,3,73,13,3,73,6,4,73,7,4,73,12,4,73,13,4,73,6,5,73,7,5,73,12,5,73,13,5,73,0,6,73,1,6,73,2,6,73,3,6,73,4,6,73,5,6,73
+    db 6,6,73,7,6,73,8,6,73,9,6,73,10,6,73,11,6,73,12,6,73,13,6,73,14,6,73,15,6,73,16,6,73,17,6,73,18,6,73,19,6,73,0,7,73,1,7,73,2,7,73,3,7,73,4,7,73,5,7,73,6,7,73,7,7,73,8,7,73,9,7,73,10,7,73,11,7,73,12,7,73,13,7,73,14,7,73,15,7,73
+    db 16,7,73,17,7,73,18,7,73,19,7,73,0,8,73,1,8,73,18,8,73,19,8,73,0,9,73,1,9,73,18,9,73,19,9,73,0,10,73,1,10,73,2,10,73,3,10,73,4,10,73,5,10,73,6,10,73,7,10,73,8,10,73,9,10,73,10,10,73,11,10,73,12,10,73,13,10,73,14,10,73,15,10,73,16,10,73,17,10,73
+    db 18,10,73,19,10,73,0,11,73,1,11,73,2,11,73,3,11,73,4,11,73,5,11,73,6,11,73,7,11,73,8,11,73,9,11,73,10,11,73,11,11,73,12,11,73,13,11,73,14,11,73,15,11,73,16,11,73,17,11,73,18,11,73,19,11,73
+paddleSize dw 12 ;;That is the height
+paddle_Width dw 20 
+paddle_x dw 5
+paddle_y dw 185 ;at the bottom of the 320*200 pixels screen
+paddle_velocity dw 10
+paddleColor db 1
+
+
+right_paddleImg db 6,0,73,7,0,73,12,0,73,13,0,73,6,1,73,7,1,73,12,1,73,13,1,73,6,2,73,7,2,73,12,2,73,13,2,73,6,3,73,7,3,73,12,3,73,13,3,73,6,4,73,7,4,73,12,4,73,13,4,73,6,5,73,7,5,73,12,5,73,13,5,73,0,6,73,1,6,73,2,6,73,3,6,73,4,6,73,5,6,73
+    db 6,6,73,7,6,73,8,6,73,9,6,73,10,6,73,11,6,73,12,6,73,13,6,73,14,6,73,15,6,73,16,6,73,17,6,73,18,6,73,19,6,73,0,7,73,1,7,73,2,7,73,3,7,73,4,7,73,5,7,73,6,7,73,7,7,73,8,7,73,9,7,73,10,7,73,11,7,73,12,7,73,13,7,73,14,7,73,15,7,73
+    db 16,7,73,17,7,73,18,7,73,19,7,73,0,8,73,1,8,73,18,8,73,19,8,73,0,9,73,1,9,73,18,9,73,19,9,73,0,10,73,1,10,73,2,10,73,3,10,73,4,10,73,5,10,73,6,10,73,7,10,73,8,10,73,9,10,73,10,10,73,11,10,73,12,10,73,13,10,73,14,10,73,15,10,73,16,10,73,17,10,73
+    db 18,10,73,19,10,73,0,11,73,1,11,73,2,11,73,3,11,73,4,11,73,5,11,73,6,11,73,7,11,73,8,11,73,9,11,73,10,11,73,11,11,73,12,11,73,13,11,73,14,11,73,15,11,73,16,11,73,17,11,73,18,11,73,19,11,73
+right_paddleSize dw 12 ;;That is the height
+right_paddle_Width dw 20 
+right_paddle_x dw 160
+right_paddle_y dw 185 ;at the bottom of the 320*200 pixels screen
+right_paddle_velocity dw 10
+right_paddleColor db 0Eh
+
+BallImg db 3,0,73,4,0,73,5,0,73,1,1,73,2,1,73,6,1,73,7,1,73,1,2,73,2,2,73,6,2,73,7,2,73,0,3,73,3,3,73,5,3,73,8,3,73,0,4,73,4,4,73,8,4,73,0,5,73,3,5,73,5,5,73,8,5,73,1,6,73,2,6,73,6,6,73,7,6,73,1,7,73,2,7,73,6,7,73,7,7,73
+        db 3,8,73,4,8,73,5,8,73
+BallSize dw 9 
+ballWidth dw 9
+fireballColor db 1100b
+
+;left fireball
+fireBall_x dw ?
+fireBall_y dw 190
+fireBall_velocity_y dw 20
+ifFireIsPressed db 0
+
+;right fireball
+right_fireBall_x dw ?
+right_fireBall_y dw 190
+right_fireBall_velocity_y dw 20
+right_ifFireIsPressed db 0
+
+
+        ;green, light magenta, red, blue, yellow
+colors db  02h,           0dh, 04h,  01h,    0Eh
+        
+                  ;green, light magenta, red, blue, yellow
+pointsOfColors db       1,            2,   3,    4,      5  
+
+colorIndex db 0
+birdColor db 2
+birdStatus db 1
+birdPoints db 1
+
+right_colorIndex db 0
+right_birdColor db 2
+right_birdStatus db 1
+right_birdPoints db 1
+
+
+playerPoints db 0
+right_playerPoints db 0
 
 
 
@@ -393,14 +479,13 @@ backGround_right db 45,6,53,46,6,53,47,6,53,48,6,53,49,6,53,50,6,53,51,6,53,52,6
 
 
 
-
-	.code
+.code
 	main proc far
 	mov ax, @data
 	mov ds, ax
 	mov ES,AX ;; for string operations
 	;ChangeVideoMode 13h ;;clears screen and starts Video mode	
-	
+	call START_GAME
 	DisplayAgain:
 	CLR_Screen_with_Scrolling_TEXT_MODE 
 	
@@ -556,8 +641,12 @@ START_GAME PROC
 	ChangeVideoMode 13h   ;; CLEARS tHE SCREEN  
 	call DRAW_BACKGROUND     ;;Draws The BackGround Image
     call UPDATE_VALUES_Displayed  ;; Update values displayed with ones in variables
-	
-	WAIT_centi_seconds_TIME 40
+	call BIRDGAME
+	WAIT_One_centi_second_TIME
+	WAIT_One_centi_second_TIME
+	;checkTime
+	;checkTime
+
 	JMP GAME_LOOP
 
 	QUIT_GAME_LOOP:
@@ -736,5 +825,55 @@ DRAW_BACKGROUND PROC
         ret
 DRAW_BACKGROUND ENDP
 
+
+;; Draws the Bird 
+BIRDGAME PROC
+    
+    
+    ;drawPaddle
+    Draw_IMG_with_color paddle_x,paddle_y,paddleImg,paddleColor,paddleSize
+    Draw_IMG_with_color right_paddle_x,right_paddle_y,right_paddleImg,right_paddleColor,right_paddleSize
+
+    movePaddle
+
+    ;checkTime
+	
+    randomBirdColor birdStatus,birdColor,colorIndex
+    setBirdPointsWithTheCorrespondingColor colorIndex,birdPoints,pointsOfColors
+
+    randomBirdColor right_birdStatus,right_birdColor,right_colorIndex
+    setBirdPointsWithTheCorrespondingColor right_colorIndex,right_birdPoints,pointsOfColors
+
+    ;clearScreen 
+
+    ;left bird
+    Draw_IMG_with_color birdX,birdY,BirdImg,birdcolor,BirdSize
+    moveBird 148,0,birdVelocity,birdX
+
+
+    ;right bird
+    Draw_IMG_with_color right_birdX,right_birdY,right_BirdImg,right_birdcolor,right_BirdSize
+    moveBird 304,160,right_birdVelocity,right_birdX
+
+
+    checkForFire ifFireIsPressed
+ 
+    cmp ifFireIsPressed,0
+    je checkRight
+
+    moveFireBall fireBall_velocity_y,fireBall_y,ifFireIsPressed
+    Draw_IMG_with_color fireBall_x,fireBall_y,BallImg,fireballColor,BallSize
+    compareBirdWithBall birdX,fireBall_x,fireBall_y,BirdSize,0,birdStatus,playerPoints,birdPoints
+
+    checkRight: cmp right_ifFireIsPressed,0
+    je midDraw
+
+    moveFireBall right_fireBall_velocity_y,right_fireBall_y,right_ifFireIsPressed
+    Draw_IMG_with_color right_fireBall_x,right_fireBall_y,BallImg,fireballColor,BallSize
+    compareBirdWithBall right_birdX,right_fireBall_x,right_fireBall_y,right_BirdSize,160,right_birdStatus,playerPoints,birdPoints
+    midDraw:
+    
+    RET
+BIRDGAME ENDP
 
 end main
