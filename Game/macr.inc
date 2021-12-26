@@ -284,7 +284,89 @@ local buffer_not_empty_yet, IT_IS_EMPTY
 endm empitify_buffer
 
 
+ReadNumberhexa_in_ax MACRO 
+    local l1, l2, numb, finished, enter_pressed_1
 
+    ;; Read number and put in ax
+    mov cx,0
+    mov dx,0
+    l1:
+        mov ah, 00   ;get key pressed (waits)
+        int 16h      ; ah -> scan code  ;; al-> ascii code if found
+        ;; enter key is ScanCode 1C
+        cmp ah,1ch
+        je enter_pressed_1
+        inc cl
+        mov dl,al
+        mov ah,2     ;; to display the the char into screen (echo)
+        int 21h
+        ;sub dl,'0'
+        cmp dl,'A'
+        jb numb
+        cmp dl, 'F'
+        ja numb
+        ;; from A-F
+        sub dl,55
+        jmp finished
+        numb:
+        ;; from 1 - 9 
+        sub dl,'0'
+        finished:
+        push dx 
+        cmp cl,4
+        jne l1
+    enter_pressed_1:
+
+
+    mov bx,1
+    mov di,0 ; to store resu
+     l2:
+    ; pop and multi then add to dx
+    pop ax
+    mul bx
+    add di,ax
+    mov ax,bx
+    mov bx,16
+    mul bx
+    mov bx,ax
+    loop l2
+    mov ax,di
+
+ENDM ReadNumberhexa_in_ax
+
+DISPLAY_num_in_HEX_ macro pos ,count ,value 
+    local deconstruct_it,Print_chars
+   mov bh,0
+    mov dx,pos
+    mov ah,2
+    int 10h    ; set cursor position where you are gonna print  
+
+
+
+  mov DI,offset ASC_TBL
+  mov cx, count
+  mov ax,value
+  deconstruct_it:
+   mov dx,0
+   mov bx,16
+   div bx
+   ;;dx -> rest ax, res
+   mov bx,dx
+   mov bx, [Di][bx] ;; convert to to the ssuitabble ascii code
+   push bx ;; to pop and print it at the end
+  
+   loop deconstruct_it
+  
+   mov cx,count
+   mov bh,0 ;;page
+   Print_chars:
+    pop ax ;al contains the char to print   
+    mov ah, 0eh           ;0eh = 14 
+    mov bl, 0ch           ;Color is red
+    int 10h ; print char -> auto advances cursor
+   loop  Print_chars
+
+endm DISPLAY_num_in_HEX_
 LEVEL_PROCESSING macro
     local SKIP_ASSIGNMENT,_continue
     ChangeVideoMode 3h ;;CLR Screen
@@ -305,30 +387,74 @@ LEVEL_PROCESSING macro
     _continue:
     DisplayString_AT_position_and_move_cursor MY_REGs_msg 0404h
     DisplayString_AT_position_and_move_cursor AX_msg 0504h
+    ReadNumberhexa_in_ax 
+    mov L_AX,AX
     DisplayString_AT_position_and_move_cursor BX_msg 0604h
+    ReadNumberhexa_in_ax 
+    mov L_BX,AX
     DisplayString_AT_position_and_move_cursor CX_msg 0704h
+    ReadNumberhexa_in_ax 
+    mov L_CX,AX
     DisplayString_AT_position_and_move_cursor DX_msg 0804h
+    ReadNumberhexa_in_ax 
+    mov L_DX,AX
     DisplayString_AT_position_and_move_cursor SI_msg 0904h
+    ReadNumberhexa_in_ax 
+    mov L_SI,AX
     DisplayString_AT_position_and_move_cursor DI_msg 0a04h
+    ReadNumberhexa_in_ax 
+    mov L_DI,AX
     DisplayString_AT_position_and_move_cursor SP_msg 0b04h
+    ReadNumberhexa_in_ax 
+    mov L_SP,AX
     DisplayString_AT_position_and_move_cursor Bp_msg 0c04h
-    
+    ReadNumberhexa_in_ax 
+    mov L_BP,AX
+
     
     DisplayString_AT_position_and_move_cursor HIS_REGs_msg 043Ah
     DisplayString_AT_position_and_move_cursor AX_msg 053Ah
+    ReadNumberhexa_in_ax 
+    mov R_AX,AX
     DisplayString_AT_position_and_move_cursor BX_msg 063Ah
+    ReadNumberhexa_in_ax 
+    mov R_BX,AX
     DisplayString_AT_position_and_move_cursor CX_msg 073Ah
+    ReadNumberhexa_in_ax 
+    mov R_CX,AX
     DisplayString_AT_position_and_move_cursor DX_msg 083Ah
+    ReadNumberhexa_in_ax 
+    mov R_DX,AX
     DisplayString_AT_position_and_move_cursor SI_msg 093Ah
+    ReadNumberhexa_in_ax 
+    mov R_SI,AX
     DisplayString_AT_position_and_move_cursor DI_msg 0a3Ah
+    ReadNumberhexa_in_ax 
+    mov R_DI,AX
     DisplayString_AT_position_and_move_cursor SP_msg 0b3Ah
+    ReadNumberhexa_in_ax 
+    mov R_SP,AX
     DisplayString_AT_position_and_move_cursor Bp_msg 0c3Ah
-
-
-
+    ReadNumberhexa_in_ax 
+    mov R_BP,AX
 
     SKIP_ASSIGNMENT:
-
+    DisplayString_AT_position_and_move_cursor Press_any_Key_message 1004h 
     Read_KEY
 
 endm LEVEL_PROCESSING
+
+
+INSTRUCTIONS_PAGE macro
+    
+
+
+
+endm INSTRUCTIONS_PAGE
+
+
+
+
+
+
+

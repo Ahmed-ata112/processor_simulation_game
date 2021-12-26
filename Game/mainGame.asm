@@ -27,14 +27,14 @@
 	other_hidden_char db 'V' 
 	MY_REGs_msg db 'MY REGS$'
 	HIS_REGs_msg db 'HIS REGS$'
-	AX_msg db 'AX:$'
-	BX_msg db 'BX:$'
-	CX_msg db 'CX:$'
-	DX_msg db 'DX:$'
-	SI_msg db 'SI:$'
-	DI_msg db 'DI:$'
-	SP_msg db 'SP:$'
-	BP_msg db 'BP:$'
+	AX_msg db 'AX: $'
+	BX_msg db 'BX: $'
+	CX_msg db 'CX: $'
+	DX_msg db 'DX: $'
+	SI_msg db 'SI: $'
+	DI_msg db 'DI: $'
+	SP_msg db 'SP: $'
+	BP_msg db 'BP: $'
 	
 	
 	
@@ -50,6 +50,144 @@
 	ActualFirstNameSize db ?
 	FirstNameData db 17 dup('$')
 
+	;;;;;;;;;-----------------positions----------;;;;
+     ;;for the left
+     ax_rec_l dw 0104h
+     cx_rec_l dw 0504h
+     bx_rec_l dw 0304h
+     dx_rec_l dw 0704h
+     si_rec_l dw 0904h
+     di_rec_l dw 0B04h
+     sp_rec_l dw 0D04h
+     Bp_rec_l dw 0F04h
+     ;; Ds LeftSide
+     DS_0_left dw 030Bh
+     DS_1_left dw 040Bh
+     DS_2_left dw 050Bh
+     DS_3_left dw 060Bh
+     DS_4_left dw 070Bh
+     DS_5_left dw 080Bh
+     DS_6_left dw 090Bh
+     DS_7_left dw 0A0Bh
+     ;; second column
+     DS_8_left dw 030eh
+     DS_9_left dw 040eh
+     DS_A_left dw 050eh
+     DS_B_left dw 060eh
+     DS_C_left dw 070eh
+     DS_D_left dw 080eh
+     DS_E_left dw 090eh
+     DS_F_left dw 0A0eh
+
+     ;; command line left side
+     CL_row_left dw 1201h
+
+     ;; Balls
+
+     first_ball_left dw 0213h;
+     second_ball_left dw 0613h;
+     third_ball_left dw 0a13h;
+     forth_ball_left dw 0e13h;
+     fifth_ball_left dw 1213h;
+
+     ;;for the right
+     ax_rec_r dw 011Ah
+     cx_rec_r dw 051Ah
+     bx_rec_r dw 031Ah
+     dx_rec_r dw 071Ah
+     si_rec_r dw 091Ah
+     di_rec_r dw 0B1Ah
+     sp_rec_r dw 0D1Ah
+     Bp_rec_r dw 0F1Ah
+     ;; Ds RightSide
+     DS_firstCol_right dw 0321h
+     DS_secondCol_right dw 0324h
+
+     DS_0_right dw 0321h
+     DS_1_right dw 0421h
+     DS_2_right dw 0521h
+     DS_3_right dw 0621h
+     DS_4_right dw 0721h
+     DS_5_right dw 0821h
+     DS_6_right dw 0921h
+     DS_7_right dw 0A21h
+     ;; s_right column
+     DS_8_right dw 0324h
+     DS_9_right dw 0424h
+     DS_A_right dw 0524h
+     DS_B_right dw 0624h
+     DS_C_right dw 0724h
+     DS_D_right dw 0824h
+     DS_E_right dw 0924h
+     DS_F_right dw 0A24h
+     ;; command line left side
+     CL_row_Right dw 1217h
+
+
+     ;; Values in regs
+		L_AX dw 0 
+		L_BX dw 0
+		L_CX dw 0 
+		L_DX dw 0
+		L_SI dw 0
+		L_DI dw 0
+		L_SP dw 0
+		L_BP dw 0
+		;;DATA Segment
+		L_00 db 0
+		L_01 db 0
+		L_02 db 0
+		L_03 db 0
+		L_04 db 0
+		L_05 db 0
+		L_06 db 0
+		L_07 db 0
+		L_08 db 0
+		L_09 db 0
+		L_A db 0
+		L_B db 0
+		L_C db 0
+		L_D db 0
+		L_E db 0
+		L_F db 0
+
+     ;; balls values
+		ball_0 db 0
+		ball_1 db 0
+		ball_2 db 0
+		ball_3 db 0
+		ball_4 db 0
+
+
+     ;; Values in regs
+		R_AX dw 0 
+		R_BX dw 0
+		R_CX dw 0 
+		R_DX dw 0
+		R_SI dw 0
+		R_DI dw 0
+		R_SP dw 0
+		R_BP dw 0
+		;;DATA Segment
+		R_00 db 0
+		R_01 db 0
+		R_02 db 0
+		R_03 db 0
+		R_04 db 0
+		R_05 db 0
+		R_06 db 0
+		R_07 db 0
+		R_08 db 0
+		R_09 db 0
+		R_A db 0
+		R_B db 0
+		R_C db 0
+		R_D db 0
+		R_E db 0
+		R_F db 0
+
+	ASC_TBL DB   '0','1','2','3','4','5','6','7','8','9'
+        DB   'A','B','C','D','E','F'
 
 
 
@@ -189,6 +327,8 @@ GAME_WELCOME_PAGE PROC
 		;;LEVEL SELECTION  -> keep looping till a F1 or F2 Is Pressed
 		LEVEL_SELECTION 	; just you choose the the level
 		LEVEL_PROCESSING	; according to the chosen -> you do that shit
+		INSTRUCTIONS_PAGE	;just to show The instructions of THE game for some 5 seconds
+
 		;; just to stop the program
 		;sis: jmp sis
 
