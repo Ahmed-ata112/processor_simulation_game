@@ -556,7 +556,7 @@ START_GAME PROC
 	ChangeVideoMode 13h   ;; CLEARS tHE SCREEN  
 	call DRAW_BACKGROUND     ;;Draws The BackGround Image
     call UPDATE_VALUES_Displayed  ;; Update values displayed with ones in variables
-
+	
 	WAIT_centi_seconds_TIME 40
 	JMP GAME_LOOP
 
