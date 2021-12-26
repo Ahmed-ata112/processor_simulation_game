@@ -57,7 +57,7 @@ ENDM ReadNumberdec_in_ax
 
 
 
-DisplayString_AT_position_TEXTMODE MACRO STR, pos
+DisplayString_AT_position_not_moving_cursor MACRO STR, pos
     ;assumes Text mode
     ;returns The cursor to its initial position before it ends
     ;pos is row-col
@@ -79,9 +79,9 @@ DisplayString_AT_position_TEXTMODE MACRO STR, pos
     mov ah,2
     mov bh,0
     int 10h ;; mov cursor 
-ENDM DisplayString_AT_position_TEXTMODE  
+ENDM DisplayString_AT_position_not_moving_cursor  
 
-DisplayString_AT_position_GraphicsMODE MACRO STR, pos
+DisplayString_AT_position_and_move_cursor MACRO STR, pos
     ;assumes Graphics mode
     ;returns The cursor to its initial position before it ends
     ;pos is row-col
@@ -96,7 +96,7 @@ DisplayString_AT_position_GraphicsMODE MACRO STR, pos
     int 21h ;; print string
 
 
-ENDM DisplayString_AT_position_GraphicsMODE  
+ENDM DisplayString_AT_position_and_move_cursor  
 
 
 UPDATE_notification_bar MACRO new_msg
@@ -113,8 +113,8 @@ UPDATE_notification_bar MACRO new_msg
     mov cx,80d
     REP MOVSb;Copies the 80 bytes from SI to DI
     ;; prints The two messages in The notification bar
-    DisplayString_AT_position_TEXTMODE First_msg_in_notification_bar , 1705h
-    DisplayString_AT_position_TEXTMODE Second_msg_in_notification_bar ,1805h ;print in the next row
+    DisplayString_AT_position_not_moving_cursor First_msg_in_notification_bar , 1705h
+    DisplayString_AT_position_not_moving_cursor Second_msg_in_notification_bar ,1805h ;print in the next row
 endm UPDATE_notification_bar
 
 UPDATE_notification_bar2 MACRO new_msg
@@ -128,7 +128,7 @@ UPDATE_notification_bar2 MACRO new_msg
 	int 10h                      ;Clear the first line
 
 
-    DisplayString_AT_position_TEXTMODE new_msg ,1705h ;print in the next row
+    DisplayString_AT_position_not_moving_cursor new_msg ,1705h ;print in the next row
 endm UPDATE_notification_bar2
 
 
@@ -286,12 +286,49 @@ endm empitify_buffer
 
 
 LEVEL_PROCESSING macro
-    ChangeVideoMode 13h ;;CLR Screen
-    DisplayString_AT_position_GraphicsMODE choose_hidden_char 0a0ah
+    local SKIP_ASSIGNMENT,_continue
+    ChangeVideoMode 3h ;;CLR Screen
+    DisplayString_AT_position_and_move_cursor choose_hidden_char 0304h
     Read_KEY
+    mov hidden_char,al
     mov dl,al
 	mov ah,2     ;; to display the the char into screen (echo)
 	int 21h
 
+    ;; send and recieve The CHAR
+
+    
+    ;; AX: 1245
+    cmp Game_Level,2
+    je _continue
+    jmp SKIP_ASSIGNMENT
+    _continue:
+    DisplayString_AT_position_and_move_cursor MY_REGs_msg 0404h
+    DisplayString_AT_position_and_move_cursor AX_msg 0504h
+    DisplayString_AT_position_and_move_cursor BX_msg 0604h
+    DisplayString_AT_position_and_move_cursor CX_msg 0704h
+    DisplayString_AT_position_and_move_cursor DX_msg 0804h
+    DisplayString_AT_position_and_move_cursor SI_msg 0904h
+    DisplayString_AT_position_and_move_cursor DI_msg 0a04h
+    DisplayString_AT_position_and_move_cursor SP_msg 0b04h
+    DisplayString_AT_position_and_move_cursor Bp_msg 0c04h
+    
+    
+    DisplayString_AT_position_and_move_cursor HIS_REGs_msg 043Ah
+    DisplayString_AT_position_and_move_cursor AX_msg 053Ah
+    DisplayString_AT_position_and_move_cursor BX_msg 063Ah
+    DisplayString_AT_position_and_move_cursor CX_msg 073Ah
+    DisplayString_AT_position_and_move_cursor DX_msg 083Ah
+    DisplayString_AT_position_and_move_cursor SI_msg 093Ah
+    DisplayString_AT_position_and_move_cursor DI_msg 0a3Ah
+    DisplayString_AT_position_and_move_cursor SP_msg 0b3Ah
+    DisplayString_AT_position_and_move_cursor Bp_msg 0c3Ah
+
+
+
+
+    SKIP_ASSIGNMENT:
+
     Read_KEY
+
 endm LEVEL_PROCESSING

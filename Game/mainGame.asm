@@ -22,9 +22,19 @@
 	level2_msg db 'LEVEL 2 -- PRESS F2$' 
 	
 	choose_hidden_char db 'Choose a hidden char: $'
+	you_cannot_write_msg db 'You Cannot write char: $'
 	hidden_char db 0		;; The hiddden char chosen by current player
-
-	
+	other_hidden_char db 'V' 
+	MY_REGs_msg db 'MY REGS$'
+	HIS_REGs_msg db 'HIS REGS$'
+	AX_msg db 'AX:$'
+	BX_msg db 'BX:$'
+	CX_msg db 'CX:$'
+	DX_msg db 'DX:$'
+	SI_msg db 'SI:$'
+	DI_msg db 'DI:$'
+	SP_msg db 'SP:$'
+	BP_msg db 'BP:$'
 	
 	
 	
@@ -56,14 +66,14 @@
     call NAME_VALIDATION
     FirstIsLetter:               ;jmp here if first character is a letter
 
-    DisplayString_AT_position_TEXTMODE Enter_Points_message 0818h ; show mes
+    DisplayString_AT_position_not_moving_cursor Enter_Points_message 0818h ; show mes
     MoveCursorTo 0921h
     ReadNumberdec_in_ax ;; Read points and put it in ax ;; TODO: See if you want this in hexa
     mov My_Initial_points,ax ;; initialize initial points
 
 	; now enter the main Screen
 	DisplayString nl
-	DisplayString_AT_position_TEXTMODE Press_any_Key_message 1018h 
+	DisplayString_AT_position_not_moving_cursor Press_any_Key_message 1018h 
 	Read_KEY
 
 	MAIN_LOOP:
@@ -78,9 +88,9 @@
 			;; F2 -> 3C   
 			;; F1 -> 3B
 			CLR_Screen_with_Scrolling_TEXT_MODE
-			DisplayString_AT_position_TEXTMODE MAIN_Screen_message1 ,0C16h
-			DisplayString_AT_position_TEXTMODE MAIN_Screen_message2 ,0D16h
-			DisplayString_AT_position_TEXTMODE MAIN_Screen_message3 ,0E16h
+			DisplayString_AT_position_not_moving_cursor MAIN_Screen_message1 ,0C16h
+			DisplayString_AT_position_not_moving_cursor MAIN_Screen_message2 ,0D16h
+			DisplayString_AT_position_not_moving_cursor MAIN_Screen_message3 ,0E16h
 			check_key_pressed1:
 				mov ah, 1
 				int 16h           ;Get key pressed (do not wait for a key - AH:scancode, AL:ASCII)
@@ -141,7 +151,7 @@
 
 	;To validate The input NAME
 	NAME_VALIDATION PROC
-		DisplayString_AT_position_TEXTMODE Enter_Name_message 0318h 
+		DisplayString_AT_position_not_moving_cursor Enter_Name_message 0318h 
 		MoveCursorTo 0421h
 		ReadString FirstName
 		
@@ -154,8 +164,8 @@
 		cmp FirstNameData,'['
 		jl  NAME_IS_VALID
 		TRY_AGAIN_INPUT:            ; if first character isn't a letter, clear screen and display a message to user
-		DisplayString_AT_position_TEXTMODE Enter_Name_message2 0a04h
-		DisplayString_AT_position_TEXTMODE Press_any_Key_message 0b04h 
+		DisplayString_AT_position_not_moving_cursor Enter_Name_message2 0a04h
+		DisplayString_AT_position_not_moving_cursor Press_any_Key_message 0b04h 
 		mov al,'$'
 		mov di,offset FirstNameData  ;DI points to the target
 		mov cx,0                     ;count
@@ -173,8 +183,8 @@ GAME_WELCOME_PAGE PROC
 
 		ChangeVideoMode 3h ;;clears screen and starts Video mode	
 
-		DisplayString_AT_position_TEXTMODE level1_msg 0a20h
-		DisplayString_AT_position_TEXTMODE level2_msg 0c20h
+		DisplayString_AT_position_not_moving_cursor level1_msg 0a20h
+		DisplayString_AT_position_not_moving_cursor level2_msg 0c20h
 
 		;;LEVEL SELECTION  -> keep looping till a F1 or F2 Is Pressed
 		LEVEL_SELECTION 	; just you choose the the level
