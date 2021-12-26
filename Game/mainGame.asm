@@ -12,8 +12,8 @@
 	MAIN_Screen_message1 db 'To Start Chatting press F1','$'
 	MAIN_Screen_message2 db 'To Start Game press F2$'  
 	MAIN_Screen_message3 db 'To end Program press ESC$'   
-	First_msg_in_notification_bar db 80 dup('$')
-	Second_msg_in_notification_bar db 80 dup('$')
+	INSTRUCTIONS_msg db 'SOME INSTRUCTIONS OF THE GAME... blA bla bla ... $'
+	
 
 	Sent_CHAT_INV_msg db 'You sent a chat Invitation','$'
 	Sent_Game_INV_msg db 'You sent a Game Invitation','$'
@@ -245,7 +245,7 @@
 				cmp ah,3bh ;f1
 				jne check_f2
 				;in case of F1
-				UPDATE_notification_bar2 Sent_CHAT_INV_msg
+				UPDATE_notification_bar Sent_CHAT_INV_msg
 				mov is_player_1_ready_for_chat,1 ;; make me ready and see if the other is ready to
 				cmp is_player_1_ready_for_chat,1
 				;;je LETS_Chat 	;;Player 2 is Ready TOO
@@ -258,7 +258,7 @@
 				cmp ah,3ch ; F2
 				jne remove_key_from_buffer
 				;in case of F2
-				UPDATE_notification_bar2 Sent_Game_INV_msg
+				UPDATE_notification_bar Sent_Game_INV_msg
 				mov is_player_1_ready_for_game,1 ;; make me ready and see if the other is ready to
 				cmp is_player_2_ready_for_game,1
 				je LETS_PLAY 	;;Player 2 is Ready TOO
@@ -319,19 +319,18 @@
 ;THE GAME AND LEVEL SELECTION
 GAME_WELCOME_PAGE PROC
 
-		ChangeVideoMode 3h ;;clears screen and starts Video mode	
+	ChangeVideoMode 3h ;;clears screen and starts Video mode	
 
-		DisplayString_AT_position_not_moving_cursor level1_msg 0a20h
-		DisplayString_AT_position_not_moving_cursor level2_msg 0c20h
+	DisplayString_AT_position_not_moving_cursor level1_msg 0a20h
+	DisplayString_AT_position_not_moving_cursor level2_msg 0c20h
 
-		;;LEVEL SELECTION  -> keep looping till a F1 or F2 Is Pressed
-		LEVEL_SELECTION 	; just you choose the the level
-		LEVEL_PROCESSING	; according to the chosen -> you do that shit
-		INSTRUCTIONS_PAGE	;just to show The instructions of THE game for some 5 seconds
+	;;LEVEL SELECTION  -> keep looping till a F1 or F2 Is Pressed
+	LEVEL_SELECTION 	; just you choose the the level
+	INSTRUCTIONS_PAGE	;just to show The instructions of THE game for 10 seconds
+	LEVEL_PROCESSING	; according to the chosen -> you do that shit
 
-		;; just to stop the program
-		;sis: jmp sis
-
+	;; just to stop the program
+	;sis: jmp sis
 	ret
 GAME_WELCOME_PAGE ENDP
 

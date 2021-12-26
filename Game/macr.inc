@@ -98,26 +98,7 @@ DisplayString_AT_position_and_move_cursor MACRO STR, pos
 
 ENDM DisplayString_AT_position_and_move_cursor  
 
-
 UPDATE_notification_bar MACRO new_msg
-    ;; updates the notification bar with a new message
-    ;; put the second int the first
-    ;; TODO: Should be done using Scrolling
-    mov SI,offset Second_msg_in_notification_bar
-    mov DI,offset First_msg_in_notification_bar
-    mov cx,80d
-    REP MOVSb;Copies the first 80 bytes from si to di
-    ;;put new message in the first
-    mov SI,offset new_msg
-    mov DI,offset Second_msg_in_notification_bar
-    mov cx,80d
-    REP MOVSb;Copies the 80 bytes from SI to DI
-    ;; prints The two messages in The notification bar
-    DisplayString_AT_position_not_moving_cursor First_msg_in_notification_bar , 1705h
-    DisplayString_AT_position_not_moving_cursor Second_msg_in_notification_bar ,1805h ;print in the next row
-endm UPDATE_notification_bar
-
-UPDATE_notification_bar2 MACRO new_msg
     ;; updates the notification bar with a new message
     ;; done using Scrolling
     ;scroll the screen
@@ -129,7 +110,7 @@ UPDATE_notification_bar2 MACRO new_msg
 
 
     DisplayString_AT_position_not_moving_cursor new_msg ,1705h ;print in the next row
-endm UPDATE_notification_bar2
+endm UPDATE_notification_bar
 
 
 ;;There should be another clear with scrolling 
@@ -444,12 +425,29 @@ LEVEL_PROCESSING macro
 
 endm LEVEL_PROCESSING
 
+WAIT_seconds_TIME MACRO n_SECONDS
+    local L1
+    mov AH,2Ch
+    int 21h ;; Get System Time
+    mov bl,dh ;;current seconds
+    add bl,n_seconds
+
+    L1:
+    mov AH,2Ch
+    int 21h ;; Get System Time
+    cmp dh,bl ;;didn't reach our time yet
+    jne L1
+
+
+ENDM
+
 
 INSTRUCTIONS_PAGE macro
-    
-
-
-
+    ChangeVideoMode 3H
+    DisplayString_AT_position_and_move_cursor INSTRUCTIONS_msg 0A14h
+    ;;should display different messages 
+    WAIT_seconds_TIME 10 ;; WAITS FOR 10 SECONDS
+    ;;
 endm INSTRUCTIONS_PAGE
 
 
