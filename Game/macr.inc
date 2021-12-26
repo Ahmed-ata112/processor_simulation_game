@@ -437,8 +437,20 @@ WAIT_seconds_TIME MACRO n_SECONDS
     int 21h ;; Get System Time
     cmp dh,bl ;;didn't reach our time yet
     jne L1
+ENDM
 
+WAIT_centi_seconds_TIME MACRO cm_SECONDS
+    local L1
+    mov AH,2Ch
+    int 21h ;; Get System Time
+    mov bl,dl ;;current seconds
+    add bl,cm_SECONDS
 
+    L1:
+    mov AH,2Ch
+    int 21h ;; Get System Time
+    cmp dl,bl ;;didn't reach our time yet
+    jne L1
 ENDM
 
 
@@ -446,13 +458,97 @@ INSTRUCTIONS_PAGE macro
     ChangeVideoMode 3H
     DisplayString_AT_position_and_move_cursor INSTRUCTIONS_msg 0A14h
     ;;should display different messages 
-    WAIT_seconds_TIME 10 ;; WAITS FOR 10 SECONDS
+    WAIT_seconds_TIME 3 ;; WAITS FOR 10 SECONDS
     ;;
 endm INSTRUCTIONS_PAGE
 
+;;Game Graphics
+
+drawPixelWithOffset macro column, row, color, X_origin, Y_origin ;x, y, color...the last two parameters are the offset position of the pixel
+        xor ch,ch
+        xor dh,dh
+        mov dl, row
+        mov cl, column
+        mov al, color
+        ;Dynamics:
+        add dx, Y_origin
+        add cx, X_origin
+        int 10h
+endm drawPixelWithOffset
+
+Draw_IMG macro p_x, p_y,imga, imgasize
+	local KeepDrawing
+	mov ah, 0ch
+	mov bx,  offset imga
+	KeepDrawing:
+			drawPixelWithOffset [bx], [bx+1], [bx+2],  p_x,  p_y
+			add bx, 3
+			cmp bx, offset imgasize
+	JNE KeepDrawing
+	
+ENDm Draw_IMG 
+
+Draw_IMG_with_color macro p_x, p_y,imga,color ,imgasize
+	local KeepDrawing
+	mov ah, 0ch
+	mov bx,  offset imga
+	KeepDrawing:
+			drawPixelWithOffset [bx], [bx+1], color,  p_x,  p_y
+			add bx, 3
+			cmp bx, offset imgasize
+	JNE KeepDrawing
+	
+ENDm Draw_IMG 
 
 
 
+
+
+
+Convert_OP_TO_HEXA MACRO OPERAND 
+    local l1, l2, numb, SKIP_NUM, end_of_op
+
+    ;; Read number and put in ax
+    mov cx,0
+    mov dx,0
+    MOV DI, offset OPERAND
+    l1:
+        
+        cmp [DI],'$'
+        je end_of_op
+        inc cl  ;;counter 
+        mov dl, [DI] ;; store it to proccedd
+        cmp dl,'A'
+        jb numb
+        cmp dl, 'F'
+        ja numb
+        ;; from A-F
+        sub dl,55       ;; convertd A-F to 10-16
+        jmp SKIP_NUM
+        numb:
+        ;; from 1 - 9 
+        sub dl,'0'
+        SKIP_NUM:
+        push dx     ;; STORE IN STACK TO TAKE IT BACK 
+        inc di  ;; next Char
+        jmp l1
+    end_of_op:
+
+    mov bx,1
+    mov di,0 ; to store result
+     l2:
+    ; pop and multi then add to dx
+    pop ax
+    mul bx
+    add di,ax
+    mov ax,bx
+    mov bx,16
+    mul bx
+    mov bx,ax
+    loop l2
+    mov ax,di
+
+ENDM Convert_OP_TO_HEXA
 
 
 
