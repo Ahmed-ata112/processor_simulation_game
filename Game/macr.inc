@@ -726,8 +726,10 @@ local notInTheRangeOfTheBird
     cmp ax,fireBall_x
     ;checks if the fire ball is in the same row as the flying ball, with some error -> ball size
     jb notInTheRangeOfTheBird
-    mov ah,birdPoints
-    add playerPoints,ah
+    mov al,birdPoints
+    mov ah,0
+    add playerPoints,ax
+    
     mov ball_x,startOfBird
     mov birdStatus,0
     notInTheRangeOfTheBird:

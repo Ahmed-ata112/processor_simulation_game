@@ -44,6 +44,8 @@
 	is_player_2_ready_for_chat db 0
     My_Initial_points dw ?
 	Game_Level db 0
+    
+  
 
     FirstName LABEL BYTE ; named the next it the same name 
 	FirstNameSize db 16
@@ -468,8 +470,8 @@ right_birdStatus db 1
 right_birdPoints db 1
 
 
-playerPoints db 0
-right_playerPoints db 0
+playerPoints dw 0
+right_playerPoints dw 0 ;; TODO: print them
 
 
 
@@ -496,6 +498,9 @@ right_playerPoints db 0
     MoveCursorTo 0921h
     ReadNumberdec_in_ax ;; Read points and put it in ax ;; TODO: See if you want this in hexa
     mov My_Initial_points,ax ;; initialize initial points
+    ;; Todo: get min and initialize the points
+    mov playerPoints,ax
+    mov right_playerPoints,ax
 
 	; now enter the main Screen
 	DisplayString nl
@@ -798,6 +803,13 @@ UPDATE_VALUES_Displayed PROC
         mov al, R_F ;; its a byte
         DISPLAY_num_in_HEX_ DS_F_right, 2 ,ax  
 
+
+        ;;points
+        mov ax,playerPoints
+        DISPLAY_num_in_HEX_ CL_row_left, 4 ,ax  
+        mov ax,right_playerPoints
+        DISPLAY_num_in_HEX_ CL_row_Right, 4 ,ax  
+
         ret
 UPDATE_VALUES_Displayed ENDP
 
@@ -870,7 +882,7 @@ BIRDGAME PROC
 
     moveFireBall right_fireBall_velocity_y,right_fireBall_y,right_ifFireIsPressed
     Draw_IMG_with_color right_fireBall_x,right_fireBall_y,BallImg,fireballColor,BallSize
-    compareBirdWithBall right_birdX,right_fireBall_x,right_fireBall_y,right_BirdSize,160,right_birdStatus,playerPoints,birdPoints
+    compareBirdWithBall right_birdX,right_fireBall_x,right_fireBall_y,right_BirdSize,160,right_birdStatus,right_playerPoints,birdPoints
     midDraw:
     
     RET
