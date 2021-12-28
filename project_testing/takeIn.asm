@@ -10,7 +10,9 @@ ENDM DisplayString
 .data
     command db 30 dup('$')
     command_Size db 0 ; to store the aactual size of input at the current time
+    forbidden_char db 'A'
     finished_taking_input db 0 ; just a flag to indicate we finished entering the string
+    
 .code
 main proc far
     mov ax, @data
@@ -32,16 +34,6 @@ main proc far
     cmp finished_taking_input,1
     je DONE_TAKING_INPUT
     
-
-    mov cx,64000
-    ll11: loop ll11
-
- mov cx,64000
-    ll121: loop ll121
-
- mov cx,64000
-    ll113: loop ll113
-
     jmp MAINLOOP
 
 
@@ -63,7 +55,16 @@ GetCommand PROC
     int 16h ;-> get key pressed AH:SC -- AL:Ascii
         ;;; backspace -> SC:0Eh
         ;; Enter -> 1C
+    ;; ,] 
     
+    cmp al,20H  ;;a space 
+    jb CHECK_IF_ENTER 
+    cmp al, ']'
+    ja CHECK_IF_ENTER
+    JMP PRINT_THE_CHAR   ;;its a valid one 
+    
+    
+    CHECK_IF_ENTER:
     cmp ah,1Ch ;; check if enter is pressed
     jne CHECK_IF_BACKSLASH
     mov finished_taking_input,1
@@ -71,7 +72,7 @@ GetCommand PROC
 
     CHECK_IF_BACKSLASH:
     cmp ah,0eh
-    jne NOT_BACKSPACE
+    jne FinishedTakingChar  ;;NOT ANY OFTHE THREE CASES
     ;if size>0 then delete the last char and dec string
     
     cmp command_Size,0
@@ -84,7 +85,7 @@ GetCommand PROC
     mov [di], '$'   
     dec command_Size
     jmp FinishedTakingChar 
-    NOT_BACKSPACE:
+    PRINT_THE_CHAR:
     ;then store The char and print it then inc the size
     mov di,offset command 
     mov bl,command_Size

@@ -42,7 +42,7 @@
 	is_player_2_ready_for_game db 0
 	is_player_1_ready_for_chat db 0
 	is_player_2_ready_for_chat db 0
-    My_Initial_points dw ?
+    My_Initial_points dw 0
 	Game_Level db 0
     
   
@@ -476,18 +476,13 @@ right_playerPoints dw 0 ;; TODO: print them
 
 
 
-
-
-
-
-
 .code
 	main proc far
 	mov ax, @data
 	mov ds, ax
 	mov ES,AX ;; for string operations
 	;ChangeVideoMode 13h ;;clears screen and starts Video mode	
-	call START_GAME
+	;call START_GAME
 	DisplayAgain:
 	CLR_Screen_with_Scrolling_TEXT_MODE 
 	
@@ -496,7 +491,7 @@ right_playerPoints dw 0 ;; TODO: print them
 
     DisplayString_AT_position_not_moving_cursor Enter_Points_message 0818h ; show mes
     MoveCursorTo 0921h
-    ReadNumberdec_in_ax ;; Read points and put it in ax ;; TODO: See if you want this in hexa
+    ReadNumberhexa_in_ax ;; Read points and put it in ax ;; TODO: See if you want this in hexa
     mov My_Initial_points,ax ;; initialize initial points
     ;; Todo: get min and initialize the points
     mov playerPoints,ax
@@ -805,10 +800,8 @@ UPDATE_VALUES_Displayed PROC
 
 
         ;;points
-        mov ax,playerPoints
-        DISPLAY_num_in_HEX_ CL_row_left, 4 ,ax  
-        mov ax,right_playerPoints
-        DISPLAY_num_in_HEX_ CL_row_Right, 4 ,ax  
+        DISPLAY_num_in_HEX_ CL_row_left, 4 ,playerPoints  
+        DISPLAY_num_in_HEX_ CL_row_Right, 4 ,right_playerPoints  
 
         ret
 UPDATE_VALUES_Displayed ENDP

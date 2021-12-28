@@ -317,7 +317,7 @@ ENDM ReadNumberhexa_in_ax
 
 DISPLAY_num_in_HEX_ macro pos ,count ,value 
     local deconstruct_it,Print_chars
-   mov bh,0
+    mov bh,0
     mov dx,pos
     mov ah,2
     int 10h    ; set cursor position where you are gonna print  
@@ -743,6 +743,9 @@ local exitMacro
     cmp birdStatus,0
     jne exitMacro
     ;dx has the seconds and 1/100 seconds from the previous "check time" macro
+    mov ah,2ch ;get the system time
+    int 21h    ;ch=hour  cl=minute  dh=seconds  dl=1/100seconds
+    
     mov  ax, dx
     xor  dx, dx
     mov  cx, 5    
