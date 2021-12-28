@@ -623,154 +623,154 @@ check_command                ENDP
 ;;Mena
 
 check_Operand MACRO  HASH_Operand Operand_Value Operand sizeIndex     
-    LOCAL A,B,C, D,E ,F ,G,H ,I,J,,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,AA,AB,AC,AD,CHECKF,CHECKmlSI,CHECKmlBI,CHECKmlBX,movml00,movml1,movml2,movml3,movml4,movml5,movml6,movml7,movml9,movmlA,movml8,movmlB,movmlC,movmlD,movmlE,movmlF,CHECKdata,CHECKmlDI,end
+    LOCAL CHECKBX,CHECKCX,CHECKDX, CHECKSI,CHECKDI ,CHECKSP ,CHECKBP,CHECKAL ,CHECKBL,CHECKCL,,CHECKDL,CHECKAH,CHECKBH,CHECKCH,CHECKDH,CHECK00,CHECK01,CHECK02,CHECK03,CHECK04,CHECK05,CHECK06,CHECK07,CHECK08,CHECK09,CHECKA,CHECKB,CHECKC,CHECKD,CHECKE,CHECKF,CHECKmlSI,CHECKmlBI,CHECKmlBX,movml00,movml1,movml2,movml3,movml4,movml5,movml6,movml7,movml9,movmlA,movml8,movmlB,movmlC,movmlD,movmlE,movmlF,CHECKdata,CHECKmlDI,end
 
     MOV SI,offset HASH_Operand 
      
     ;; AX
     
     CMP [SI],24dH
-    JNZ A
+    JNZ CHECKBX
     
     mov ax,_AX;; CODE       
     mov Operand_Value,ax
     mov sizeIndex,1h 
     jmp end
 
-    A:
+    CHECKBX:
     
     
     ;; BX
     
     CMP [SI],252H
-     JNZ B
+     JNZ CHECKCX
     
     mov ax,_BX;; CODE                                               
      mov Operand_Value,ax 
      mov sizeIndex,1h
     jmp end
 
-    B:
+    CHECKCX:
     
     ;; CX 
     
     CMP [SI],257H
-     JNZ C
+     JNZ CHECKDX
     
     mov ax,_CX;; CODE
      mov Operand_Value,ax 
      mov sizeIndex,1h                   
     jmp end
-    C:
+    CHECKDX:
     
     ;; DX   
                                     
     CMP [SI],25cH
-     JNZ D
+     JNZ CHECKSI
     
     mov ax,_DX;; CODE
      mov Operand_Value,ax
      mov sizeIndex,1h
     jmp end
-    D:
+    CHECKSI:
     
     ;; SI   
     
     CMP [SI],27aH
-     JNZ E
+     JNZ CHECKDI
     
     mov ax,_SI;; CODE
      mov Operand_Value,ax
      mov sizeIndex,1h
     jmp end
-    E:
+    CHECKDI:
     
     ;; DI   
     
     CMP [SI],22fH
-     JNZ F
+     JNZ CHECKSP
     
     mov ax,_DI;; CODE
      mov Operand_Value,ax
      mov sizeIndex,1h
     jmp end
-    F:
+    CHECKSP:
     
     ;; SP   
     
     CMP [SI],28fH
-     JNZ G
+     JNZ CHECKBP
     
     mov ax,_SP;; CODE
      mov Operand_Value,ax 
      mov sizeIndex,1h
     jmp end
-    G:
+    CHECKBP:
     
     ;; BP   
     
     CMP [SI],23aH
-     JNZ H
+     JNZ CHECKAL
     
     mov ax,_BP;; CODE
      mov Operand_Value,ax
      mov sizeIndex,1h
     jmp end
-    H:
+    CHECKAL:
     
     ;; AL    
     
     CMP [SI],229H
-     JNZ I
+     JNZ CHECKBL
     
     mov ax,_AX;; CODE
     mov Ah,00H
     mov Operand_Value,ax
     ;mov sizeIndex,0h
     jmp end
-    I:
+    CHECKBL:
     
     ;; BL    
     
     CMP [SI],22eH
-     JNZ J
+     JNZ CHECKCL
     
     mov ax,_BX;; CODE
     MOV AH,00H 
      mov Operand_Value,ax 
        ;mov sizeIndex,0h
     jmp end
-    J:
+    CHECKCL:
     
     ;; CL   
     
     CMP [SI],233H
-     JNZ K
+     JNZ CHECKDL
    
     mov ax,_CX;; CODE
     MOV AH,00H
      mov Operand_Value,ax
        ;mov sizeIndex,0h
     jmp end
-    K:
+    CHECKDL:
     
     ;; DL   
     
     CMP [SI],238H      
-     JNZ L
+     JNZ CHECKAH
     
     mov ax,_DX;; CODE
     MOV AH,00H
      mov Operand_Value,ax
        ;mov sizeIndex,0h
     jmp end
-    L:
+    CHECKAH:
     
     
     ;; AH  
     
     CMP [SI],21dH
-     JNZ M
+     JNZ CHECKBH
     
     mov ax,_AX;; CODE
     MOV AL,AH
@@ -778,12 +778,12 @@ check_Operand MACRO  HASH_Operand Operand_Value Operand sizeIndex
      mov Operand_Value,ax
        ;mov sizeIndex,0h
     jmp end
-    M:
+    CHECKBH:
     
     ;; BH   
     
     CMP [SI],222H
-     JNZ N
+     JNZ CHECKCH
     
     mov ax,_BX;; CODE
     MOV AL,AH
@@ -791,12 +791,12 @@ check_Operand MACRO  HASH_Operand Operand_Value Operand sizeIndex
      mov Operand_Value,ax
        ;mov sizeIndex,0h
     jmp end
-    N:
+    CHECKCH:
     
     ;; CH   
     
     CMP [SI],227H
-     JNZ O
+     JNZ CHECKDH
     
     mov ax,_CX;; CODE
     MOV AL,AH
@@ -804,12 +804,12 @@ check_Operand MACRO  HASH_Operand Operand_Value Operand sizeIndex
      mov Operand_Value,ax
        ;mov sizeIndex,0h
     jmp end
-    O:
+    CHECKDH:
     
     ;; DH  
     
     CMP [SI],22cH 
-     JNZ P
+     JNZ CHECK00
      
     mov ax,_DX;; CODE
     MOV AL,AH
@@ -817,174 +817,174 @@ check_Operand MACRO  HASH_Operand Operand_Value Operand sizeIndex
      mov Operand_Value,ax
        ;mov sizeIndex,0h
     jmp end
-    P:
+    CHECK00:
     
     ;; 00  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;TO CHECK
     
     CMP [SI],3feH 
-    JNZ Q
+    JNZ CHECK01
     movml00: 
     mov aL,_00
     MOV AH,_01                                          
     mov Operand_Value,ax
     jmp end
-    Q:
+    CHECK01:
     
 ;     ;; 01  
     
     CMP [SI],401H 
-    JNZ R
+    JNZ CHECK02
      movml1:
     mov aL,_01
     MOV AH,_02
      mov Operand_Value,ax
   ;mov sizeIndex,0h 
     jmp end
-    R:
+    CHECK02:
     
 ;     ;; 02  
     
     CMP [SI],404H 
-     JNZ S
+     JNZ CHECK03
       movml2:
     mov aL,_02
     MOV AH,_03 
      mov Operand_Value,ax
   ;mov sizeIndex,0h 
     jmp end
-    S:
+    CHECK03:
     
 ;     ;; 03  
     
     CMP [SI],407H 
-     JNZ T
+     JNZ CHECK04
       movml3:
     mov aL,_03
     MOV AH,_04
      mov Operand_Value,ax
   ;mov sizeIndex,0h 
      jmp end
-    T:
+    CHECK04:
     
 ;     ;; 04  
     
     CMP [SI],40aH 
-     JNZ U
+     JNZ CHECK05
        movml4:
     mov aL,_04
     MOV AH,_05
      mov Operand_Value,ax
   ;mov sizeIndex,0h 
  jmp end    
-    U:
+    CHECK05:
     
 ;     ;; 05  
     
     CMP [SI],40dH 
-     JNZ V
+     JNZ CHECK06
       movml5:
     mov aL,_05
     MOV AH,_06 
      mov Operand_Value,ax
   ;mov sizeIndex,0h
  jmp end    
-    V:
+    CHECK06:
     
 ;     ;; 06  
     
     CMP [SI],410H 
-     JNZ W
+     JNZ CHECK07
       movml6:
     mov aL,_06
     MOV AH,_07 
      mov Operand_Value,ax
   ;mov sizeIndex,0h
  jmp end    
-    W:
+    CHECK07:
     
 ;     ;; 07  
     
     CMP [SI],413H 
-     JNZ X
+     JNZ CHECK08
       movml7:
     mov aL,_07
     MOV AH,_08 
      mov Operand_Value,ax
   ;mov sizeIndex,0h
  jmp end   
-    X:
+    CHECK08:
     
 ;     ;; 08  
     
     CMP [SI],416H 
-     JNZ Y
+     JNZ CHECK09
       movml8:
     mov aL,_08
     MOV AH,_09
      mov Operand_Value,ax
   ;mov sizeIndex,0h 
  jmp end       
-    Y:
+    CHECK09:
     
 ;     ;; 09  
     
     CMP [SI],419H 
-     JNZ Z
+     JNZ CHECKA
       movml9:
     mov aL,_09
     MOV AH,_A 
      mov Operand_Value,ax 
   ;mov sizeIndex,0h
  jmp end    
-    Z:
+    CHECKA:
     
 ;     ;; A  
     
     CMP [SI],3a1H 
-     JNZ AA
+     JNZ CHECKB
       movmlA:
     mov aL,_A
     MOV AH,_B 
      mov Operand_Value,aX
   ;mov sizeIndex,0h
  jmp end     
-    AA:
+    CHECKB:
     
 ;     ;; B  
     
     CMP [SI],3a4H 
-     JNZ AB
+     JNZ CHECKC
       movmlB:
     mov aL,_B
     MOV AH,_C 
      mov Operand_Value,ax
   ;mov sizeIndex,0h
  jmp end     
-    AB:
+    CHECKC:
     
 ;     ;; C  
     
     CMP [SI],3a7H 
-     JNZ AC
+     JNZ CHECKD
       movmlC:
     mov aL,_C
     MOV AH,_D
      mov Operand_Value,ax
   ;mov sizeIndex,0h 
  jmp end     
-    AC:
+    CHECKD:
     
 ;     ;; D  
     
     CMP [SI],3aaH 
-     JNZ AD
+     JNZ CHECKE
       movmlD:
     mov aL,_D
     MOV AH,_E
      mov Operand_Value,ax
   ;mov sizeIndex,0h 
  jmp end     
-    AD:
+    CHECKE:
     
 ;     ;; E  
    
@@ -1202,7 +1202,7 @@ ENDM Convert_OP_TO_HEXA
 
 put_Operand MACRO  HASH_Operand Operand_Value sizeIndex
     
-    LOCAL A,B,C, D,E ,F ,G,H ,I,J,,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,AA,AB,AC,AD,CHECKF,CHECKmlSI,CHECKmlBI,CHECKmlBX,movml00,movml1,movml2,movml3,movml4,movml5,movml6,movml7,movml9,movmlA,movml8,movmlB,movmlC,movmlD,movmlE,movmlF,CHECKdata ,CHECKmlDI,end
+    LOCAL CHECKBX,CHECKCX,CHECKDX, CHECKSI,CHECKDI ,CHECKSP ,CHECKBP,CHECKAL ,CHECKBL,CHECKCL,,CHECKDL,CHECKAH,CHECKBH,CHECKCH,CHECKDH,CHECK00,CHECK01,CHECK02,CHECK03,CHECK04,CHECK05,CHECK06,CHECK07,CHECK08,CHECK09,CHECKA,CHECKB,CHECKC,CHECKD,CHECKE,CHECKF,CHECKmlSI,CHECKmlBI,CHECKmlBX,movml00,movml1,movml2,movml3,movml4,movml5,movml6,movml7,movml9,movmlA,movml8,movmlB,movmlC,movmlD,movmlE,movmlF,CHECKdata ,CHECKmlDI,end
 
     MOV SI,offset HASH_Operand 
     mov cl,sizeIndex
@@ -1211,187 +1211,187 @@ put_Operand MACRO  HASH_Operand Operand_Value sizeIndex
     ;; AX
     
     CMP [SI],24dH
-    JNZ A
+    JNZ CHECKBX
     
     mov ax,Operand_Value;; CODE
     mov _AX,ax 
     jmp end
 
-    A:
+    CHECKBX:
     
     
     ;; BX
     
     CMP [SI],252H
-     JNZ B
+     JNZ CHECKCX
     
     mov ax,Operand_Value;; CODE
      mov _BX,ax
     jmp end
 
-    B:
+    CHECKCX:
     
     ;; CX 
     
     CMP [SI],257H
-     JNZ C
+     JNZ CHECKDX
     
     mov ax,Operand_Value;; CODE
      mov _CX,ax                    
     jmp end
-    C:
+    CHECKDX:
                                                                            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;; DX   
                                     
     CMP [SI],25cH
-     JNZ D
+     JNZ CHECKSI
     
     mov ax,Operand_Value;; CODE
      mov _DX,ax
     jmp end
-    D:
+    CHECKSI:
     
     ;; SI   
     
     CMP [SI],27aH
-     JNZ E
+     JNZ CHECKDI
     
     mov ax,Operand_Value;; CODE
      mov _SI,ax
     jmp end
-    E:
+    CHECKDI:
     
     ;; DI   
     
     CMP [SI],22fH
-     JNZ F
+     JNZ CHECKSP
     
     mov ax,Operand_Value;; CODE
      mov _DI,ax
     jmp end
-    F:
+    CHECKSP:
     
     ;; SP   
     
     CMP [SI],28fH
-     JNZ G
+     JNZ CHECKBP
     
     mov ax,Operand_Value;; CODE
      mov _SP,ax
     jmp end
-    G:
+    CHECKBP:
     
     ;; BP   
     
     CMP [SI],23aH
-     JNZ H
+     JNZ CHECKAL
     
     mov ax,Operand_Value;; CODE
      mov _BP,ax
     jmp end
-    H:;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    CHECKAL:;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     
     ;; AL   
     
     CMP [SI],229H
-     JNZ I
+     JNZ CHECKBL
     
     mov ax,Operand_Value;; CODE 
     mov bx,_AX
     mov bl,al
      mov _AX,bx
     jmp end
-    I:
+    CHECKBL:
     
     ;; BL    
     
     CMP [SI],22eH
-     JNZ J
+     JNZ CHECKCL
     
     mov ax,Operand_Value;; CODE 
          mov bx,_BX
     mov bl,al
      mov _bX,bx
     jmp end
-    J:
+    CHECKCL:
     
     ;; CL   
     
     CMP [SI],233H
-     JNZ K
+     JNZ CHECKDL
    
     mov ax,Operand_Value;; CODE
      mov bx,_CX
     mov bl,al
      mov _CX,bx
     jmp end
-    K:
+    CHECKDL:
     
     ;; DL   
     
     CMP [SI],238H      
-     JNZ L
+     JNZ CHECKAH
     
     mov ax,Operand_Value;; CODE
         mov bx,_DX
     mov bl,al
      mov _DX,bx
     jmp end
-    L:
+    CHECKAH:
     
     
     ;; AH   
     
     CMP [SI],21dH
-     JNZ M
+     JNZ CHECKBH
     
     mov ax,Operand_Value;; CODE
     mov bx,_AX
     mov bh,al
      mov _AX,bx
     jmp end
-    M:
+    CHECKBH:
     
     ;; BH   
     
     CMP [SI],222H
-     JNZ N
+     JNZ CHECKCH
     
     mov ax,Operand_Value;; CODE
         mov bx,_BX
     mov bh,al
      mov _BX,bx
     jmp end
-    N:
+    CHECKCH:
     
     ;; CH   
     
     CMP [SI],227H
-     JNZ O
+     JNZ CHECKDH
     
     mov ax,Operand_Value;; CODE
         mov bx,_CX
     mov bh,al
      mov _CX,bx
     jmp end
-    O:
+    CHECKDH:
     
     ;; DH  
     
     CMP [SI],22cH 
-     JNZ P
+     JNZ CHECK00
      
     mov ax,Operand_Value;; CODE
         mov bx,_DX
     mov bh,al
      mov _DX,bx
     jmp end
-    P:
+    CHECK00:
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;; 00  
     
      CMP [SI],3feH 
-     JNZ Q
+     JNZ CHECK01
      movml00:                                                       
                                                                      
      mov ax,Operand_Value;; CODE
@@ -1400,12 +1400,12 @@ put_Operand MACRO  HASH_Operand Operand_Value sizeIndex
      jne end
      mov _01,ah
      jmp end
-     Q:
+     CHECK01:
     
 ;     ;; 01  
     
      CMP [SI],401H 
-     JNZ R
+     JNZ CHECK02
       movml1:
      mov ax,Operand_Value;; CODE
       mov _01,al
@@ -1413,12 +1413,12 @@ put_Operand MACRO  HASH_Operand Operand_Value sizeIndex
      jne end
      mov _02,ah 
      jmp end
-     R:
+     CHECK02:
     
 ;     ;; 02  
     
      CMP [SI],404H 
-      JNZ S
+      JNZ CHECK03
        movml2:
      mov ax,Operand_Value;; CODE 
       mov _02,al
@@ -1426,12 +1426,12 @@ put_Operand MACRO  HASH_Operand Operand_Value sizeIndex
      jne end
      mov _03,ah 
      jmp end
-     S:
+     CHECK03:
    
 ;     ;; 03  
     
      CMP [SI],407H 
-      JNZ T
+      JNZ CHECK04
        movml3:
      mov ax,Operand_Value;; CODE
       mov _03,al 
@@ -1439,12 +1439,12 @@ put_Operand MACRO  HASH_Operand Operand_Value sizeIndex
      jne end
      mov _04,ah
       jmp end
-     T:
+     CHECK04:
     
 ;     ;; 04  
     
     CMP [SI],40aH 
-     JNZ U
+     JNZ CHECK05
        movml4:
     mov ax,Operand_Value;; CODE
      mov _04,al 
@@ -1452,12 +1452,12 @@ put_Operand MACRO  HASH_Operand Operand_Value sizeIndex
      jne end
      mov _05,ah
  jmp end    
-    U:
+    CHECK05:
     
 ;     ;; 05  
     
     CMP [SI],40dH 
-     JNZ V
+     JNZ CHECK06
       movml5:
     mov ax,Operand_Value;; CODE 
      mov _05,ax
@@ -1465,12 +1465,12 @@ put_Operand MACRO  HASH_Operand Operand_Value sizeIndex
      jne end
      mov _06,ah
  jmp end    
-    V:
+    CHECK06:
     
 ;     ;; 06  
     
     CMP [SI],410H 
-     JNZ W
+     JNZ CHECK07
       movml6:
     mov ax,Operand_Value;; CODE 
      mov _06,ax
@@ -1478,12 +1478,12 @@ put_Operand MACRO  HASH_Operand Operand_Value sizeIndex
      jne end
      mov _07,ah
  jmp end    
-    W:
+    CHECK07:
     
 ;     ;; 07  
     
     CMP [SI],413H 
-     JNZ X
+     JNZ CHECK08
       movml7:
     mov ax,Operand_Value;; CODE 
      mov _07,al
@@ -1491,12 +1491,12 @@ put_Operand MACRO  HASH_Operand Operand_Value sizeIndex
      jne end
      mov _08,ah
  jmp end   
-    X:
+    CHECK08:
     
 ;     ;; 08  
     
     CMP [SI],416H 
-     JNZ Y
+     JNZ CHECK09
       movml8:
     mov ax,Operand_Value;; CODE
      mov _08,al
@@ -1504,12 +1504,12 @@ put_Operand MACRO  HASH_Operand Operand_Value sizeIndex
      jne end
      mov _09,ah 
  jmp end       
-    Y:
+    CHECK09:
     
 ;     ;; 09  
     
     CMP [SI],419H 
-     JNZ Z
+     JNZ CHECKA
       movml9:
     mov ax,Operand_Value;; CODE 
      mov _09,al
@@ -1517,12 +1517,12 @@ put_Operand MACRO  HASH_Operand Operand_Value sizeIndex
      jne end
      mov _A,ah
  jmp end    
-    Z:
+    CHECKA:
     
 ;     ;; A  
     
     CMP [SI],3a1H 
-     JNZ AA
+     JNZ CHECKB
       movmlA:
     mov ax,Operand_Value;; CODE 
      mov _A,al
@@ -1530,12 +1530,12 @@ put_Operand MACRO  HASH_Operand Operand_Value sizeIndex
      jne end
      mov _B,ah
  jmp end     
-    AA:
+    CHECKB:
     
 ;     ;; B  
     
     CMP [SI],3a4H 
-     JNZ AB
+     JNZ CHECKC
       movmlB:
     mov ax,Operand_Value;; CODE 
      mov _B,al
@@ -1543,12 +1543,12 @@ put_Operand MACRO  HASH_Operand Operand_Value sizeIndex
      jne end
      mov _C,ah
  jmp end     
-    AB:
+    CHECKC:
     
 ;     ;; C  
     
     CMP [SI],3a7H 
-     JNZ AC
+     JNZ CHECKD
       movmlC:
     mov ax,Operand_Value;; CODE
      mov _C,al
@@ -1556,12 +1556,12 @@ put_Operand MACRO  HASH_Operand Operand_Value sizeIndex
      jne end
      mov _D,ah 
  jmp end     
-    AC:
+    CHECKD:
     
 ;     ;; D  
     
     CMP [SI],3aaH 
-     JNZ AD
+     JNZ CHECKE
       movmlD:
     mov ax,Operand_Value;; CODE
      mov _D,al
@@ -1569,7 +1569,7 @@ put_Operand MACRO  HASH_Operand Operand_Value sizeIndex
      jne end
      mov _E,ah 
  jmp end     
-    AD:
+    CHECKE:
     
 ;     ;; E  
     

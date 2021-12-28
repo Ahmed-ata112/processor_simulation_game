@@ -88,7 +88,7 @@ DisplayString_AT_position_and_move_cursor MACRO STR, pos
     mov bh,0       ;page number
     mov dx,pos
     mov ah,2
-    mov bh,0
+
     int 10h ;; mov cursor 
 
     mov ah,9h
@@ -451,8 +451,17 @@ WAIT_One_centi_second_TIME MACRO
     int 21h ;; Get System Time
     cmp dl,bl ;;didn't reach our time yet
     je L1
-endm WAIT_centi_seconds_TIME
+endm WAIT_One_centi_second_TIME
 
+
+Wait_centi_seconds MACRO N
+    local LL
+    mov di,N 
+    LL:
+      WAIT_One_centi_second_TIME  
+        dec di
+    jnz LL   
+ENDM Wait_centi_seconds
 
 INSTRUCTIONS_PAGE macro
     ChangeVideoMode 3H

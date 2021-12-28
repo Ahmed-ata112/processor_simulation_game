@@ -36,7 +36,7 @@
 	SP_msg db 'SP: $'
 	BP_msg db 'BP: $'
 	
-	
+	separator_ db ' : $'
 	
 	is_player_1_ready_for_game db 0
 	is_player_2_ready_for_game db 0
@@ -81,8 +81,9 @@
 		DS_E_left dw 090eh
 		DS_F_left dw 0A0eh
 
-     ;; command line left side
-     CL_row_left dw 1201h
+     ;; command line left side and points BOX
+         CL_row_left dw 1201h
+         Points_BOX_left dw 0E0Ch
 
      ;; Balls
 		first_ball_left dw 0213h;
@@ -123,7 +124,7 @@
 		DS_F_right dw 0A24h
      ;; command line left side
      CL_row_Right dw 1217h
-
+     Points_BOX_right dw 0E22h
 
      ;; Values in regs
 		L_AX dw 0 
@@ -473,7 +474,12 @@ right_birdPoints db 1
 playerPoints dw 0
 right_playerPoints dw 0 ;; TODO: print them
 
-
+;;;;-------------Comand Line Input------------;;;;;;
+    THE_COMMAND db 30 dup('$')
+    command_Size db 0 ; to store the aactual size of input at the current time
+    forbidden_char db 'A'
+    finished_taking_input db 0 ; just a flag to indicate we finished entering the string
+    
 
 
 .code
@@ -642,10 +648,9 @@ START_GAME PROC
 	call DRAW_BACKGROUND     ;;Draws The BackGround Image
     call UPDATE_VALUES_Displayed  ;; Update values displayed with ones in variables
 	call BIRDGAME
-	WAIT_One_centi_second_TIME
-	WAIT_One_centi_second_TIME
-	;checkTime
-	;checkTime
+    call GetCommand
+    Wait_centi_seconds 1
+
 
 	JMP GAME_LOOP
 
@@ -800,8 +805,13 @@ UPDATE_VALUES_Displayed PROC
 
 
         ;;points
-        DISPLAY_num_in_HEX_ CL_row_left, 4 ,playerPoints  
-        DISPLAY_num_in_HEX_ CL_row_Right, 4 ,right_playerPoints  
+        DISPLAY_num_in_HEX_ Points_BOX_left, 4 ,playerPoints  
+        DISPLAY_num_in_HEX_ Points_BOX_right, 4 ,right_playerPoints  
+        
+        ;;Command 
+        DisplayString_AT_position_and_move_cursor FirstNameData CL_row_left
+       ; DisplayString separator_
+        DisplayString THE_COMMAND
 
         ret
 UPDATE_VALUES_Displayed ENDP
@@ -880,5 +890,61 @@ BIRDGAME PROC
     
     RET
 BIRDGAME ENDP
+
+GetCommand PROC
+    mov ah,1
+    int 16h ;-> looks at the buffer
+    jz FinishedTakingChar ;nothing is clicked
+
+    mov ah,0
+    int 16h ;-> get key pressed AH:SC -- AL:Ascii
+        ;;; backspace -> SC:0Eh
+        ;; Enter -> 1C
+    ;; ,] 
+    
+    cmp al,20H  ;;a space 
+    jb CHECK_IF_ENTER 
+    cmp al, ']'
+    ja CHECK_IF_ENTER
+    JMP PRINT_THE_CHAR   ;;its a valid one 
+    
+    
+    CHECK_IF_ENTER:
+    cmp ah,1Ch ;; check if enter is pressed
+    jne CHECK_IF_BACKSLASH
+    mov finished_taking_input,1
+    jmp FinishedTakingChar
+
+    CHECK_IF_BACKSLASH:
+    cmp ah,0eh
+    jne FinishedTakingChar  ;;NOT ANY OFTHE THREE CASES
+    ;if size>0 then delete the last char and dec string
+    
+    cmp command_Size,0
+    je FinishedTakingChar
+    mov di,offset THE_COMMAND 
+    mov bl,command_Size 
+    dec bl
+    xor bh,bh
+    add di,bx
+    mov [di], '$'   
+    dec command_Size
+    jmp FinishedTakingChar 
+    PRINT_THE_CHAR:
+    ;then store The char and print it then inc the size
+   cmp command_Size,15  ;; command is full  -> in order to not delete $ at the end
+    je FinishedTakingChar
+    mov di,offset THE_COMMAND 
+    mov bl,command_Size
+    xor bh,bh
+    add di,bx
+    mov [di],al ;;the char is moved to the end of string
+    inc command_Size
+    FinishedTakingChar:
+    ret
+GetCommand ENDP
+
+
+
 
 end main

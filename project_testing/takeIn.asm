@@ -19,7 +19,7 @@ main proc far
     mov ds, ax
     MAINLOOP:
 
-
+    
     ; Clear screen
     mov ah,0
     mov al,13h
