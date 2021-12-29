@@ -36,7 +36,7 @@
 	SP_msg db 'SP: $'
 	BP_msg db 'BP: $'
 	
-	separator_ db ' : $'
+	separator_ db 'e: $'
 	
 	is_player_1_ready_for_game db 0
 	is_player_2_ready_for_game db 0
@@ -822,10 +822,10 @@ UPDATE_VALUES_Displayed PROC
         
         ;;1 AHMED
         ;INC_CURSOR ActualFirstNameSize
-        DisplayString separator_ 
+        ;DisplayString separator_ 
         ;INC_CURSOR 3
         ;;need to move cursor that 
-        DisplayString THE_COMMAND
+        ;DisplayString THE_COMMAND
 
 
         ret
