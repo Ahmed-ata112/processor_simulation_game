@@ -818,7 +818,7 @@ UPDATE_VALUES_Displayed PROC
         ;INC_CURSOR 3
         ;;need to move cursor that 
         DisplayString THE_COMMAND
-        DisplayString_AT_position_and_move_cursor FirstNameData CL_row_RIGHT
+        ;DisplayString_AT_position_and_move_cursor FirstNameData CL_row_RIGHT
         
         ;;1 AHMED
         ;INC_CURSOR ActualFirstNameSize
