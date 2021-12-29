@@ -1,4 +1,6 @@
 	include macr.inc
+    public L_AX, L_BX ,L_CX d,L_DX ,L_SI ,L_DI ,L_SP ,L_BP, L_00 ,L_01 ,L_02 ,L_03 ,L_04 ,L_05 ,L_06 ,L_07 ,L_08 ,L_09 ,L_A ,L_B ,L_C ,L_D ,L_E ,L_F
+    extrn ex_MAIN : far
 	.286
 	.model small
 	.stack 64
@@ -480,7 +482,11 @@ right_playerPoints dw 0 ;; TODO: print them
     forbidden_char db 'A'
     finished_taking_input db 0 ; just a flag to indicate we finished entering the string
     
-
+    
+    L_command LABEL BYTE ; named the next it the same name 
+	L_commandSize db 20
+	Actual_L_commandSize db ?
+	L_commandData db 20 dup('$')
 
 .code
 	main proc far
@@ -648,7 +654,23 @@ START_GAME PROC
 	call DRAW_BACKGROUND     ;;Draws The BackGround Image
     call UPDATE_VALUES_Displayed  ;; Update values displayed with ones in variables
 	call BIRDGAME
-    call GetCommand
+    ;call GetCommand
+    mov ah, 1
+    int 16h           ;Get key pressed (do not wait for a key - AH:scancode, AL:ASCII)
+
+    jnz _continue1 ;; something is clicked
+    jmp no_thing_clicked
+    _continue1:
+    cmp ah,3ch ; F2
+    jne skipcommand
+	;; get command
+    ReadString L_command
+    call ex_MAIN
+    skipcommand:			
+
+
+
+
     Wait_centi_seconds 1
 
 
