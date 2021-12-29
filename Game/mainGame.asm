@@ -1,5 +1,5 @@
 	include macr.inc
-	;.286
+	.286
 	.model small
 	.stack 64
 	.data  
@@ -48,9 +48,9 @@
   
 
     FirstName LABEL BYTE ; named the next it the same name 
-	FirstNameSize db 16
+	FirstNameSize db 20
 	ActualFirstNameSize db ?
-	FirstNameData db 17 dup('$')
+	FirstNameData db 20 dup('$')
 
 	;;;;;;;;;-----------------positions----------;;;;
      ;;for the left
@@ -809,9 +809,24 @@ UPDATE_VALUES_Displayed PROC
         DISPLAY_num_in_HEX_ Points_BOX_right, 4 ,right_playerPoints  
         
         ;;Command 
+        
         DisplayString_AT_position_and_move_cursor FirstNameData CL_row_left
-       ; DisplayString separator_
+        
+        ;;1 AHMED
+        INC_CURSOR ActualFirstNameSize
+        DisplayString separator_ 
+        ;INC_CURSOR 3
+        ;;need to move cursor that 
         DisplayString THE_COMMAND
+        DisplayString_AT_position_and_move_cursor FirstNameData CL_row_RIGHT
+        
+        ;;1 AHMED
+        ;INC_CURSOR ActualFirstNameSize
+        DisplayString separator_ 
+        ;INC_CURSOR 3
+        ;;need to move cursor that 
+        DisplayString THE_COMMAND
+
 
         ret
 UPDATE_VALUES_Displayed ENDP

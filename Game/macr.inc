@@ -1,4 +1,5 @@
 DisplayString MACRO STR
+            xor bx,bx
             mov ah,9h
             mov dx,offset STR
             int 21h
@@ -56,6 +57,18 @@ ReadNumberdec_in_ax MACRO
 ENDM ReadNumberdec_in_ax
 
 
+INC_CURSOR MACRO N
+    ;pos is row-col
+    mov bh,0       ;page number
+    mov ah,3
+    int 10h ;; get cursor in dh-dl   
+    add dl,N
+    INC DL   
+    mov bh,0       ;page number
+    mov ah,2
+    int 10h ;; mov cursor 
+
+ENDM INC_CURSOR
 
 DisplayString_AT_position_not_moving_cursor MACRO STR, pos
     ;assumes Text mode
@@ -85,15 +98,12 @@ DisplayString_AT_position_and_move_cursor MACRO STR, pos
     ;assumes Graphics mode
     ;returns The cursor to its initial position before it ends
     ;pos is row-col
-    mov bh,0       ;page number
+    XOR BX,BX       ;page number
     mov dx,pos
     mov ah,2
-
     int 10h ;; mov cursor 
 
-    mov ah,9h
-    mov dx,offset STR
-    int 21h ;; print string
+    DisplayString STR
 
 
 ENDM DisplayString_AT_position_and_move_cursor  
