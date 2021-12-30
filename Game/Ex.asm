@@ -1,41 +1,70 @@
 ;; Hany && Mena
+DISPLAY_num_in_HEX_ macro pos ,count ,value 
+    local deconstruct_it,Print_chars
+    mov bh,0
+    mov dx,pos
+    mov ah,2
+    int 10h    ; set cursor position where you are gonna print  
 
+
+
+  mov DI,offset ASC_TBL
+  mov cx, count
+  mov ax,value
+  deconstruct_it:
+   mov dx,0
+   mov bx,16
+   div bx
+   ;;dx -> rest ax, res
+   mov bx,dx
+   mov bx, [Di][bx] ;; convert to to the ssuitabble ascii code
+   push bx ;; to pop and print it at the end
+  
+   loop deconstruct_it
+  
+   mov cx,count
+   mov bh,0 ;;page
+   Print_chars:
+    pop ax ;al contains the char to print   
+    mov ah, 0eh           ;0eh = 14 
+    mov bl, 0ch           ;Color is red
+    int 10h ; print char -> auto advances cursor
+   loop  Print_chars
+
+endm DISPLAY_num_in_HEX_
 include Ex_macr.inc
-    extrn L_AX: word 
-    extrn L_BX: word
-    extrn L_CX: word 
-    extrn L_DX: word
-    extrn L_SI: word
-    extrn L_DI: word
-    extrn L_SP: word
-    extrn L_BP: word
-    extrn ;;DA: bytegment
-    extrn L_00: byte
-    extrn L_01: byte
-    extrn L_02: byte
-    extrn L_03: byte
-    extrn L_04: byte
-    extrn L_05: byte
-    extrn L_06: byte
-    extrn L_07: byte
-    extrn L_08: byte
-    extrn L_09: byte
-    extrn L_A : byte    
-    extrn L_B : byte    
-    extrn L_C : byte    
-    extrn L_D : byte    
-    extrn L_E : byte    
-    extrn L_F : byte
-    extrn L_command : byte
-    extrn L_commandData : byte
-    public ex_MAIN
+  ;  public ex_MAIN
 .MODEL SMALL
 .STACK 64
 .DATA 
 
+    L_AX dw 1234H 
+		L_BX dw 5678H
+		L_CX dw 0 
+		L_DX dw 0
+		L_SI dw 0
+		L_DI dw 0
+		L_SP dw 0
+		L_BP dw 0
+		;;DATA Segment
+		L_00 db 0
+		L_01 db 0
+		L_02 db 0
+		L_03 db 0
+		L_04 db 0
+		L_05 db 0
+		L_06 db 0
+		L_07 db 0
+		L_08 db 0
+		L_09 db 0
+		L_A db 0
+		L_B db 0
+		L_C db 0
+		L_D db 0
+		L_E db 0
+		L_F db 0
 
-
-
+  L_commandData db 'MOV AX,BXe$'
 command_splited db 5 dup('$') 
 Operand1 db 5 dup('$')
 Operand2 db 5 dup('$')
@@ -56,6 +85,10 @@ Operand DB 5 dup('$')
 HASH_comand DW ?                                  ;MOV AX,[00] DONE
 HASH_Operand2 DW ?                         ;MOV Al,[00] DONE
 HASH_Operand1 DW ?                         ; ADD AX,[00] DONE
+	ASC_TBL DB   '0','1','2','3','4','5','6','7','8','9'
+        DB   'A','B','C','D','E','F'
+
+
                                            ;ADC DX,BX  DONE
 ;L_commandData DB 'MOV [00],AXe','$'                ;SUB DX,BX  DONE   ;SBB DX,BX DONE
                                             ;................................................
@@ -86,7 +119,7 @@ ex_MAIN PROC far
     MOV SI,offset Operand1
     MOV DI, offset Operand
     MOV CX,5
-    REP STOSB
+    REP MOVSB
 
     CALL check_Operand     ;; 0 for byte, 1 for word
 
@@ -102,7 +135,7 @@ ex_MAIN PROC far
     MOV SI,offset Operand2
     MOV DI, offset Operand
     MOV CX,5
-    REP STOSB
+    REP MOVSB
 
     CALL check_Operand
 
@@ -110,7 +143,13 @@ ex_MAIN PROC far
     MOV Operand2_Value,AX 
     
     
-    CALL check_command                
+    CALL check_command          
+
+    mov ah, 00h
+        mov al, 13h
+        int 10h
+    DISPLAY_num_in_HEX_ 0101h, 4 ,L_Ax    
+
     ;;Dont Use HLT
     MOV AH,4CH
 	INT 21H ;GO BACK TO DOS ;to end the program
@@ -1437,7 +1476,7 @@ put_Operand PROC
     mov ax,Operand_Value;; CODE 
     mov bx,L_BX
     mov bl,al
-    mov _bX,bx
+    mov L_bX,bx
     jmp end1
     CHECKCL1:
     

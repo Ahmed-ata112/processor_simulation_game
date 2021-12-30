@@ -517,7 +517,7 @@ Draw_IMG_with_color macro p_x, p_y,imga,color ,imgasize
 			cmp bx, offset imgasize
 	JNE KeepDrawing
 	
-ENDm Draw_IMG 
+ENDm Draw_IMG_with_color 
 
 
 
