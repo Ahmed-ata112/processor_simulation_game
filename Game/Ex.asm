@@ -145,10 +145,10 @@ ex_MAIN PROC far
     
     CALL check_command          
 
-    mov ah, 00h
-        mov al, 13h
-        int 10h
-    DISPLAY_num_in_HEX_ 0101h, 4 ,L_Ax    
+    ; mov ah, 00h
+    ;     mov al, 13h
+    ;     int 10h
+    ;DISPLAY_num_in_HEX_ 0101h, 4 ,L_Ax    
 
     ;;Dont Use HLT
     MOV AH,4CH
