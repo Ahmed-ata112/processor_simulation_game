@@ -47,8 +47,8 @@ include Ex_macr.inc
 		L_SP dw 0
 		L_BP dw 0
 		;;DATA Segment
-		L_00 db 0
-		L_01 db 0
+		L_00 db 56H
+		L_01 db 14H
 		L_02 db 0
 		L_03 db 0
 		L_04 db 0
@@ -64,7 +64,7 @@ include Ex_macr.inc
 		L_E db 0
 		L_F db 0
 
-  L_commandData db 'MOV AX,BXe$'
+  L_commandData db 'MOV AX,[00]e$'
 command_splited db 5 dup('$') 
 Operand1 db 5 dup('$')
 Operand2 db 5 dup('$')
@@ -1162,7 +1162,7 @@ jnz escape14
      CHECKmlDI:
         ; ;; [DI]
          CMP [SI],485H  
-         jnz escape17
+         jz escape17
      jmp CHECKmlBX
      escape17:
 
@@ -1257,7 +1257,7 @@ jnz escape14
      CHECKmlBX:
          ;; [BX] 
      CMP [SI],4acH 
-      jnz escape34
+      jz escape34
      jmp CHECKdata
      escape34:
         
