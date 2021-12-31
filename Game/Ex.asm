@@ -1,4 +1,33 @@
 ;; Hany && Mena
+
+include Ex_macr.inc
+    extrn L_AX: word 
+    extrn L_BX: word
+    extrn L_CX: word 
+    extrn L_DX: word
+    extrn L_SI: word
+    extrn L_DI: word
+    extrn L_SP: word
+    extrn L_BP: word
+    extrn L_00: byte
+    extrn L_01: byte
+    extrn L_02: byte
+    extrn L_03: byte
+    extrn L_04: byte
+    extrn L_05: byte
+    extrn L_06: byte
+    extrn L_07: byte
+    extrn L_08: byte
+    extrn L_09: byte
+    extrn L_A : byte    
+    extrn L_B : byte    
+    extrn L_C : byte    
+    extrn L_D : byte    
+    extrn L_E : byte    
+    extrn L_F : byte
+    extrn L_command : byte
+    extrn L_commandData : byte
+    public ex_MAIN
 DISPLAY_num_in_HEX_ macro pos ,count ,value 
     local deconstruct_it,Print_chars
     mov bh,0
@@ -32,39 +61,39 @@ DISPLAY_num_in_HEX_ macro pos ,count ,value
    loop  Print_chars
 
 endm DISPLAY_num_in_HEX_
-include Ex_macr.inc
-  ;  public ex_MAIN
+
+.286
 .MODEL SMALL
 .STACK 64
 .DATA 
 
-    L_AX dw 1234H 
-		L_BX dw 5678H
-		L_CX dw 0 
-		L_DX dw 0
-		L_SI dw 0
-		L_DI dw 0
-		L_SP dw 0
-		L_BP dw 0
-		;;DATA Segment
-		L_00 db 56H
-		L_01 db 14H
-		L_02 db 0
-		L_03 db 0
-		L_04 db 0
-		L_05 db 0
-		L_06 db 0
-		L_07 db 0
-		L_08 db 0
-		L_09 db 0
-		L_A db 0
-		L_B db 0
-		L_C db 0
-		L_D db 0
-		L_E db 0
-		L_F db 0
+    ; L_AX dw 1234H 
+		; L_BX dw 5678H
+		; L_CX dw 0 
+		; L_DX dw 0
+		; L_SI dw 0
+		; L_DI dw 0
+		; L_SP dw 0
+		; L_BP dw 0
+		; ;;DATA Segment
+		; L_00 db 56H
+		; L_01 db 14H
+		; L_02 db 0
+		; L_03 db 0
+		; L_04 db 0
+		; L_05 db 0
+		; L_06 db 0
+		; L_07 db 0
+		; L_08 db 0
+		; L_09 db 0
+		; L_A db 0
+		; L_B db 0
+		; L_C db 0
+		; L_D db 0
+		; L_E db 0
+		; L_F db 0
 
-  L_commandData db 'MOV AX,[00]e$'
+ ; L_commandData db 'MOV AX,5E$'
 command_splited db 5 dup('$') 
 Operand1 db 5 dup('$')
 Operand2 db 5 dup('$')
@@ -95,11 +124,19 @@ HASH_Operand1 DW ?                         ; ADD AX,[00] DONE
 .code                                       ;DIV CX
 ex_MAIN PROC far
 
-    MOV AX,@DATA
+  MOV AX,@DATA
 	MOV DS,AX
 	mov es,ax
     
-	;DisplayString command
+    MOV DL,'N'
+    MOV SI, OFFSET L_commandData
+    CMP DL, [SI]
+    JNE C50
+    JMP  EN
+    C50:
+
+
+	  ;DisplayString command
     ;Convert_OP_TO_HEXA Operand1
     CALL split_command
     split_operands Two_Operands_Together_splited Operand1 Operand2
@@ -145,16 +182,13 @@ ex_MAIN PROC far
     
     CALL check_command          
 
-    ; mov ah, 00h
-    ;     mov al, 13h
-    ;     int 10h
+   ;  mov ah, 00h
+  ;  mov al, 13h
+   ; int 10h
     ;DISPLAY_num_in_HEX_ 0101h, 4 ,L_Ax    
-
-    ;;Dont Use HLT
-    MOV AH,4CH
-	INT 21H ;GO BACK TO DOS ;to end the program
-	     
-ex_MAIN ENDP     
+    EN:
+	  RET   
+ex_MAIN  ENDP     
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 
 
@@ -670,7 +704,7 @@ check_Operand proc
     mov ax,L_AX;; CODE       
     mov Operand_Value,ax
     mov sizeIndex,1h 
-    jmp end
+    jmp END2
 
     CHECKBX:
     
@@ -683,7 +717,7 @@ check_Operand proc
     mov ax,L_BX;; CODE                                               
      mov Operand_Value,ax 
      mov sizeIndex,1h
-    jmp end
+    jmp END2
 
     CHECKCX:
     
@@ -696,7 +730,7 @@ check_Operand proc
     mov ax,L_CX;; CODE
      mov Operand_Value,ax 
      mov sizeIndex,1h                   
-    jmp end
+    jmp END2
     CHECKDX:
     
     ;; DX   
@@ -707,7 +741,7 @@ check_Operand proc
     mov ax,L_DX;; CODE
      mov Operand_Value,ax
      mov sizeIndex,1h
-    jmp end
+    jmp END2
     CHECKSI:
     
     ;; SI   
@@ -718,7 +752,7 @@ check_Operand proc
     mov ax,L_SI;; CODE
      mov Operand_Value,ax
      mov sizeIndex,1h
-    jmp end
+    jmp END2
     CHECKDI:
     
     ;;  ja
@@ -731,7 +765,7 @@ check_Operand proc
     mov ax,L_DI;; CODE
      mov Operand_Value,ax
      mov sizeIndex,1h
-    jmp end
+    jmp END2
     CHECKSP:
     
     ;; SP   
@@ -742,7 +776,7 @@ check_Operand proc
     mov ax,L_SP;; CODE
      mov Operand_Value,ax 
      mov sizeIndex,1h
-    jmp end
+    jmp END2
     CHECKBP:
     
     ;; BP   
@@ -753,7 +787,7 @@ check_Operand proc
     mov ax,L_BP;; CODE
      mov Operand_Value,ax
      mov sizeIndex,1h
-    jmp end
+    jmp END2
     CHECKAL:
     
     ;; AL    
@@ -765,7 +799,7 @@ check_Operand proc
     mov Ah,00H
     mov Operand_Value,ax
     ;mov sizeIndex,0h
-    jmp end
+    jmp END2
     CHECKBL:
     
     ;; BL    
@@ -777,7 +811,7 @@ check_Operand proc
     MOV AH,00H 
      mov Operand_Value,ax 
        ;mov sizeIndex,0h
-    jmp end
+    jmp END2
     CHECKCL:
     
     ;; CL   
@@ -789,7 +823,7 @@ check_Operand proc
     MOV AH,00H
      mov Operand_Value,ax
        ;mov sizeIndex,0h
-    jmp end
+    jmp END2
     CHECKDL:
     
     ;; DL   
@@ -801,7 +835,7 @@ check_Operand proc
     MOV AH,00H
      mov Operand_Value,ax
        ;mov sizeIndex,0h
-    jmp end
+    jmp END2
     CHECKAH:
     
     
@@ -815,7 +849,7 @@ check_Operand proc
     MOV AH,00H                              
      mov Operand_Value,ax
        ;mov sizeIndex,0h
-    jmp end
+    jmp END2
     CHECKBH:
     
     ;; BH   
@@ -828,7 +862,7 @@ check_Operand proc
     MOV AH,00H
      mov Operand_Value,ax
        ;mov sizeIndex,0h
-    jmp end
+    jmp END2
     CHECKCH:
     
     ;; CH   
@@ -841,7 +875,7 @@ check_Operand proc
     MOV AH,00H
      mov Operand_Value,ax
        ;mov sizeIndex,0h
-    jmp end
+    jmp END2
     CHECKDH:
     
     ;; DH  
@@ -854,7 +888,7 @@ check_Operand proc
     MOV AH,00H
      mov Operand_Value,ax
        ;mov sizeIndex,0h
-    jmp end
+    jmp END2
     CHECK00:
     
     ;; 00  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;TO CHECK
@@ -865,7 +899,7 @@ check_Operand proc
     mov aL,L_00
     MOV AH,L_01                                          
     mov Operand_Value,ax
-    jmp end
+    jmp END2
     CHECK01:
     
 ;     ;; 01  
@@ -877,7 +911,7 @@ check_Operand proc
     MOV AH,L_02
      mov Operand_Value,ax
   ;mov sizeIndex,0h 
-    jmp end
+    jmp END2
     CHECK02:
     
 ;     ;; 02  
@@ -889,7 +923,7 @@ check_Operand proc
     MOV AH,L_03 
      mov Operand_Value,ax
   ;mov sizeIndex,0h 
-    jmp end
+    jmp END2
     CHECK03:
     
 ;     ;; 03  
@@ -901,7 +935,7 @@ check_Operand proc
     MOV AH,L_04
      mov Operand_Value,ax
   ;mov sizeIndex,0h 
-     jmp end
+     jmp END2
     CHECK04:
     
 ;     ;; 04  
@@ -913,7 +947,7 @@ check_Operand proc
     MOV AH,L_05
      mov Operand_Value,ax
   ;mov sizeIndex,0h 
- jmp end    
+ jmp END2    
     CHECK05:
     
 ;     ;; 05  
@@ -925,7 +959,7 @@ check_Operand proc
     MOV AH,L_06 
      mov Operand_Value,ax
   ;mov sizeIndex,0h
- jmp end    
+ jmp END2    
     CHECK06:
     
 ;     ;; 06  
@@ -937,7 +971,7 @@ check_Operand proc
     MOV AH,L_07 
      mov Operand_Value,ax
   ;mov sizeIndex,0h
- jmp end    
+ jmp END2    
     CHECK07:
     
 ;     ;; 07  
@@ -949,7 +983,7 @@ check_Operand proc
     MOV AH,L_08 
      mov Operand_Value,ax
   ;mov sizeIndex,0h
- jmp end   
+ jmp END2   
     CHECK08:
     
 ;     ;; 08  
@@ -961,7 +995,7 @@ check_Operand proc
     MOV AH,L_09
      mov Operand_Value,ax
   ;mov sizeIndex,0h 
- jmp end       
+ jmp END2       
     CHECK09:
     
 ;     ;; 09  
@@ -973,7 +1007,7 @@ check_Operand proc
     MOV AH,L_A 
      mov Operand_Value,ax 
   ;mov sizeIndex,0h
- jmp end    
+ jmp END2    
     CHECKA:
     
 ;     ;; A  
@@ -985,7 +1019,7 @@ check_Operand proc
     MOV AH,L_B 
      mov Operand_Value,aX
   ;mov sizeIndex,0h
- jmp end     
+ jmp END2     
     CHECKB:
     
 ;     ;; B  
@@ -997,7 +1031,7 @@ check_Operand proc
     MOV AH,L_C 
      mov Operand_Value,ax
   ;mov sizeIndex,0h
- jmp end     
+ jmp END2     
     CHECKC:
     
 ;     ;; C  
@@ -1009,7 +1043,7 @@ check_Operand proc
     MOV AH,L_D
      mov Operand_Value,ax
   ;mov sizeIndex,0h 
- jmp end     
+ jmp END2     
     CHECKD:
     
 ;     ;; D  
@@ -1021,7 +1055,7 @@ check_Operand proc
     MOV AH,L_E
      mov Operand_Value,ax
   ;mov sizeIndex,0h 
- jmp end     
+ jmp END2     
     CHECKE:
     
 ;     ;; E  
@@ -1033,7 +1067,7 @@ check_Operand proc
      MOV AH,L_F
       mov Operand_Value,ax
         ;mov sizeIndex,0h 
-  jmp end         
+  jmp END2         
      CHECKF:
    
      ;; F  
@@ -1045,7 +1079,7 @@ check_Operand proc
      MOV AH,L_00
      mov Operand_Value,ax
        ;mov sizeIndex,0h 
-     jmp end 
+     jmp END2 
          
      CHECKmlSI:
     
@@ -1158,7 +1192,7 @@ jnz escape14
     ; ;
     
      ;RegisterIndirect_Addressing_Mode _SI 
-         jmp end              
+         jmp end2             
      CHECKmlDI:
         ; ;; [DI]
          CMP [SI],485H  
@@ -1349,11 +1383,11 @@ jnz escape14
     Convert_OP_TO_HEXA Operand 
     mov Operand_Value,ax
  
-    end:
+    end2:
             
     ret
 
-ENDp check_Operand
+check_Operand ENDp
 
 
 put_Operand PROC
@@ -2031,6 +2065,6 @@ put_Operand PROC
             
     RET
 
-endP put_Operand 
+ put_Operand endP
 
-END ex_MAIN
+END

@@ -10,7 +10,7 @@ HASHING MACRO STR ,HASH                      ;CLC
     mov SI,offset STR                       ;SAR
     mov DI, offset HASH                     ;ROR
     mov al,'$' ;; to check END              ;RCL
-    MOV [DI],0H                             ;RCR
+    MOV [DI],byte ptr 0H                             ;RCR
                                             ;ROL
     MOV BX,[DI]
     MOV CL,[SI]
@@ -40,7 +40,7 @@ HASHING_op MACRO STR, HASH
     mov SI,offset STR
     mov DI, offset HASH
     mov al,'$' ;; to check END
-    MOV [DI],0H 
+    MOV [DI],byte ptr 0H 
                   
     MOV BX,[DI]
     MOV CL,[SI]
@@ -105,7 +105,7 @@ Convert_OP_TO_HEXA MACRO OPERAND
     mov dx,0
     MOV DI, offset OPERAND
     l1: 
-        cmp [DI],'$'
+        cmp [DI],byte ptr '$'
         je end_of_op
         inc cx  ;;counter  (LENTGH OF STRING)
         mov dl, [DI] ;; store it to proccedd

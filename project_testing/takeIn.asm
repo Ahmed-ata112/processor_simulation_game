@@ -3,7 +3,11 @@
             mov dx,offset STR
             int 21h
 ENDM DisplayString  
-
+ReadString MACRO PromptMessage
+    mov ah, 0AH                  ;Read from keyboard
+	mov dx, offset PromptMessage
+	int 21h
+ENDM ReadString
 
 .model small
 .stack 64
@@ -12,12 +16,17 @@ ENDM DisplayString
     command_Size db 0 ; to store the aactual size of input at the current time
     forbidden_char db 'A'
     finished_taking_input db 0 ; just a flag to indicate we finished entering the string
-    
+
+     L_command LABEL BYTE ; named the next it the same name 
+	L_commandSize db 20
+	Actual_L_commandSize db ?
+	L_commandData db 20 dup('$')
 .code
 main proc far
     mov ax, @data
     mov ds, ax
     MAINLOOP:
+    ReadString L_command
 
     
     ; Clear screen
