@@ -269,7 +269,12 @@ local exit
                      
     je exit
     mov prevTime,dh ; reaching here meaning it's not the same previous second, so we TOGGLE the state of the game
-    
+    mov ax,birdX
+    mov bx,right_birdX
+    xchg ax,bx
+    mov birdX,ax
+    mov right_birdX,bx
+
     cmp gameStatus,1
     jne changeToOne ;--> if the game status isn't 1 (is 0), change it to one
     
@@ -390,9 +395,9 @@ playerPoints db 0
 right_playerPoints db 0
 
 
-gameStatus db 0
+gameStatus db 1
 prevTime db 0 ;variable used when checking if the time has changed
-timeInterval db 3 ;the shooting game apears/disappears every time interval
+timeInterval db 5 ;the shooting game apears/disappears every time interval
 
 .code
 
@@ -404,6 +409,10 @@ main proc far
     clearScreen
 
     draw:
+
+
+    checkTimeInterval gamestatus, prevTime, timeInterval
+
     Draw_IMG_with_color paddle_x,paddle_y,paddleImg,paddleColor,paddleSize
     Draw_IMG_with_color right_paddle_x,right_paddle_y,right_paddleImg,right_paddleColor,right_paddleSize
 
@@ -420,6 +429,9 @@ main proc far
 
     clearScreen 
 
+    cmp gamestatus,0
+    je skipDrawingBirds
+
     ;left bird
     Draw_IMG_with_color birdX,birdY,BirdImg,birdcolor,BirdSize
     moveBird 148,0,birdVelocity,birdX
@@ -428,9 +440,10 @@ main proc far
     ;right bird
     Draw_IMG_with_color right_birdX,right_birdY,right_BirdImg,right_birdcolor,right_BirdSize
     moveBird 304,160,right_birdVelocity,right_birdX
+   
+    skipDrawingBirds:
 
-
-   checkForFire fireScanCode,paddle_x,paddle_width,BallSize,fireBall_x,fireBall_y,ifFireIsPressed,paddle_y
+    checkForFire fireScanCode,paddle_x,paddle_width,BallSize,fireBall_x,fireBall_y,ifFireIsPressed,paddle_y
  
     cmp ifFireIsPressed,0
     je checkRight
@@ -450,10 +463,7 @@ main proc far
     compareBirdWithBall right_birdX,right_fireBall_x,right_fireBall_y,right_BirdSize,160,right_birdStatus,playerPoints,birdPoints
 
 midDraw: ;for jumping out of boundaries error
-    ; cmp playerpoints,10
-    ; jae finish
-    ; cmp right_playerPoints,20
-    ; jae finish
+
     jmp draw
     finish:
     clearScreen
