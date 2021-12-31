@@ -252,6 +252,39 @@ mov birdPoints,al
 endm setBirdPointsWithTheCorrespondingColor
 
 
+checkTimeInterval macro gameStatus,prevTime,timeInterval
+local exit
+    mov ah,2ch ;get the system time
+    int 21h    ;ch=hour  cl=minute  dh=seconds  dl=1/100seconds 
+  
+    mov al,dh
+    mov ah,0
+    mov bx,0
+    mov bl,timeInterval
+    div bl
+    cmp ah,0 ; --> checks if the current time is divisible by 10
+    jne exit ; --> if not, does nothing
+    cmp dh,prevTime  ; --> if it is, then checks if it's the same second as before
+                     ; the proccessor is fast and it checks the same second many times and causes undesirable toggling
+                     
+    je exit
+    mov prevTime,dh ; reaching here meaning it's not the same previous second, so we TOGGLE the state of the game
+    
+    cmp gameStatus,1
+    jne changeToOne ;--> if the game status isn't 1 (is 0), change it to one
+    
+    mov gameStatus,0
+    jmp exit    
+    
+    changeToOne:   
+    mov gameStatus,1
+
+
+    exit:
+
+endm checkTimeInterval
+
+
 
 ;;fire ball status 
 ;;xor -> colors 
