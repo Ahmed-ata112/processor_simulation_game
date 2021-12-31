@@ -1,10 +1,3 @@
-;; Hany && Mena
-
-DisplayString MACRO STR                     ;DIV CL
-            mov ah,9h                      
-            mov dx,offset STR               ;MUL CL
-            int 21h                         
-ENDM DisplayString                          
 HASHING MACRO STR ,HASH                      ;CLC
     local moving111                         ;SHL
     mov SI,offset STR                       ;SAR

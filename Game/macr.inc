@@ -5,6 +5,18 @@ DisplayString MACRO STR
             int 21h
 ENDM DisplayString   
 
+Reset_Command macro
+    xor CX,CX
+    mov cl, 20
+    mov di , offset L_commandData
+    mov al, '$'
+    rep stosb 
+    MOV Actual_L_commandSize,0
+
+endm Reset_Command
+
+
+
 MoveCursorTo MACRO pos
     push ax
     push dx
@@ -517,7 +529,7 @@ Draw_IMG_with_color macro p_x, p_y,imga,color ,imgasize
 			cmp bx, offset imgasize
 	JNE KeepDrawing
 	
-ENDm Draw_IMG_with_color 
+ENDm Draw_IMG 
 
 
 
