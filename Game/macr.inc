@@ -460,7 +460,7 @@ LEVEL_PROCESSING macro
     ChangeVideoMode 3h ;;CLR Screen
     DisplayString_AT_position_and_move_cursor choose_hidden_char 0304h
     Read_KEY
-    mov hidden_char,al
+    mov forbidden_char,al
     mov dl,al
 	mov ah,2     ;; to display the the char into screen (echo)
 	int 21h
@@ -983,4 +983,13 @@ local exit
     exit:
 
 endm checkTimeInterval
+
+
+
+
+
+
+
+
+
 

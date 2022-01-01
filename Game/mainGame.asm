@@ -24,10 +24,11 @@
 	
 	level1_msg db 'LEVEL 1 -- PRESS F1$' 
 	level2_msg db 'LEVEL 2 -- PRESS F2$' 
-	choose_hidden_char db 'Choose a hidden char: $'
+	choose_hidden_char db 'Choose A Forbidden char: $'
 	you_cannot_write_msg db 'You Cannot write char: $'
-	hidden_char db 0		;; The hiddden char chosen by current player
-	other_hidden_char db 'V' 
+	forbidden_char db '?'       ;; The hiddden char chosen by current player
+	right_forbidden_char db 'E'
+    contains_forbidden db 0
 	MY_REGs_msg db 'MY REGS$'
 	HIS_REGs_msg db 'HIS REGS$'
 	AX_msg db 'AX: $'
@@ -329,7 +330,6 @@ timeInterval db 3 ;the shooting game apears/disappears every time interval
 	commandSize db 30
     actualcommand_Size db 0 ;the actual size of input at the current time
     THE_COMMAND db 30 dup('$')
-    forbidden_char db 'A'
     finished_taking_input db 0 ; just a flag to indicate we finished entering the string
     
     
@@ -553,7 +553,7 @@ CHAT_ROOM ENDP
 ;would add another Your_Game ig i the one who recieved the invitation
 START_My_GAME PROC
 
-	ChangeVideoMode 13h   ;; CLEARS tHE SCREEN  
+	ChangeVideoMode 13h   ;; CLEARS tHE SCREEN and start video mode
     mov Game_turn,1 ;; player left starts the Game
 	GAME_LOOP:
 	CLR_Screen_with_Scrolling_GRAPHICS_MODE   ;; CLEARS tHE SCREEN  
@@ -564,10 +564,16 @@ START_My_GAME PROC
     call GetCommand
     Update_the_Commands         ;; to be displayed in its place (L or R)
     CMP finished_taking_input,1           
+    je hhhheeeeeeee
+    Jmp NOT_FINISHED_INPUT_YET
+    hhhheeeeeeee:
     ;; THE PLAYER FINSHED TYPING
     ;; WE WILL UPDATE chosen players Regs
-    JNE NOT_FINISHED_INPUT_YET
+    call CHECK_FORBIDDEN_CHARS
+    cmp contains_forbidden,1    ;; the command had a forbidden char
+    je skip_excuting_the_command
     CALL EX_MAIN
+    skip_excuting_the_command:
     Reset_Command   ;;TODO: CHANGE IT TO RESET ALL OF THEM
     MOV finished_taking_input,0
     ;;swap turns
@@ -884,6 +890,35 @@ GetCommand PROC
     ret
 GetCommand ENDP
 
+
+CHECK_FORBIDDEN_CHARS proc 
+    ;; if turn=1 mov to L_command else R_command
+    cmp Game_turn,1 ;;first player
+    jne check_p22
+    mov al,right_forbidden_char
+    jmp check_p33
+    check_p22: ;;the other is playing
+    mov al,forbidden_char
+    check_p33:
+    ;; checks if command have that char
+    mov di,offset THE_COMMAND  
+    xor ch,ch
+    mov cl,actualcommand_Size
+    repne scasb ;;searches for al
+    cmp cx,0
+    jne bad_char
+    dec di
+    cmp byte ptr [di],al
+    je  bad_char
+    mov contains_forbidden,0
+    ret
+    
+
+    bad_char:
+    mov contains_forbidden,1
+    ret
+    
+CHECK_FORBIDDEN_CHARS ENDp 
 
 
 
