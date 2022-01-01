@@ -1,6 +1,85 @@
-;; Hany && Mena
-include Ex_macr.inc
+;; Hany-> command;
+;; Mena -> second; 
 
+;EXTRN mainGame:_AX, _BX, _CX, _DX, _SI, _DI, _SP, _BP,_AL, _BL, _CL, _DL, _AH, _BH, _CH, _DH
+;EXTRN mainGame:command
+;EXTRN mainGame:_00,_01,_02,_03,_04,_05,_06,_07,_08,_09,_A,_B,_C,_D,_E,_F
+;PUBLIC result
+;include valid_in.inc 
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;    
+; Hany
+
+split_operands MACRO source des1 des2 ; to split the two operand (des1->first oper && des2->second oper) 
+	    
+	mov SI,offset source
+	mov DI,offset des1
+	mov al,','
+    MOV AH,'$'
+moving1:	
+	MOVSB
+    CMP AH,[SI]
+    JE FIN
+    cmp al,[SI]
+	jnz moving1
+	
+	inc SI ;; to skip (,)
+	mov DI,offset des2
+	mov al,'$'
+moving2:	
+	MOVSB
+	cmp al,[SI]
+	jnz moving2
+
+	FIN:
+	dec di ; to remove enter
+    mov [DI],AH
+
+ENDM split_operands
+
+
+
+;; HASHING operand
+HASHING_op MACRO STR HASH
+    local moving111        
+    mov SI,offset STR
+    mov DI, offset HASH
+    mov al,'$' ;; to check END
+    MOV [DI],0H 
+                  
+    MOV BX,[DI]
+    MOV CL,[SI]
+    MOV CH,00H      ;; first time
+    ADD BX,CX 
+    
+    MOV [DI],BX 
+    
+    
+    MOV BX,[DI]
+    MOV CL,[SI]     ;; second time
+    MOV CH,00H
+    ADD BX,CX 
+    
+    MOV [DI],BX
+    
+        
+moving111:
+    MOV BX,[DI]
+    MOV CL,[SI]
+    MOV CH,00H
+    ADD BX,CX  
+    ADD BX,CX
+    ADD BX,CX
+    MOV [DI],BX
+    INC SI	
+	cmp al,[SI]
+	jnz moving111
+            
+ENDM HASHING_op
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 .MODEL SMALL
 .STACK 64
@@ -47,74 +126,80 @@ sizeIndex db 0
                                        
                                        
                                            ;MOV [00],AX DONE
-HASH_Operand DW ?
-Operand_Value DW ?
-Operand DB 5 dup('$')
                                            ;MOV [00],Al DONE
-HASH_comand DW ?                                  ;MOV AX,[00] DONE
+HASH DW ?                                  ;MOV AX,[00] DONE
 HASH_Operand2 DW ?                         ;MOV Al,[00] DONE
 HASH_Operand1 DW ?                         ; ADD AX,[00] DONE
                                            ;ADC DX,BX  DONE
 command DB 'MOV [00],AXe','$'                ;SUB DX,BX  DONE   ;SBB DX,BX DONE
                                             ;................................................
 .code                                       ;DIV CX
+DisplayString MACRO STR                     ;DIV CL
+            mov ah,9h                       ;MUL CX
+            mov dx,offset STR               ;MUL CL
+            int 21h                         ;XOR AX,[00]
+ENDM DisplayString                          ;AND AX,[00]
+                                            ;OR AX,[00]
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       ;NOP
+                                            ;SHR
+; Hany                                      ;INC
+;; HASHING                                  ;DEC
+HASHING MACRO STR HASH                      ;CLC
+    local moving111                         ;SHL
+    mov SI,offset STR                       ;SAR
+    mov DI, offset HASH                     ;ROR
+    mov al,'$' ;; to check END              ;RCL
+    MOV [DI],0H                             ;RCR
+                                            ;ROL
+    MOV BX,[DI]
+    MOV CL,[SI]
+    MOV CH,00H
+    ADD BX,CX 
+    
+    MOV [DI],BX 
+    
+moving111:
+    MOV BX,[DI]
+    MOV CL,[SI]
+    MOV CH,00H
+    ADD BX,CX  
+    ADD BX,CX
+    ADD BX,CX
+    MOV [DI],BX
+    INC SI	
+	cmp al,[SI]
+	jnz moving111
+            
+ENDM HASHING 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;   
+
+
+
 MAIN PROC far
 
     MOV AX,@DATA
 	MOV DS,AX
 	mov es,ax
-    
-	DisplayString command
-    ;Convert_OP_TO_HEXA Operand1
+	  
     CALL split_command
     split_operands Two_Operands_Together_splited Operand1 Operand2
-    HASHING command_splited HASH_comand    
+    
+    HASHING command_splited HASH    
     HASHING_op Operand1 HASH_Operand1
     HASHING_op Operand2 HASH_Operand2 
     
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     
-    MOV AX,HASH_Operand1
-
-    MOV HASH_Operand,AX
-
-
-
-
-    MOV SI,offset Operand1
-    MOV DI, offset Operand
-    MOV CX,5
-    REP STOSB
-
-    CALL check_Operand     ;; 0 for byte, 1 for word
-
-    MOV AX, Operand_Value
-    MOV Operand1_Value,AX 
-
-
-    MOV AX,HASH_Operand2
-
-    MOV HASH_Operand,AX
-
-
-    MOV SI,offset Operand2
-    MOV DI, offset Operand
-    MOV CX,5
-    REP STOSB
-
-    CALL check_Operand
-
-    MOV AX, Operand_Value
-    MOV Operand2_Value,AX 
-    
-    
+    check_Operand HASH_Operand1 Operand1_Value Operand1 sizeIndex ;; 0 for byte, 1 for word
+    check_Operand HASH_Operand2 Operand2_Value Operand2 sizeIndex
     CALL check_command                
      
     HLT
 	     
 MAIN ENDP     
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; 
+;; Hany
 
 ;; split operand and store it in split_command 
 ;; split operands and store it in Two_Operands_Together_splited
@@ -141,26 +226,23 @@ split_command               ENDP
 
 check_command                PROC 
 
-    MOV SI,offset HASH_comand 
+    MOV SI,offset HASH 
     MOV DI,offset command_splited  
       
      
     ;; ADD;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     
     CMP [SI],29CH
-    jz asdasd
-    Jmp CHECK1 
-    asdasd:    
+    JNZ CHECK1 
+    
     MOV AX,Operand1_Value
     MOV BX,Operand2_Value
     
     ADD AX,BX
     
-    MOV BX,HASH_Operand1 
-     MOV HASH_Operand,BX
-    MOV Operand_Value,AX
-
-    CALL put_Operand
+     
+    
+    put_Operand HASH_Operand1 AX sizeIndex
     
     CHECK1:
     
@@ -168,8 +250,6 @@ check_command                PROC
     ;; ADC
     
     CMP [SI],299H
-
-
      JNZ CHECK2
     
     ;; CODE
@@ -182,12 +262,9 @@ check_command                PROC
     ADC AX,BX
     
      
-
-    MOV BX,HASH_Operand1 
-     MOV HASH_Operand,BX
-    MOV Operand_Value,AX
-
-    CALL put_Operand    
+    
+    put_Operand HASH_Operand1 AX sizeIndex
+    
     CHECK2:
     
     ;; SUB  
@@ -206,11 +283,8 @@ check_command                PROC
     
      
     
-MOV BX,HASH_Operand1 
-     MOV HASH_Operand,BX
-    MOV Operand_Value,AX
-
-    CALL put_Operand    
+    put_Operand HASH_Operand1 AX sizeIndex
+    
     
     
     CHECK3:
@@ -231,11 +305,8 @@ MOV BX,HASH_Operand1
     
      
     
-MOV BX,HASH_Operand1 
-     MOV HASH_Operand,BX
-    MOV Operand_Value,AX
-
-    CALL put_Operand    
+    put_Operand HASH_Operand1 AX sizeIndex
+    
     
     
     
@@ -255,40 +326,28 @@ MOV BX,HASH_Operand1
     MOV  CL,sizeIndex
     
     CMP CL,1
-    JNE BYTE1
+    JNE BYTE
     MOV AX,_AX                                  ;;;;;;    div error div overflow
     DIV BX
                                                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     
     MOV HASH_Operand1,24DH
     
-    MOV BX,HASH_Operand1 
-     MOV HASH_Operand,BX
-    MOV Operand_Value,AX
-
-    CALL put_Operand                     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    put_Operand HASH_Operand1 AX sizeIndex                     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     
     MOV HASH_Operand1,25CH
      
                                                                 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    MOV BX,HASH_Operand1 
-     MOV HASH_Operand,BX
-    MOV Operand_Value,DX
-
-    CALL put_Operand
+    put_Operand HASH_Operand1 DX sizeIndex
     JMP CONT
                                                                   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    BYTE1:
+    BYTE:
     MOV AX,_AX                                                     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     DIV BL
     
      MOV HASH_Operand1,24DH
                                                                     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    MOV BX,HASH_Operand1 
-     MOV HASH_Operand,BX
-    MOV Operand_Value,AX
-
-    CALL put_Operand
+    put_Operand HASH_Operand1 AX sizeIndex
     CONT:
     
     CHECK5:
@@ -306,39 +365,28 @@ MOV BX,HASH_Operand1
     MOV  CL,sizeIndex
     
     CMP CL,1
-    JNE BYTE11
+    JNE BYTE1
     MOV AX,_AX
     MUL BX
     
     
     MOV HASH_Operand1,24DH
     
-MOV BX,HASH_Operand1 
-     MOV HASH_Operand,BX
-    MOV Operand_Value,AX
-
-    CALL put_Operand    
+    put_Operand HASH_Operand1 AX sizeIndex
+    
     MOV HASH_Operand1,25CH
      
                                                              
-MOV BX,HASH_Operand1 
-     MOV HASH_Operand,BX
-    MOV Operand_Value,DX
-
-    CALL put_Operand    
+    put_Operand HASH_Operand1 DX sizeIndex
     JMP CONT
     
-    BYTE11:
+    BYTE1:
     MOV AX,_AX 
     MUL BL
     
      MOV HASH_Operand1,24DH
     
-MOV BX,HASH_Operand1 
-     MOV HASH_Operand,BX
-    MOV Operand_Value,AX
-
-    CALL put_Operand    
+    put_Operand HASH_Operand1 AX sizeIndex
     CONT1:
     
     CHECK6:
@@ -349,12 +397,8 @@ MOV BX,HASH_Operand1
      JNZ CHECK7
     
     ;; CODE
-    MOV AX,Operand2_Value
-MOV BX,HASH_Operand1 
-     MOV HASH_Operand,BX
-    MOV Operand_Value,AX
-
-    CALL put_Operand    
+    put_Operand HASH_Operand1 Operand2_Value Operand1 sizeIndex  
+    
     CHECK7:
     
     ;; XOR   
@@ -370,11 +414,8 @@ MOV BX,HASH_Operand1
     
      
     
-MOV BX,HASH_Operand1 
-     MOV HASH_Operand,BX
-    MOV Operand_Value,AX
-
-    CALL put_Operand        
+    put_Operand HASH_Operand1 AX sizeIndex
+    
     CHECK8:
     
     ;; AND   
@@ -390,11 +431,7 @@ MOV BX,HASH_Operand1
     
      
     
-    MOV BX,HASH_Operand1 
-     MOV HASH_Operand,BX
-    MOV Operand_Value,AX
-
-    CALL put_Operand    
+    put_Operand HASH_Operand1 AX sizeIndex
     
     CHECK9:
     
@@ -411,11 +448,7 @@ MOV BX,HASH_Operand1
     
      
     
-    MOV BX,HASH_Operand1 
-     MOV HASH_Operand,BX
-    MOV Operand_Value,AX
-
-    CALL put_Operand    
+    put_Operand HASH_Operand1 AX sizeIndex
     
     CHECK10:
     
@@ -439,11 +472,7 @@ MOV BX,HASH_Operand1
      SHR AX,CL
      
      
-     MOV BX,HASH_Operand1 
-     MOV HASH_Operand,BX
-    MOV Operand_Value,AX
-
-    CALL put_Operand    
+     put_Operand HASH_Operand1 AX sizeIndex
     
     
     
@@ -462,11 +491,7 @@ MOV BX,HASH_Operand1
     INC AX
      
      
-     MOV BX,HASH_Operand1 
-     MOV HASH_Operand,BX
-    MOV Operand_Value,AX
-
-    CALL put_Operand    
+     put_Operand HASH_Operand1 AX sizeIndex
     
     CHECK12:
     
@@ -481,11 +506,7 @@ MOV BX,HASH_Operand1
     DEC AX
      
      
-     MOV BX,HASH_Operand1 
-     MOV HASH_Operand,BX
-    MOV Operand_Value,AX
-
-    CALL put_Operand    
+     put_Operand HASH_Operand1 AX sizeIndex
     
     CHECK13:
     
@@ -510,11 +531,7 @@ MOV BX,HASH_Operand1
      SHL AX,CL
      
      
-     MOV BX,HASH_Operand1 
-     MOV HASH_Operand,BX
-    MOV Operand_Value,AX
-
-    CALL put_Operand    
+     put_Operand HASH_Operand1 AX sizeIndex
     
     CHECK16:
     
@@ -529,11 +546,7 @@ MOV BX,HASH_Operand1
      SAR AX,CL
      
      
-     MOV BX,HASH_Operand1 
-     MOV HASH_Operand,BX
-    MOV Operand_Value,AX
-
-    CALL put_Operand    
+     put_Operand HASH_Operand1 AX sizeIndex
     
     CHECK17:
     
@@ -548,11 +561,7 @@ MOV BX,HASH_Operand1
      ROR AX,CL
      
      
-     MOV BX,HASH_Operand1 
-     MOV HASH_Operand,BX
-    MOV Operand_Value,AX
-
-    CALL put_Operand    
+     put_Operand HASH_Operand1 AX sizeIndex
     
     CHECK18:
     
@@ -567,11 +576,7 @@ MOV BX,HASH_Operand1
      RCL AX,CL
      
      
-     MOV BX,HASH_Operand1 
-     MOV HASH_Operand,BX
-    MOV Operand_Value,AX
-
-    CALL put_Operand    
+     put_Operand HASH_Operand1 AX sizeIndex
     
     CHECK19: 
     
@@ -586,11 +591,7 @@ MOV BX,HASH_Operand1
      RCR AX,CL
      
      
-     MOV BX,HASH_Operand1 
-     MOV HASH_Operand,BX
-    MOV Operand_Value,AX
-
-    CALL put_Operand    
+     put_Operand HASH_Operand1 AX sizeIndex
     
     CHECK20: 
     
@@ -605,18 +606,24 @@ MOV BX,HASH_Operand1
      ROL AX,CL
      
      
-     MOV BX,HASH_Operand1 
-     MOV HASH_Operand,BX
-    MOV Operand_Value,AX
-
-    CALL put_Operand    
+     put_Operand HASH_Operand1 AX sizeIndex
     
-    CHECK21:  
+    CHECK21:
+     
+    
+      
+            
     RET
+
 check_command                ENDP  
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+   
 
 
-check_Operand proc      
+;;Mena
+
+check_Operand MACRO  HASH_Operand Operand_Value Operand sizeIndex     
+    LOCAL CHECKBX,CHECKCX,CHECKDX, CHECKSI,CHECKDI ,CHECKSP ,CHECKBP,CHECKAL ,CHECKBL,CHECKCL,,CHECKDL,CHECKAH,CHECKBH,CHECKCH,CHECKDH,CHECK00,CHECK01,CHECK02,CHECK03,CHECK04,CHECK05,CHECK06,CHECK07,CHECK08,CHECK09,CHECKA,CHECKB,CHECKC,CHECKD,CHECKE,CHECKF,CHECKmlSI,CHECKmlBI,CHECKmlBX,movml00,movml1,movml2,movml3,movml4,movml5,movml6,movml7,movml9,movmlA,movml8,movmlB,movmlC,movmlD,movmlE,movmlF,CHECKdata,CHECKmlDI,end
 
     MOV SI,offset HASH_Operand 
      
@@ -648,9 +655,8 @@ check_Operand proc
     ;; CX 
     
     CMP [SI],257H
-    jz continue1
-     jmp CHECKDX
-    continue1:
+     JNZ CHECKDX
+    
     mov ax,_CX;; CODE
      mov Operand_Value,ax 
      mov sizeIndex,1h                   
@@ -679,8 +685,6 @@ check_Operand proc
     jmp end
     CHECKDI:
     
-    ;;  ja
-    ;; jbe + jmp
     ;; DI   
     
     CMP [SI],22fH
@@ -1013,200 +1017,82 @@ check_Operand proc
     
       ;[SI]
     CMP [SI],4b2H 
-    jz as1
-     jmp CHECKmlDI
-     as1:   
+    JNZ CHECKmlDI   
     
     ;;
      cmp _SI,0H
-
-     jnz escape1
-     jmp movml00 
-     escape1:
-
+     jz movml00                  
      cmp _SI,1H
-     jnz escape2
-     jmp movml1 
-     escape2:
-      
+     jz movml1
      cmp _SI,2H
-
-     jnz escape3
-     jmp movml2 
-     escape3:
-
-
+     jz movml2
      cmp _SI,3H
-
-     jnz escape4
-     jmp movml3 
-     escape4:
-
-      
+     jz movml3
      cmp _SI,4H
-     jnz escape5
-     jmp movml4 
-     escape5:
-      
+     jz movml4
      cmp _SI,5H
-
-    jnz escape6
-     jmp movml5
-     escape6:
-
+     jz movml5
      cmp _SI,6H
-jnz escape7
-     jmp movml6
-     escape7:
-
+     jz movml6
      cmp _SI,7H
-
-jnz escape8
-     jmp movml7
-     escape8:
-
+     jz movml7
      cmp _SI,8H
-
-
-jnz escape9
-     jmp movml8
-     escape9:
-
+     jz movml8
      cmp _SI,9H
-
-
-     jnz escape10
-     jmp movml9
-     escape10:
-
+     jz movml9
      cmp _SI,0AH
-
-    jnz escape11
-     jmp movmlA
-     escape11:
-
+     jz movmlA
      cmp _SI,0BH
-
-    jnz escape12
-     jmp movmlB
-     escape12:
-
+     jz movmlB
      cmp _SI,0CH
-jnz escape13
-     jmp movmlc
-     escape13:     
-     
+     jz movmlC
      cmp _SI,0DH
-jnz escape14
-     jmp movmlE
-     escape14:     
+     jz movmlD
      cmp _SI,0EH
-
-    jnz escape15
-     jmp movmlE
-     escape15:
-
+     jz movmlE
      cmp _SI,0FH
-     jnz escape16
-     jmp movmlF
-     escape16:
-
-
-
+     jz movmlF
     ; ;
     
      ;RegisterIndirect_Addressing_Mode _SI 
          jmp end              
      CHECKmlDI:
         ; ;; [DI]
-         CMP [SI],485H  
-         jnz escape17
-     jmp CHECKmlBX
-     escape17:
-
-    
-
+         CMP [SI],485H   
+     JNZ CHECKmlBX 
+         ;
      cmp _DI,0H
-   jnz escape18
-     jmp movml00
-     escape18:
-
-                     
+     jz movml00                  
      cmp _DI,1H
-     jnz escape19
-     jmp movml1
-     escape19:
-    
+     jz movml1
      cmp _DI,2H
-       jnz escape20
-     jmp movml2
-     escape20:
-
+     jz movml2
      cmp _DI,3H
-      jnz escape21
-     jmp movml3
-     escape21:
-
+     jz movml3
      cmp _DI,4H
-       jnz escape22
-     jmp movml4
-     escape22:
-   
+     jz movml4
      cmp _DI,5H
-     jnz escape23
-     jmp movml5
-     escape23:
-    
+     jz movml5
      cmp _DI,6H
-      jnz escape24
-     jmp movml6
-     escape24:
- 
+     jz movml6
      cmp _DI,7H
-      jnz escape25
-     jmp movml7
-     escape25:
-    
+     jz movml7
      cmp _DI,8H
-     jnz escape26
-     jmp movml8
-     escape26:
-   
+     jz movml8
      cmp _DI,9H
-      jnz escape27
-     jmp movml9
-     escape27:
-    
+     jz movml9
      cmp _DI,0AH
-        jnz escape28
-     jmp movmlA
-     escape28:
-     
+     jz movmlA
      cmp _DI,0BH
-        jnz escape29
-     jmp movmlB
-     escape29:
-     
+     jz movmlB
      cmp _DI,0CH
-        jnz escape30
-     jmp movmlC
-     escape30:
-  
+     jz movmlC
      cmp _DI,0DH
-        jnz escape31
-     jmp movmlD
-     escape31:
-  
+     jz movmlD
      cmp _DI,0EH
-      jnz escape32
-     jmp movmlE
-     escape32:
-     
+     jz movmlE
      cmp _DI,0FH
-      jnz escape33
-     jmp movmlF
-     escape33:
- 
+     jz movmlF
     ; ;
     
      ;RegisterIndirect_Addressing_Mode _DI
@@ -1215,91 +1101,40 @@ jnz escape14
      CHECKmlBX:
          ;; [BX] 
      CMP [SI],4acH 
-      jnz escape34
-     jmp CHECKdata
-     escape34:
-        
+     JNZ CHECKdata     
          ;
      cmp _BX,0H
-     jnz escape35
-     jmp movml00
-     escape35:
-                    
+     jz movml00                  
      cmp _BX,1H
-     jnz escape36
-     jmp movml1
-     escape36:
-     
+     jz movml1
      cmp _BX,2H
-     jnz escape37
-     jmp movml2
-     escape37:
-   
+     jz movml2
      cmp _BX,3H
-      jnz escape38
-     jmp movml3
-     escape38:
-    
+     jz movml3
      cmp _BX,4H
-      jnz escape39
-     jmp movml4
-     escape39:
-
+     jz movml4
      cmp _BX,5H
-      jnz escape40
-     jmp movml5
-     escape40:
-
+     jz movml5
      cmp _BX,6H
-     jnz escape41
-     jmp movml6
-     escape41:
-
+     jz movml6
      cmp _BX,7H
-     jnz escape42
-     jmp movml7
-     escape42:
-  
+     jz movml7
      cmp _BX,8H
-     jnz escape43
-     jmp movml8
-     escape43:
-   
+     jz movml8
      cmp _BX,9H
-      jnz escape44
-     jmp movml9
-     escape44:
-
+     jz movml9
      cmp _BX,0AH
-    jnz escape45
-     jmp movmlA
-     escape45:
-  
+     jz movmlA
      cmp _BX,0BH
-     jnz escape46
-     jmp movmlB
-     escape46:
-   
+     jz movmlB
      cmp _BX,0CH
-     jnz escape47
-     jmp movmlC
-     escape47:
- 
+     jz movmlC
      cmp _BX,0DH
-      jnz escape48
-     jmp movmlD
-     escape48:
-
+     jz movmlD
      cmp _BX,0EH
-      jnz escape49
-     jmp movmlE
-     escape49:
-  
+     jz movmlE
     cmp _BX,0FH
-     jnz escape50
-     jmp movmlF
-     escape50:
-   
+      jz movmlF
    
     
     ; ;RegisterIndirect_Addressing_Mode _BX                                               
@@ -1309,12 +1144,65 @@ jnz escape14
  
     end:
             
-    ret
+    
 
-ENDp check_Operand
+check_Operand                ENDM   
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  
+                                                                                         
+Convert_OP_TO_HEXA MACRO OPERAND 
+    local l1, l2, numb, SKIP_NUM, end_of_op,FINISHED
 
+    ;;STORES THE RESULT in AX
+    mov cx,0
+    mov dx,0
+    MOV DI, offset OPERAND
+    l1: 
+        cmp [DI],'$'
+        je end_of_op
+        inc cx  ;;counter  (LENTGH OF STRING)
+        mov dl, [DI] ;; store it to proccedd
+        cmp dl,'A'
+        jb numb
+        cmp dl, 'F'
+        ja numb
+        ;; from A-F
+        sub dl,55       ;; convertd A-F to 10-16
+        jmp SKIP_NUM
+        numb:
+        ;; from 1 - 9 
+        sub dl,'0'
+        SKIP_NUM:
+        push dx     ;; STORE IN STACK TO TAKE IT BACK 
+        inc di  ;; next Char
+        jmp l1
+    end_of_op:
 
-put_Operand PROC
+    mov bx,1
+    mov di,0 ; to store result 
+     
+    CMP CX,0 ;;STRING WAS EMPTY
+    JE FINISHED
+    
+     l2:
+    ; pop and multi then add to dx
+    pop ax
+    mul bx  ;; MULTIPLY AX BY THE SUITABLE WEIGHT
+    add di,ax
+    mov ax,bx   
+    ;; INCREASE THE WEIGHT
+    mov bx,16 ;;in AX   
+    mul bx
+    mov bx,ax  ;;get it in BX
+    loop l2 
+    FINISHED:
+    mov ax,di   ;; STORE THE RESULT 
+    
+ENDM Convert_OP_TO_HEXA                                                                                        
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; done
+
+put_Operand MACRO  HASH_Operand Operand_Value sizeIndex
+    
+    LOCAL CHECKBX,CHECKCX,CHECKDX, CHECKSI,CHECKDI ,CHECKSP ,CHECKBP,CHECKAL ,CHECKBL,CHECKCL,,CHECKDL,CHECKAH,CHECKBH,CHECKCH,CHECKDH,CHECK00,CHECK01,CHECK02,CHECK03,CHECK04,CHECK05,CHECK06,CHECK07,CHECK08,CHECK09,CHECKA,CHECKB,CHECKC,CHECKD,CHECKE,CHECKF,CHECKmlSI,CHECKmlBI,CHECKmlBX,movml00,movml1,movml2,movml3,movml4,movml5,movml6,movml7,movml9,movmlA,movml8,movmlB,movmlC,movmlD,movmlE,movmlF,CHECKdata ,CHECKmlDI,end
 
     MOV SI,offset HASH_Operand 
     mov cl,sizeIndex
@@ -1323,438 +1211,392 @@ put_Operand PROC
     ;; AX
     
     CMP [SI],24dH
-    jz con1
-    Jmp CHECKBX1
-    con1:    
+    JNZ CHECKBX
+    
     mov ax,Operand_Value;; CODE
     mov _AX,ax 
-    jmp end1
+    jmp end
 
-    CHECKBX1:
+    CHECKBX:
     
     
     ;; BX
     
     CMP [SI],252H
-    jz con2
-
-     Jmp CHECKCX1
-    con2:
+     JNZ CHECKCX
+    
     mov ax,Operand_Value;; CODE
      mov _BX,ax
-    jmp end1
+    jmp end
 
-    CHECKCX1:
+    CHECKCX:
     
     ;; CX 
     
     CMP [SI],257H
-    jz con3
-     Jmp CHECKDX1
-    con3:
+     JNZ CHECKDX
+    
     mov ax,Operand_Value;; CODE
      mov _CX,ax                    
-    jmp end1
-    CHECKDX1:
+    jmp end
+    CHECKDX:
                                                                            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;; DX   
                                     
     CMP [SI],25cH
-    jz con4
-    jmp CHECKSI1
-    con4:
+     JNZ CHECKSI
+    
     mov ax,Operand_Value;; CODE
      mov _DX,ax
-    jmp end1
-    CHECKSI1:
+    jmp end
+    CHECKSI:
     
     ;; SI   
     
     CMP [SI],27aH
-    jz con5
-     Jmp CHECKDI1
-    con5:
+     JNZ CHECKDI
+    
     mov ax,Operand_Value;; CODE
      mov _SI,ax
-    jmp end1
-    CHECKDI1:
+    jmp end
+    CHECKDI:
     
     ;; DI   
     
     CMP [SI],22fH
-    jz con6
-     Jmp CHECKSP1
-    con6:
+     JNZ CHECKSP
+    
     mov ax,Operand_Value;; CODE
      mov _DI,ax
-    jmp end1
-    CHECKSP1:
+    jmp end
+    CHECKSP:
     
     ;; SP   
     
     CMP [SI],28fH
-    jz con7
-     Jmp CHECKBP1
-    con7:
+     JNZ CHECKBP
+    
     mov ax,Operand_Value;; CODE
      mov _SP,ax
-    jmp end1
-    CHECKBP1:
+    jmp end
+    CHECKBP:
     
     ;; BP   
     
     CMP [SI],23aH
-    jz con8
-    Jmp CHECKAL1
-    con8:
+     JNZ CHECKAL
+    
     mov ax,Operand_Value;; CODE
      mov _BP,ax
-    jmp end1
-    CHECKAL1:;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    jmp end
+    CHECKAL:;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     
     ;; AL   
     
     CMP [SI],229H
-     jz con9
-     Jmp CHECKBL1
-    con9:
+     JNZ CHECKBL
+    
     mov ax,Operand_Value;; CODE 
     mov bx,_AX
     mov bl,al
      mov _AX,bx
-    jmp end1
-    CHECKBL1:
+    jmp end
+    CHECKBL:
     
     ;; BL    
     
     CMP [SI],22eH
-    jz con10
-     Jmp CHECKCL1
-    con10:
+     JNZ CHECKCL
+    
     mov ax,Operand_Value;; CODE 
-    mov bx,_BX
+         mov bx,_BX
     mov bl,al
-    mov _bX,bx
-    jmp end1
-    CHECKCL1:
+     mov _bX,bx
+    jmp end
+    CHECKCL:
     
     ;; CL   
     
     CMP [SI],233H
-     JNZ CHECKDL1
+     JNZ CHECKDL
    
     mov ax,Operand_Value;; CODE
      mov bx,_CX
     mov bl,al
      mov _CX,bx
-    jmp end1
-    CHECKDL1:
+    jmp end
+    CHECKDL:
     
     ;; DL   
     
     CMP [SI],238H      
-     JNZ CHECKAH1
+     JNZ CHECKAH
     
     mov ax,Operand_Value;; CODE
         mov bx,_DX
     mov bl,al
      mov _DX,bx
-    jmp end1
-    CHECKAH1:
+    jmp end
+    CHECKAH:
     
     
     ;; AH   
     
     CMP [SI],21dH
-     JNZ CHECKBH1
+     JNZ CHECKBH
     
     mov ax,Operand_Value;; CODE
     mov bx,_AX
     mov bh,al
      mov _AX,bx
-    jmp end1
-    CHECKBH1:
+    jmp end
+    CHECKBH:
     
     ;; BH   
     
     CMP [SI],222H
-     JNZ CHECKCH1
+     JNZ CHECKCH
     
     mov ax,Operand_Value;; CODE
         mov bx,_BX
     mov bh,al
      mov _BX,bx
-    jmp end1
-    CHECKCH1:
+    jmp end
+    CHECKCH:
     
     ;; CH   
     
     CMP [SI],227H
-     JNZ CHECKDH1
+     JNZ CHECKDH
     
     mov ax,Operand_Value;; CODE
         mov bx,_CX
     mov bh,al
      mov _CX,bx
-    jmp end1
-    CHECKDH1:
+    jmp end
+    CHECKDH:
     
     ;; DH  
     
     CMP [SI],22cH 
-     JNZ CHECK001
+     JNZ CHECK00
      
     mov ax,Operand_Value;; CODE
         mov bx,_DX
     mov bh,al
      mov _DX,bx
-    jmp end1
-    CHECK001:
+    jmp end
+    CHECK00:
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;; 00  
     
      CMP [SI],3feH 
-     JNZ CHECK011
-     movml001:                                                       
+     JNZ CHECK01
+     movml00:                                                       
                                                                      
      mov ax,Operand_Value;; CODE
      mov _00,al 
      cmp cl,ch
-   je escape63
-     jmp end1
-     escape63:
+     jne end
      mov _01,ah
-     jmp end1
-     CHECK011:
+     jmp end
+     CHECK01:
     
 ;     ;; 01  
     
      CMP [SI],401H 
-     JNZ CHECK021
-      movml11:
+     JNZ CHECK02
+      movml1:
      mov ax,Operand_Value;; CODE
       mov _01,al
       cmp cl,ch
-     je escape65
-     jmp end1
-     escape65:
+     jne end
      mov _02,ah 
-     jmp end1
-     CHECK021:
+     jmp end
+     CHECK02:
     
 ;     ;; 02  
     
      CMP [SI],404H 
-      JNZ CHECK031
-       movml21:
+      JNZ CHECK03
+       movml2:
      mov ax,Operand_Value;; CODE 
       mov _02,al
             cmp cl,ch
-     je escape66
-     jmp end1
-     escape66:
+     jne end
      mov _03,ah 
-     jmp end1
-     CHECK031:
+     jmp end
+     CHECK03:
    
 ;     ;; 03  
     
      CMP [SI],407H 
-      JNZ CHECK041
-       movml31:
+      JNZ CHECK04
+       movml3:
      mov ax,Operand_Value;; CODE
       mov _03,al 
             cmp cl,ch
-    je escape51
-     jmp end1
-     escape51:
-   
+     jne end
      mov _04,ah
-      jmp end1
-     CHECK041:
+      jmp end
+     CHECK04:
     
 ;     ;; 04  
     
     CMP [SI],40aH 
-     JNZ CHECK051
-       movml41:
+     JNZ CHECK05
+       movml4:
     mov ax,Operand_Value;; CODE
      mov _04,al 
       cmp cl,ch
-     je escape52
-     jmp end1
-     escape52:
+     jne end
      mov _05,ah
- jmp end1    
-    CHECK051:
+ jmp end    
+    CHECK05:
     
 ;     ;; 05  
     
     CMP [SI],40dH 
-     JNZ CHECK061
-      movml51:
+     JNZ CHECK06
+      movml5:
     mov ax,Operand_Value;; CODE 
-     mov _05,al
+     mov _05,ax
       cmp cl,ch
-     je escape53
-     jmp end1
-     escape53:
+     jne end
      mov _06,ah
- jmp end1    
-    CHECK061:
+ jmp end    
+    CHECK06:
     
 ;     ;; 06  
     
     CMP [SI],410H 
-     JNZ CHECK071
-      movml61:
+     JNZ CHECK07
+      movml6:
     mov ax,Operand_Value;; CODE 
-     mov _06,al
+     mov _06,ax
       cmp cl,ch
-     je escape54
-     jmp end1
-     escape54:
+     jne end
      mov _07,ah
- jmp end1    
-    CHECK071:
+ jmp end    
+    CHECK07:
     
 ;     ;; 07  
     
     CMP [SI],413H 
-     JNZ CHECK081
-      movml71:
+     JNZ CHECK08
+      movml7:
     mov ax,Operand_Value;; CODE 
      mov _07,al
       cmp cl,ch
-    je escape55
-     jmp end1
-     escape55:
+     jne end
      mov _08,ah
- jmp end1   
-    CHECK081:
+ jmp end   
+    CHECK08:
     
 ;     ;; 08  
     
     CMP [SI],416H 
-     JNZ CHECK091
-      movml81:
+     JNZ CHECK09
+      movml8:
     mov ax,Operand_Value;; CODE
      mov _08,al
       cmp cl,ch
-     je escape56
-     jmp end1
-     escape56:
+     jne end
      mov _09,ah 
- jmp end1       
-    CHECK091:
+ jmp end       
+    CHECK09:
     
 ;     ;; 09  
     
     CMP [SI],419H 
-     JNZ CHECKA1
-      movml91:
+     JNZ CHECKA
+      movml9:
     mov ax,Operand_Value;; CODE 
      mov _09,al
       cmp cl,ch
-    je escape57
-     jmp end1
-     escape57:
+     jne end
      mov _A,ah
- jmp end1    
-    CHECKA1:
+ jmp end    
+    CHECKA:
     
 ;     ;; A  
     
     CMP [SI],3a1H 
-     JNZ CHECKB1
-      movmlA1:
+     JNZ CHECKB
+      movmlA:
     mov ax,Operand_Value;; CODE 
      mov _A,al
       cmp cl,ch
-    je escape58
-     jmp end1
-     escape58:
+     jne end
      mov _B,ah
- jmp end1     
-    CHECKB1:
+ jmp end     
+    CHECKB:
     
 ;     ;; B  
     
     CMP [SI],3a4H 
-    jz asdasd1
-     Jmp CHECKC1
-    asdasd1:
-    movmlB1:
+     JNZ CHECKC
+      movmlB:
     mov ax,Operand_Value;; CODE 
      mov _B,al
       cmp cl,ch
-      je dede1
-     jmp end1
-     dede1:
+     jne end
      mov _C,ah
- jmp end1     
-    CHECKC1:
+ jmp end     
+    CHECKC:
     
 ;     ;; C  
     
     CMP [SI],3a7H 
-     JNZ CHECKD1
-      movmlC1:
+     JNZ CHECKD
+      movmlC:
     mov ax,Operand_Value;; CODE
      mov _C,al
       cmp cl,ch
-    je escape59
-     jmp end1
-     escape59:
+     jne end
      mov _D,ah 
- jmp end1     
-    CHECKD1:
+ jmp end     
+    CHECKD:
     
 ;     ;; D  
     
     CMP [SI],3aaH 
-     JNZ CHECKE1
-      movmlD1:
+     JNZ CHECKE
+      movmlD:
     mov ax,Operand_Value;; CODE
      mov _D,al
       cmp cl,ch
-    je escape60
-     jmp end1
-     escape60:
+     jne end
      mov _E,ah 
- jmp end1    
-    CHECKE1:
+ jmp end     
+    CHECKE:
     
 ;     ;; E  
     
     CMP [SI],3adH 
-     JNZ CHECKF1
-      movmlE1:
+     JNZ CHECKF
+      movmlE:
     mov ax,Operand_Value;; CODE
      mov _E,al
       cmp cl,ch
-    je escape61
-     jmp end1
-     escape61:
+     jne end
      mov _F,ah 
- jmp end1         
-    CHECKF1:
+ jmp end         
+    CHECKF:
     
 ;     ;; F  
     
     CMP [SI],3b0H 
-    JNZ CHECKmlSI1 
-    movmlF1:
+    JNZ CHECKmlSI 
+    movmlF:
     mov ax,Operand_Value;; CODE
     mov _F,al
       cmp cl,ch
-    je escape62
-     jmp end1
-     escape62:
+     jne end
      mov _00,ah 
-    jmp end1 
+    jmp end 
           
-    CHECKmlSI1:
+    CHECKmlSI:
     
     
 ;       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1763,232 +1605,188 @@ put_Operand PROC
     
     ;[SI]
     CMP [SI],4b2H 
-    jz con1101
-    jmp CHECKmlDI1   
-    con1101:
+    JNZ CHECKmlDI   
+    
     ;;
      cmp _SI,0H
-     jnz cont11
-     jmp movml001                  
-    cont11:
+     jz movml00                  
      cmp _SI,1H
-     jnz cont21
-     jmp movml11
-     cont21:
+     jz movml1
      cmp _SI,2H
-     jnz cont31
-     jmp movml21
-     cont31:
+     jz movml2
      cmp _SI,3H
-     jnz cont41
-     jmp movml31
-     cont41:
+     jz movml3
      cmp _SI,4H
-     jnz cont51
-     jmp movml41
-     cont51:
+     jz movml4
      cmp _SI,5H
-     jnz cont61
-     jmp movml51
-     cont61:
+     jz movml5
      cmp _SI,6H
-     jnz cont71
-     jmp movml61
-     cont71:
+     jz movml6
      cmp _SI,7H
-     jnz cont81
-     jmp movml71
-     cont81:
+     jz movml7
      cmp _SI,8H
-     jnz cont91
-     jmp movml81
-     cont91:
+     jz movml8
      cmp _SI,9H
-     jnz cont101
-     jmp movml91
-     cont101:
+     jz movml9
      cmp _SI,0AH
-     jnz cont111
-     jmp movmlA1
-     cont111:
+     jz movmlA
      cmp _SI,0BH
-     jnz cont121
-     jmp movmlB1
-     cont121:
+     jz movmlB
      cmp _SI,0CH
-     jnz cont131
-     jmp movmlC1
-     cont131:
+     jz movmlC
      cmp _SI,0DH
-     jnz cont141
-     jmp movmlD1
-     cont141:
+     jz movmlD
      cmp _SI,0EH
-     jnz cont151
-     jmp movmlE1
-     cont151:
+     jz movmlE
      cmp _SI,0FH
-     jnz cont161
-     jmp movmlF1
-     cont161:
+     jz movmlF
     ; ;
     
 ;     ;RegisterIndirect_Addressing_Mode _SI 
     
-    jmp end1              
-    CHECKmlDI1:
+    jmp end              
+    CHECKmlDI:
     
     ; ;; [DI]
-    CMP [SI],485H   
-    jz erer1
-     Jmp CHECKmlBX1 
-        erer1:
+         CMP [SI],485H   
+     JNZ CHECKmlBX 
+         ;
      cmp _DI,0H
-     jnz cont171
-     jmp movml001
-     cont171:                  
+     jz movml00                  
      cmp _DI,1H
-     jnz cont181
-     jmp movml11
-     cont181:
+     jz movml1
      cmp _DI,2H
-     jnz cont191
-     jmp movml21
-     cont191:
+     jz movml2
      cmp _DI,3H
-     jnz cont201
-     jmp movml31
-     cont201:
+     jz movml3
      cmp _DI,4H
-     jnz cont211
-     jmp movml41
-     cont211:
+     jz movml4
      cmp _DI,5H
-     jnz cont221
-     jmp movml51
-     cont221:
+     jz movml5
      cmp _DI,6H
-     jnz cont231
-     jmp movml61
-     cont231:
+     jz movml6
      cmp _DI,7H
-     jnz cont241
-     jmp movml71
-     cont241:
+     jz movml7
      cmp _DI,8H
-     jnz cont251
-     jmp movml81
-     cont251:
+     jz movml8
      cmp _DI,9H
-     jnz cont261
-     jmp movml91
-     cont261:
+     jz movml9
      cmp _DI,0AH
-     jnz cont271
-     jmp movmlA1
-     cont271:
+     jz movmlA
      cmp _DI,0BH
-     jnz cont281
-     jmp movmlB1
-     cont281:
+     jz movmlB
      cmp _DI,0CH
-     jnz cont291
-     jmp movmlC1
-     cont291:
+     jz movmlC
      cmp _DI,0DH
-     jnz cont301
-     jmp movmlD1
-     cont301:
+     jz movmlD
      cmp _DI,0EH
-     jnz cont311
-     jmp movmlE1
-     cont311:
+     jz movmlE
      cmp _DI,0FH
-     jnz cont321
-     jmp movmlF1
-     cont321:       ; ;
+     jz movmlF
+    ; ;
     
 ;     ;RegisterIndirect_Addressing_Mode _DI
                      
                
-    CHECKmlBX1:    
+    CHECKmlBX:    
     
     ;; [BX] 
      CMP [SI],4acH 
-     jz conte11
-    conte11:           ;
+     JNZ end     
+         ;
      cmp _BX,0H
-     jnz conte21
-     jmp movml001
-     conte21:                   
+     jz movml00                  
      cmp _BX,1H
-     jnz conte31
-     jmp movml11
-     conte31:
+     jz movml1
      cmp _BX,2H
-     jnz conte41
-     jmp movml21
-     conte41:
+     jz movml2
      cmp _BX,3H
-     jnz conte51
-     jmp movml31
-     conte51:
+     jz movml3
      cmp _BX,4H
-     jnz conte61
-     jmp movml41
-     conte61:
+     jz movml4
      cmp _BX,5H
-     jnz conte71
-     jmp movml51
-     conte71:
+     jz movml5
      cmp _BX,6H
-     jnz conte81
-     jmp movml61
-     conte81:
+     jz movml6
      cmp _BX,7H
-     jnz conte91
-     jmp movml71
-     conte91:
+     jz movml7
      cmp _BX,8H
-     jnz conte101
-     jmp movml81
-     conte101:
+     jz movml8
      cmp _BX,9H
-     jnz conte111
-     jmp movml91
-     conte111:
+     jz movml9
      cmp _BX,0AH
-     jnz conte121
-     jmp movmlA1
-     conte121:
+     jz movmlA
      cmp _BX,0BH
-     jnz conte131
-     jmp movmlB1
-     conte131:
+     jz movmlB
      cmp _BX,0CH
-     jnz conte141
-     jmp movmlC1
-    conte141:
+     jz movmlC
      cmp _BX,0DH
-     jnz conte151
-     jmp movmlD1
-     conte151:
+     jz movmlD
      cmp _BX,0EH
-     jnz conte161
-     jmp movmlE1
-     conte161:
+     jz movmlE
     cmp _BX,0FH
-    jnz conte171
-      jmp movmlF1
-      conte171:
+      jz movmlF
     
 ;     ;RegisterIndirect_Addressing_Mode _BX            
  
     
-    end1:
+    end:
             
-    RET
+    
 
-endP put_Operand 
+put_Operand                ENDM
+
+
+
 
 END MAIN
+                                                    
+                                                    
+                                                    
+                                                    
+; ;.....................................
+; check_command MACRO command result;; command is a string that contain the command-- Result -> 1 means sucess -- -> 0 failed
+
+; ;; determine the command
+
+; cmp
+; jnz
+; ;; checing validation
+
+; ;; split two operands
+; ;;des 1 -- des 2
+; ;; call macro-> move
+
+; cmp
+; ;;call macro-> add
+
+
+
+; ENDM check_command
+
+; move MACRO des1 des2 _Ax _BX _CX 
+
+; ;; Es
+; ;; second  reg, memory -> 
+; ;
+; ;
+; ; move ES
+; ;; first 
+; ;
+; ;
+; ;mov variable es
+; ;.................
+; ;; reg cehck
+; ;;ax                                ;;mov [_al],
+;     ; l h
+
+; ;;memory
+; ;;[]
+
+; ;;reg
+; ;; location num
+
+; ;exec
+
+; ENDM move
+; ;...........

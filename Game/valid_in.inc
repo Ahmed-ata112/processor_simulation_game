@@ -97,9 +97,12 @@ split_operands MACRO source des1 des2 ; to split the two operand (des1->first op
 	mov SI,offset source
 	mov DI,offset des1
 	mov al,','
+    MOV AH,'$'
 moving1:	
 	MOVSB
-	cmp al,[SI]
+    CMP AH,[SI]
+    JE FIN
+    cmp al,[SI]
 	jnz moving1
 	
 	inc SI ;; to skip (,)
@@ -109,9 +112,10 @@ moving2:
 	MOVSB
 	cmp al,[SI]
 	jnz moving2
-	
+
+	FIN:
 	dec di ; to remove enter
-    mov [DI],al
+    mov [DI],AH
 
 ENDM split_operands
 
@@ -141,18 +145,4 @@ checkOperandsRegistersNames macro FirstOperandData,SecondOperandData,result
       check_if_in_array  validRegNamesArr,validRegNamesArrSize,ActualSecondOperandSize, SecondOperandData,result
       finish:                          
 checkOperandsRegistersNames    endm
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
