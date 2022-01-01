@@ -516,8 +516,8 @@ right_birdPoints db 1
 playerPoints dw 0
 right_playerPoints dw 0
 
-leftPlayerStatus db 0 ;; 1 -> the player has won 2-? the player has lost
-rightPlayerStatus db 0
+playersStatus db 0 ;; 0 -> nothing , 1 -> left palyer lost/right player won , 2 -> right player lost/left player won
+
 
 
 
@@ -1059,7 +1059,7 @@ checkValuesInRegisters proc
     jne checkLeftPlayer
 
     leftPlayerWins:
-    mov leftPlayerStatus,1
+    mov playersStatus,2
     jmp exitCheckValuesInRegisters
 
 checkLeftPlayer:
@@ -1087,7 +1087,7 @@ checkLeftPlayer:
     cmp L_BP,ax
     jne exitCheckValuesInRegisters
 rightPlayerWins:
-    mov rightPlayerStatus,1 
+    mov playersStatus,1 
     exitCheckValuesInRegisters:
 ret
 endp checkValuesInRegisters
@@ -1096,12 +1096,12 @@ checkIfAnyPlayerLost proc
 
     cmp playerPoints,0
     jg checkIfRightPlayerLost
-    mov leftPlayerStatus,2
+    mov playersStatus,1
 
 checkIfRightPlayerLost:
     cmp right_playerPoints,0
     jg exitCheckIfAnyPlayerLost
-    mov rightPlayerStatus,2
+    mov playersStatus,2
 
     exitCheckIfAnyPlayerLost:
 ret
@@ -1109,17 +1109,17 @@ endp checkIfAnyPlayerLost
 
 
 
-checkIfAnyPlayerWon proc 
+; checkIfAnyPlayerWon proc 
 
-    cmp leftPlayerStatus,1
-    je exitCheckIfAnyPlayerWon
+;     cmp leftPlayerStatus,1
+;     je exitCheckIfAnyPlayerWon
 
-    cmp rightPlayerStatus,1
-    je exitCheckIfAnyPlayerWon
+;     cmp rightPlayerStatus,1
+;     je exitCheckIfAnyPlayerWon
 
-    exitCheckIfAnyPlayerWon:
-ret
-endp checkIfAnyPlayerWon
+;     exitCheckIfAnyPlayerWon:
+; ret
+; endp checkIfAnyPlayerWon
 
 
 
