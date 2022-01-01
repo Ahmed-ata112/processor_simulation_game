@@ -1,6 +1,4 @@
-include valid_in.inc
-
-Command_valid PROC
+Check_valid PROC
 
 CALL split_command
 split_operands Two_Operands_Together_splited Operand1 Operand2
@@ -51,7 +49,7 @@ C543212345:
 CONT54321:
 
 	  ret
-Command_valid  ENDP 
+Check_valid  ENDP 
 
 ex_MAIN PROC 
 
