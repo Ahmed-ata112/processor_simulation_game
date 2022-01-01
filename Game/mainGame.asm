@@ -1134,7 +1134,7 @@ exchangeRightPlayerRegisters:
         xchg  _F,ah
         mov R_F,ah
 
-        mov ah,r_CARRY 
+        mov ah,R_CARRY 
         xchg  _CARRY,ah
         mov R_CARRY,ah
 
