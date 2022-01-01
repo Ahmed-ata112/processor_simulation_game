@@ -73,10 +73,51 @@ Reset_Command macro
     mov di , offset THE_COMMAND
     mov al, '$'
     rep stosb 
-    MOV command_Size,0
+    MOV actualcommand_Size,0
+
+
+    xor CX,CX
+    mov CX, 30
+    mov di , offset L_commandData
+    mov al, '$'
+    rep stosb 
+    MOV Actual_L_commandSize,0
+
+
+    xor CX,CX
+    mov CX, 30
+    mov di , offset r_commandData
+    mov al, '$'
+    rep stosb 
+    MOV Actual_r_commandSize,0
+    
+
+
 
 endm Reset_Command
 
+
+Update_the_Commands MACRO 
+    ;; if turn=1 mov to L_command else R_command
+    cmp Game_turn,1 ;;first player
+    jne check_p2
+    xor ch,ch
+    mov cl,commandSize
+    mov Actual_L_commandSize,cl
+    mov si,offset THE_COMMAND
+    mov di ,offset L_commandData
+    rep movsb
+    check_p2:
+    cmp Game_turn,2 ;;second player
+    jne check_p3
+    xor ch,ch
+    mov cl,commandSize
+    mov Actual_R_commandSize,cl
+    mov si , offset THE_COMMAND
+    mov di , offset R_commandData
+    rep movsb
+    check_p3:
+ENDM Update_the_Commands
 
 
 DisplayString_AT_position_not_moving_cursor MACRO STR, pos

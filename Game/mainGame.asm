@@ -47,6 +47,7 @@
 	is_player_2_ready_for_chat db 0
     My_Initial_points dw 0
 	Game_Level db 0
+    Game_Turn db 1 ;; 1 for left player     2 for right 
     
   
 
@@ -55,6 +56,11 @@
 	ActualFirstNameSize db ?
 	FirstNameData db 20 dup('$')
 
+
+    SecondName LABEL BYTE ; named the next it the same name 
+	SecondNameSize db 20
+	ActualSecondNameSize db 4
+	SecondNameData db 'LINA',20 dup('$')
 	;;;;;;;;;-----------------positions----------;;;;
      ;;for the left
 		ax_rec_l dw 0104h
@@ -291,7 +297,7 @@ timeInterval db 3 ;the shooting game apears/disappears every time interval
 ;;;;-------------Comand Line Input------------;;;;;;
     command LABEL BYTE ; named the next it the same name 
 	commandSize db 30
-    command_Size db 0 ;the actual size of input at the current time
+    actualcommand_Size db 0 ;the actual size of input at the current time
     THE_COMMAND db 30 dup('$')
     forbidden_char db 'A'
     finished_taking_input db 0 ; just a flag to indicate we finished entering the string
@@ -301,6 +307,11 @@ timeInterval db 3 ;the shooting game apears/disappears every time interval
 	L_commandSize db 30
 	Actual_L_commandSize db ?
 	L_commandData db 30 dup('$')
+    
+    R_command LABEL BYTE ; named the next it the same name 
+	R_commandSize db 30
+	Actual_R_commandSize db ?
+	R_commandData db 30 dup('$')
         
     command_splited db 5 dup('$') ;';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;'
     Operand1 db 5 dup('$')
@@ -412,7 +423,7 @@ timeInterval db 3 ;the shooting game apears/disappears every time interval
 			LETS_PLAY:
 			empitify_buffer			;; To make Sure That no bat chars are saved in Buffer
 			CALL GAME_WELCOME_PAGES 	;; For level selection and continue To GAME
-			CALL START_GAME
+			CALL START_My_GAME
 			jmp QUIT_THIS_GAME
 
 			LETS_Chat:
@@ -512,10 +523,11 @@ CHAT_ROOM PROC
 CHAT_ROOM ENDP
 
 
-;description
-START_GAME PROC
+;would add another Your_Game ig i the one who recieved the invitation
+START_My_GAME PROC
 
 	ChangeVideoMode 13h   ;; CLEARS tHE SCREEN  
+    mov Game_turn,1 ;; player left starts the Game
 	GAME_LOOP:
 	CLR_Screen_with_Scrolling_GRAPHICS_MODE   ;; CLEARS tHE SCREEN  
 	;; WE DRAW THE BACKGROUND - THE Values - 
@@ -523,14 +535,12 @@ START_GAME PROC
     call UPDATE_VALUES_Displayed  ;; Update values displayed with ones in variables
 	call BIRDGAME
     call GetCommand
+    Update_the_Commands         ;; to be displayed in its place (L or R)
     CMP finished_taking_input,1
     ;; THE PLAYER FINSHED TYPING
-
-
-
     JNE NOT_FINISHED_INPUT_YET
     CALL EX_MAIN
-    Reset_Command
+    Reset_Command   ;;TODO: CHANGE IT TO RESET ALL OF THEM
     MOV finished_taking_input,0
     NOT_FINISHED_INPUT_YET:
     Wait_centi_seconds 1
@@ -540,7 +550,7 @@ START_GAME PROC
 
 	QUIT_GAME_LOOP:
 	RET
-START_GAME ENDP
+START_My_GAME ENDP
 
 
 
@@ -692,22 +702,21 @@ UPDATE_VALUES_Displayed PROC
         DISPLAY_num_in_HEX_ Points_BOX_left, 4 ,playerPoints  
         DISPLAY_num_in_HEX_ Points_BOX_right, 4 ,right_playerPoints  
         
-        ;;Command
-        MoveCursorTo CL_row_left
-        ;DisplayString_AT_position_and_move_cursor FirstNameData CL_row_right
-        
-        DisplayString FirstNameData ;Ends with an enter
+        ;;Command 
+        DisplayString_AT_position_and_move_cursor FirstNameData CL_row_left
+        mov dx,CL_row_left
+        add dl, ActualFirstNameSize ;;to move cursor
+        MoveCursorTo dx
         DisplayString separator_ 
-        DisplayString THE_COMMAND
-        ;INC_CURSOR 3
-        ;;need to move cursor that 
-        ;DisplayString_AT_position_and_move_cursor FirstNameData CL_row_RIGHT
+        DisplayString L_commandData
+
+        DisplayString_AT_position_and_move_cursor SecondNameData CL_row_RIGHT
+        mov dx,CL_row_RIGHT
+        add dl, ActualSecondNameSize ;;to move cursor
+        MoveCursorTo dx
+        DisplayString separator_ 
+        DisplayString R_commandData
         
-        ;;1 AHMED
-        ;INC_CURSOR ActualFirstNameSize
-        ;DisplayString separator_ 
-        ;INC_CURSOR 3
-        ;DisplayString THE_COMMAND
 
 
         ret
@@ -822,27 +831,27 @@ GetCommand PROC
     jne FinishedTakingChar  ;;NOT ANY OFTHE THREE CASES
     ;if size>0 then delete the last char and dec string
     READ_KEY
-    cmp command_Size,0
+    cmp actualcommand_Size,0
     je FinishedTakingChar
     mov di,offset THE_COMMAND 
-    mov bl,command_Size 
+    mov bl,actualcommand_Size 
     dec bl
     xor bh,bh
     add di,bx
     mov byte ptr [di], '$'   
-    dec command_Size
+    dec actualcommand_Size
     jmp FinishedTakingChar 
     ADD_TO_COMMAND:
     READ_KEY
     ;then store The char and print it then inc the size
-   cmp command_Size,15  ;; command is full  -> in order to not delete $ at the end
+   cmp actualcommand_Size,15  ;; command is full  -> in order to not delete $ at the end
     je FinishedTakingChar
     mov di,offset THE_COMMAND 
-    mov bl,command_Size
+    mov bl,actualcommand_Size
     xor bh,bh
     add di,bx
     mov [di],al ;;the char is moved to the end of string
-    inc command_Size
+    inc actualcommand_Size
     FinishedTakingChar:
     ret
 GetCommand ENDP
