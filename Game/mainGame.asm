@@ -165,7 +165,7 @@
 		_D db 0
 		_E db 0
 		_F db 0
-
+        _CARRY DB 0
 
 		L_AX dw 0 
 		L_BX dw 0
@@ -572,7 +572,9 @@ START_My_GAME PROC
     call CHECK_FORBIDDEN_CHARS
     cmp contains_forbidden,1    ;; the command had a forbidden char
     je skip_excuting_the_command
+    CALL exchangeValuesInRegisters
     CALL EX_MAIN
+    CALL exchangeValuesInRegisters
     skip_excuting_the_command:
     Reset_Command   ;;TODO: CHANGE IT TO RESET ALL OF THEM
     MOV finished_taking_input,0
@@ -920,6 +922,225 @@ CHECK_FORBIDDEN_CHARS proc
     
 CHECK_FORBIDDEN_CHARS ENDp 
 
+
+exchangeValuesInRegisters proc 
+
+    cmp game_turn,2
+    JE RTRTRTRT
+    jMP exchangeRightPlayerRegisters
+        RTRTRTRT:
+        mov ax,L_AX
+        xchg  _AX,ax
+        mov L_AX,ax
+
+        mov ax,L_BX
+        xchg  _BX,ax
+        mov L_BX,ax
+
+        mov ax,L_CX
+        xchg  _CX,ax
+        mov L_CX,ax
+
+        mov ax,L_DX
+        xchg  _DX,ax
+        mov L_DX,ax
+
+        mov ax,L_SI
+        xchg  _SI,ax
+        mov L_SI,ax
+
+        mov ax,L_DI
+        xchg  _DI,ax
+        mov L_DI,ax
+        
+        mov ax,L_SP
+        xchg  _SP,ax
+        mov L_SP,ax
+        
+        mov ax,L_BP
+        xchg  _BP,ax
+        mov L_BP,ax
+        
+        
+
+        mov ah,L_00
+        xchg  _00,ah
+        mov L_00,ah
+
+        mov ah,L_01
+        xchg  _01,ah
+        mov L_01,ah
+        
+        mov ah,L_02
+        xchg  _02,ah
+        mov L_02,ah
+        
+        mov ah,L_03
+        xchg  _03,ah  
+        mov L_03,ah
+          
+        mov ah,L_04
+        xchg  _04,ah
+        mov L_04,ah
+        
+        mov ah,L_05
+        xchg  _05,ah
+        mov L_05,ah
+        
+        mov ah,L_06
+        xchg  _06,ah
+        mov L_06,ah
+        
+        mov ah,L_07
+        xchg  _07,ah
+        mov L_07,ah
+        
+        mov ah,L_08
+        xchg  _08,ah
+        mov L_08,ah
+        
+        mov ah,L_09             
+        xchg  _09,ah
+        mov L_09,ah
+        
+        mov ah,L_A 
+        xchg  _A,ah
+        mov L_A,ah
+        
+        mov ah,L_B 
+        xchg  _B,ah
+        mov L_B,ah
+        
+        mov ah,L_C 
+        xchg  _C,ah
+        mov L_C,ah
+        
+        mov ah,L_D 
+        xchg  _D,ah
+        mov L_D,ah
+        
+        mov ah,L_E 
+        xchg  _E,ah
+        mov L_E,ah
+        
+        mov ah,L_F 
+        xchg  _F,ah
+        mov L_F,ah
+        
+        mov ah,L_CARRY 
+        xchg  _CARRY,ah
+        mov L_CARRY,ah
+
+        
+        
+       jmp ouououlou
+exchangeRightPlayerRegisters:
+
+        mov ax,R_AX
+        xchg  _AX,ax
+        mov R_AX,ax
+
+        mov ax,R_BX
+        xchg  _BX,ax
+        mov R_BX,ax
+
+        mov ax,R_CX
+        xchg  _CX,ax
+        mov R_CX,ax
+
+        mov ax,R_DX
+        xchg  _DX,ax
+        mov R_DX,ax
+
+        mov ax,R_SI
+        xchg  _SI,ax
+        mov R_SI,ax
+
+        mov ax,R_DI
+        xchg  _DI,ax
+        mov R_DI,ax
+        
+        mov ax,R_SP
+        xchg  _SP,ax
+        mov R_SP,ax
+        
+        mov ax,R_BP
+        xchg  _BP,ax
+        mov R_BP,ax
+        
+        
+
+        mov ah,R_00
+        xchg  _00,ah
+        mov R_00,ah
+
+        mov ah,R_01
+        xchg  _01,ah
+        mov R_01,ah
+        
+        mov ah,R_02
+        xchg  _02,ah
+        mov R_02,ah
+        
+        mov ah,R_03
+        xchg  _03,ah  
+        mov R_03,ah
+          
+        mov ah,R_04
+        xchg  _04,ah
+        mov R_04,ah
+        
+        mov ah,R_05
+        xchg  _05,ah
+        mov R_05,ah
+        
+        mov ah,R_06
+        xchg  _06,ah
+        mov R_06,ah
+        
+        mov ah,R_07
+        xchg  _07,ah
+        mov R_07,ah
+        
+        mov ah,R_08
+        xchg  _08,ah
+        mov R_08,ah
+        
+        mov ah,R_09             
+        xchg  _09,ah
+        mov R_09,ah
+        
+        mov ah,R_A 
+        xchg  _A,ah
+        mov R_A,ah
+        
+        mov ah,R_B 
+        xchg  _B,ah
+        mov R_B,ah
+        
+        mov ah,R_C 
+        xchg  _C,ah
+        mov R_C,ah
+        
+        mov ah,R_D 
+        xchg  _D,ah
+        mov R_D,ah
+        
+        mov ah,R_E 
+        xchg  _E,ah
+        mov R_E,ah
+        
+        mov ah,R_F 
+        xchg  _F,ah
+        mov R_F,ah
+
+        mov ah,r_CARRY 
+        xchg  _CARRY,ah
+        mov R_CARRY,ah
+
+ouououlou:
+ret
+endp exchangeValuesInRegisters
 
 
 end main
