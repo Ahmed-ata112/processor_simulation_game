@@ -39,7 +39,7 @@
 	SP_msg db 'SP: $'
 	BP_msg db 'BP: $'
 	
-	separator_ db ' : $'
+	separator_ db ': $'
 	
 	is_player_1_ready_for_game db 0
 	is_player_2_ready_for_game db 0
@@ -524,6 +524,10 @@ START_GAME PROC
 	call BIRDGAME
     call GetCommand
     CMP finished_taking_input,1
+    ;; THE PLAYER FINSHED TYPING
+
+
+
     JNE NOT_FINISHED_INPUT_YET
     CALL EX_MAIN
     Reset_Command
@@ -688,23 +692,21 @@ UPDATE_VALUES_Displayed PROC
         DISPLAY_num_in_HEX_ Points_BOX_left, 4 ,playerPoints  
         DISPLAY_num_in_HEX_ Points_BOX_right, 4 ,right_playerPoints  
         
-        ;;Command 
+        ;;Command
+        MoveCursorTo CL_row_left
+        ;DisplayString_AT_position_and_move_cursor FirstNameData CL_row_right
         
-        DisplayString_AT_position_and_move_cursor FirstNameData CL_row_left
-        
-        ;;1 AHMED
-        INC_CURSOR ActualFirstNameSize
+        DisplayString FirstNameData ;Ends with an enter
         DisplayString separator_ 
+        DisplayString THE_COMMAND
         ;INC_CURSOR 3
         ;;need to move cursor that 
-        DisplayString THE_COMMAND
         ;DisplayString_AT_position_and_move_cursor FirstNameData CL_row_RIGHT
         
         ;;1 AHMED
         ;INC_CURSOR ActualFirstNameSize
         ;DisplayString separator_ 
         ;INC_CURSOR 3
-        ;;need to move cursor that 
         ;DisplayString THE_COMMAND
 
 

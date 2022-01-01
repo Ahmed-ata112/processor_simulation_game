@@ -6,14 +6,10 @@ DisplayString MACRO STR
 ENDM DisplayString   
 
 MoveCursorTo MACRO pos
-    push ax
-    push dx
     XOR bx,bx
     mov ah,2h
     mov dx,pos
     int 10h
-    pop dx
-    pop ax
 ENDM MoveCursorTo
 
 ReadString MACRO PromptMessage
