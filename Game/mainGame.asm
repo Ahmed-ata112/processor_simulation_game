@@ -126,6 +126,35 @@
      CL_row_Right dw 1217h
      Points_BOX_right dw 0E22h
 
+     ;;GENERIC REGISTERS
+
+     	GENERIC_AX dw 0 
+		GENERIC_BX dw 0
+		GENERIC_CX dw 0 
+		GENERIC_DX dw 0
+		GENERIC_SI dw 0
+		GENERIC_DI dw 0
+		GENERIC_SP dw 0
+		GENERIC_BP dw 0
+	    
+        ;GENERIC DATA Segment
+		GENERIC_00 db 0
+		GENERIC_01 db 0
+		GENERIC_02 db 0
+		GENERIC_03 db 0
+		GENERIC_04 db 0
+		GENERIC_05 db 0
+		GENERIC_06 db 0
+		GENERIC_07 db 0
+		GENERIC_08 db 0
+		GENERIC_09 db 0
+		GENERIC_A db 0
+		GENERIC_B db 0
+		GENERIC_C db 0
+		GENERIC_D db 0
+		GENERIC_E db 0
+		GENERIC_F db 0
+
      ;; Values in regs
 		L_AX dw 0 
 		L_BX dw 0
@@ -496,6 +525,8 @@ rightPlayerStatus db 0
 gameStatus db 0
 prevTime db 0 ;variable used when checking if the time has changed
 timeInterval db 3 ;the shooting game apears/disappears every time interval
+
+game_turn db 1 ; 1 for left player, 2 for right player
 
 ;;;;-------------Comand Line Input------------;;;;;;
     THE_COMMAND db 30 dup('$')
@@ -1087,4 +1118,123 @@ checkIfAnyPlayerWon proc
 ret
 endp checkIfAnyPlayerWon
 
+
+
+exchangeValuesInRegisters proc 
+
+    cmp game_turn,1
+    jne exchangeRightPlayerRegisters
+
+        mov ax,L_AX
+        xchg GENERIC_AX,ax
+        mov ax,L_BX
+        xchg GENERIC_BX,ax
+        mov ax,L_CX
+        xchg GENERIC_CX,ax
+        mov ax,L_DX
+        xchg GENERIC_DX,ax
+        mov ax,L_SI
+        xchg GENERIC_SI,ax
+        mov ax,L_DI
+        xchg GENERIC_DI,ax
+        mov ax,L_SP
+        xchg GENERIC_SP,ax
+        mov ax,L_BP
+        xchg GENERIC_BP,ax
+        
+
+        mov ah,L_00
+        xchg GENERIC_00,ah
+        mov ah,L_01
+        xchg GENERIC_01,ah
+        mov ah,L_02
+        xchg GENERIC_02,ah
+        mov ah,L_03
+        xchg GENERIC_03,ah    
+        mov ah,L_04
+        xchg GENERIC_04,ah
+        mov ah,L_05
+        xchg GENERIC_05,ah
+        mov ah,L_06
+        xchg GENERIC_06,ah
+        mov ah,L_07
+        xchg GENERIC_07,ah
+        mov ah,L_08
+        xchg GENERIC_08,ah
+        mov ah,L_09             
+        xchg GENERIC_09,ah
+        mov ah,L_A 
+        xchg GENERIC_A,ah
+        mov ah,L_B 
+        xchg GENERIC_B,ah
+        mov ah,L_C 
+        xchg GENERIC_C,ah
+        mov ah,L_D 
+        xchg GENERIC_D,ah
+        mov ah,L_E 
+        xchg GENERIC_E,ah
+        mov ah,L_F 
+        xchg GENERIC_F,ah
+        
+       
+exchangeRightPlayerRegisters:
+
+        mov ax,R_AX
+        xchg GENERIC_AX,ax
+        mov ax,R_BX
+        xchg GENERIC_BX,ax
+        mov ax,R_CX
+        xchg GENERIC_CX,ax
+        mov ax,R_DX
+        xchg GENERIC_DX,ax
+        mov ax,R_SI
+        xchg GENERIC_SI,ax
+        mov ax,R_DI
+        xchg GENERIC_DI,ax
+        mov ax,R_SP
+        xchg GENERIC_SP,ax
+        mov ax,R_BP
+        xchg GENERIC_BP,ax
+        
+
+        mov ah,R_00
+        xchg GENERIC_00,ah
+        mov ah,R_01
+        xchg GENERIC_01,ah
+        mov ah,R_02
+        xchg GENERIC_02,ah
+        mov ah,R_03
+        xchg GENERIC_03,ah    
+        mov ah,R_04
+        xchg GENERIC_04,ah
+        mov ah,R_05
+        xchg GENERIC_05,ah
+        mov ah,R_06
+        xchg GENERIC_06,ah
+        mov ah,R_07
+        xchg GENERIC_07,ah
+        mov ah,R_08
+        xchg GENERIC_08,ah
+        mov ah,R_09             
+        xchg GENERIC_09,ah
+        mov ah,R_A 
+        xchg GENERIC_A,ah
+        mov ah,R_B 
+        xchg GENERIC_B,ah
+        mov ah,R_C 
+        xchg GENERIC_C,ah
+        mov ah,R_D 
+        xchg GENERIC_D,ah
+        mov ah,R_E 
+        xchg GENERIC_E,ah
+        mov ah,R_F 
+        xchg GENERIC_F,ah
+
+ret
+endp exchangeValuesInRegisters
+
+
+
 end main
+
+
