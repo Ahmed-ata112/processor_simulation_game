@@ -37,7 +37,7 @@
 	SP_msg db 'SP: $'
 	BP_msg db 'BP: $'
 	
-	separator_ db 'e: $'
+	separator_ db ' : $'
 	
 	is_player_1_ready_for_game db 0
 	is_player_2_ready_for_game db 0
@@ -972,19 +972,19 @@ GetCommand PROC
     jz FinishedTakingChar ;nothing is clicked
 
     cmp al,20H  ;;a space 
-    jb CHECK_IF_ENTER 
+    jb CHECK_IF_ENTER11 
     cmp al, ']'
-    ja CHECK_IF_ENTER
+    ja CHECK_IF_ENTER11
     JMP ADD_TO_COMMAND   ;;its a valid one 
     
     
-    CHECK_IF_ENTER:
+    CHECK_IF_ENTER11:
     cmp ah,1Ch ;; check if enter is pressed
-    jne CHECK_IF_BACKSLASH
+    jne CHECK_IF_BACKSLASH11
     mov finished_taking_input,1
-    jmp ADD_TO_COMMAND
+    jmp ADD_TO_COMMAND  ;; TO ADD THE ENTER
 
-    CHECK_IF_BACKSLASH:
+    CHECK_IF_BACKSLASH11:
     cmp ah,0eh
     jne FinishedTakingChar  ;;NOT ANY OFTHE THREE CASES
     ;if size>0 then delete the last char and dec string
