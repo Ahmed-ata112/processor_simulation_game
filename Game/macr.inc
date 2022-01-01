@@ -5,6 +5,22 @@ DisplayString MACRO STR
             int 21h
 ENDM DisplayString   
 
+
+
+EXECUTE_THECOMMAND_AT_SIDE MACRO turn
+    local skip_excuting_the_command
+    call CHECK_FORBIDDEN_CHARS    ;; returns value in contains_forbidden
+    cmp contains_forbidden,1    ;; the command had a forbidden char
+    je skip_excuting_the_command
+    mov al, turn       ;;send Game_turn to determine which player to execute commands on
+    CALL exchangeValuesInRegisters
+    CALL EX_MAIN
+    mov al, turn       ;;send Game_turn to determine which player to execute commands on
+    CALL exchangeValuesInRegisters
+    skip_excuting_the_command:
+ENDM EXECUTE_THECOMMAND_AT_SIDE
+
+
 MoveCursorTo MACRO pos
     XOR bx,bx
     mov ah,2h

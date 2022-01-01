@@ -473,7 +473,7 @@ timeInterval db 3 ;the shooting game apears/disappears every time interval
 	include Ex.asm
 
 	;To validate The input NAME
-	NAME_VALIDATION PROC
+NAME_VALIDATION PROC
 		DisplayString_AT_position_not_moving_cursor Enter_Name_message 0318h 
 		MoveCursorTo 0421h
 		ReadString FirstName
@@ -502,7 +502,7 @@ timeInterval db 3 ;the shooting game apears/disappears every time interval
 	NAME_VALIDATION ENDP
 
 
-    dis2dig proc
+dis2dig proc
 	; displays 2 digit number in AX
 	mov bl, 10
     XOR BH,BH
@@ -527,7 +527,7 @@ timeInterval db 3 ;the shooting game apears/disappears every time interval
     mov bl, 0ch           ;Color is red
     int 10h ; print char -> auto advances cursor
 	ret
-	dis2dig endp
+    dis2dig endp
 ;THE GAME AND LEVEL SELECTION
 GAME_WELCOME_PAGES PROC
 
@@ -564,6 +564,7 @@ START_My_GAME PROC
 	call DRAW_BACKGROUND     ;;Draws The BackGround Image
     call UPDATE_VALUES_Displayed  ;; Update values displayed with ones in variables
 	call BIRDGAME
+    call CHECK_POWERUPS
     call GetCommand
     Update_the_Commands         ;; to be displayed in its place (L or R)
     CMP finished_taking_input,1           
@@ -572,17 +573,14 @@ START_My_GAME PROC
     hhhheeeeeeee:
     ;; THE PLAYER FINSHED TYPING
     ;; WE WILL UPDATE chosen players Regs
-    call CHECK_FORBIDDEN_CHARS
-    cmp contains_forbidden,1    ;; the command had a forbidden char
-    je skip_excuting_the_command
-    CALL exchangeValuesInRegisters
-    CALL EX_MAIN
-    CALL exchangeValuesInRegisters
-    skip_excuting_the_command:
-    Reset_Command   ;;TODO: CHANGE IT TO RESET ALL OF THEM
-    MOV finished_taking_input,0
+    EXECUTE_THECOMMAND_AT_SIDE game_turn
+    Reset_Command   
+    MOV finished_taking_input,0    ;;to reset it
     ;;swap turns
     SWAP_TURNS
+
+
+
     NOT_FINISHED_INPUT_YET:
     CALL checkValuesInRegisters
     CALL checkIfAnyPlayerLost
@@ -592,7 +590,6 @@ START_My_GAME PROC
     JMP QUIT_GAME_LOOP
     CHECK_IF_RIGHT_LOST:
     CMP playersStatus,2 ;; Right LOST
-
     JNE no_ONE_LOST_YET
     JMP QUIT_GAME_LOOP
     no_ONE_LOST_YET:
@@ -879,7 +876,7 @@ GetCommand PROC
     jmp ADD_TO_COMMAND  ;; TO ADD THE ENTER
 
     CHECK_IF_BACKSLASH11:
-    cmp ah,0eh
+    cmp ah,0eh      ;;backk
     jne FinishedTakingChar  ;;NOT ANY OFTHE THREE CASES
     ;if size>0 then delete the last char and dec string
     READ_KEY
@@ -940,8 +937,8 @@ CHECK_FORBIDDEN_CHARS ENDp
 
 
 exchangeValuesInRegisters proc 
-
-    cmp game_turn,2
+   ; cmp game_turn,2  ;;send it in al
+    CMP al,2
     JE RTRTRTRT
     jMP exchangeRightPlayerRegisters
         RTRTRTRT:
@@ -1237,4 +1234,62 @@ checkIfRightPlayerLost:
     exitCheckIfAnyPlayerLost:
 ret
 checkIfAnyPlayerLost endp 
+
+
+;description
+CHECK_POWERUPS PROC
+     mov ah,1
+    int 16h ;-> looks at the buffer
+    jz FinishedCheckingPowerUps ;nothing is clicked
+
+    ;; f5 to f9 are the POWERUps
+    ;; f5 ->sc63
+    cmp ah,63       ;F5
+    jne check_if_F6
+    ;execute on your Procecceor
+
+    cmp game_turn,1
+    jne exec_on_other
+    cmp playerPoints,3 ;;consumes 3 points
+    jb FinishedCheckingPowerUps
+    EXECUTE_THECOMMAND_AT_SIDE 2
+    exec_on_other:
+    cmp right_playerPoints,3 ;;consumes 3 points
+    jb FinishedCheckingPowerUps
+    EXECUTE_THECOMMAND_AT_SIDE 1
+    check_if_F6:
+    cmp ah,64       ;F6
+    jne check_if_F7
+
+    check_if_F7:
+    cmp ah,65       ;F7
+    jne check_if_F8
+
+
+    check_if_F8:
+    cmp ah,66       ;F8
+    jne check_if_F9
+
+    check_if_F9:
+
+
+    FinishedCheckingPowerUps:
+    ret
+CHECK_POWERUPS ENDP
+
+
+
+;execute a command at your proceccor
+powerUp_1 macro turn
+    
+    ReadString command
+    EXECUTE_THECOMMAND_AT_SIDE turn
+    Reset_Command
+endm powerUp_1 
+
+
+
+
+
+
 end main
