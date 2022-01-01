@@ -590,17 +590,17 @@ local finish
 endm moveBird
 
 
-
 moveFireBall macro velocity,yCoordinate,ifPressed
 local finish
     mov ax,velocity
     sub ax,Ballsize
     sub yCoordinate,ax
-    cmp yCoordinate,15
+    cmp yCoordinate,5
     jg finish
     mov ifPressed,0
     finish:
 endm moveFireBall
+
 
 
 
@@ -625,62 +625,7 @@ endm getTime
 
 
 
-checkXBoundaries macro
-        MOV AX,WINDOW_WIDTH
-        sub ax,8 ;subtract ball width
-		cmp ball_x,ax ;check if the x coordinate of the ball is stil within the range
-        jae finish ;jump to finish lable in main if it's done passing the whole width
-endm checkXBoundaries      
 
-
-
-drawPaddle macro
-local drawP
-    mov cx,paddle_x ;set initial column (x)
-    mov dx,paddle_y ;set initial row (y)
-drawP:
-            MOV AH,0Ch                   ;set the configuration to writing a pixel
-			MOV AL,5h 					 ;choose purple as color
-			MOV BH,00h 					 ;set the page number 
-			INT 10h   
-            INC CX     					 ;CX = CX + 1
-			MOV AX,CX          	  		 ;CX - paddle_left > paddle_width  (Y -> We go to the next line,N -> We continue to the next column
-			SUB AX,paddle_x
-			CMP AX,paddle_width
-			JNG drawP
-
-            MOV CX,paddle_x 			 ;the CX register goes back to the initial column
-			INC DX       				 ;we advance one line
-			
-			MOV AX,DX             		 ;DX - paddle_y > paddle_height (Y -> we exit this procedure,N -> we continue to the next line
-			SUB AX,paddle_y
-			CMP AX,paddle_height
-			JNG drawP
-
-
-
-    mov cx,right_paddle_x ;set initial column (x)
-    mov dx,right_paddle_y ;set initial row (y)
-drawP2:
-            MOV AH,0Ch                   ;set the configuration to writing a pixel
-			MOV AL,9h 					 ;choose purple as color
-			MOV BH,00h 					 ;set the page number 
-			INT 10h   
-            INC CX     					 ;CX = CX + 1
-			MOV AX,CX          	  		 ;CX - paddle_left > paddle_width  (Y -> We go to the next line,N -> We continue to the next column
-			SUB AX,right_paddle_x
-			CMP AX,right_paddle_width
-			JNG drawP2
-
-            MOV CX,right_paddle_x 			 ;the CX register goes back to the initial column
-			INC DX       				 ;we advance one line
-			
-			MOV AX,DX             		 ;DX - paddle_y > paddle_height (Y -> we exit this procedure,N -> we continue to the next line
-			SUB AX,right_paddle_y
-			CMP AX,right_paddle_height
-			JNG drawP2
-
-endm drawPaddle
 
 
 movePaddle macro paddle_x,paddle_velocity_x,paddle_y,paddle_velocity_y,upControl,downControl,rightControl,leftControl,rightlimit,leftlimit 
@@ -690,10 +635,8 @@ movePaddle macro paddle_x,paddle_velocity_x,paddle_y,paddle_velocity_y,upControl
     mov ah,1
     int 16h
     jz exitMacro ;exists the macro since no key is pressed
-    
-    
-
-;checks right control
+ 
+ ;checks right control
     cmp ah,rightControl ;77 -> scan code of right arrow
     jne checkLeft ;checks if it's the left arrow
 
@@ -799,8 +742,7 @@ local notInTheRangeOfTheBird
     sub ax,8
     cmp ax,fireBall_x
 
-    ja notInTheRangeOfTheBird
-    ;not in the same row --> behind it
+    ja notInTheRangeOfTheBird ;not in the same row --> behind it    
     add ax,BALL_SIZE
     add ax,8
     cmp ax,fireBall_x

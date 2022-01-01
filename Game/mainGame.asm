@@ -422,7 +422,7 @@ paddle_Width dw 20
 paddle_x dw 5
 paddle_y dw 185 ;at the bottom of the 320*200 pixels screen
 paddle_velocity_x dw 10
-paddle_velocity_y dw 5
+paddle_velocity_y dw 3
 paddleColor db 1011b
 paddleUp db 72 ; scan code of up arrow
 paddleDown db 80 ; scan code of down arrow
@@ -439,7 +439,7 @@ right_paddle_Width dw 20
 right_paddle_x dw 160
 right_paddle_y dw 185 ;at the bottom of the 320*200 pixels screen
 right_paddle_velocity_x dw 10
-right_paddle_velocity_y dw 5
+right_paddle_velocity_y dw 3
 right_paddleColor db 1101b
 right_paddleUp db 71 ; scan code of 7 when num lock is turned off
 right_paddleDown db 73 ; scan code of 9 when num lock is turned off
@@ -927,8 +927,8 @@ BIRDGAME PROC
     moveFireBall fireBall_velocity_y,fireBall_y,ifFireIsPressed
     Draw_IMG_with_color fireBall_x,fireBall_y,BallImg,fireballColor,BallSize
     compareBirdWithBall birdX,fireBall_x,fireBall_y,BirdSize,0,birdStatus,playerPoints,birdPoints,colorIndex
-
     checkRight: 
+
     checkForFire right_fireScancode,right_paddle_x,right_paddle_width,BallSize,right_fireBall_x,right_fireBall_y,right_ifFireIsPressed,right_paddle_y
 
     cmp right_ifFireIsPressed,0
