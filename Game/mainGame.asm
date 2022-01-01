@@ -971,12 +971,6 @@ GetCommand PROC
     int 16h ;-> looks at the buffer
     jz FinishedTakingChar ;nothing is clicked
 
-    mov ah,0
-    int 16h ;-> get key pressed AH:SC -- AL:Ascii
-        ;;; backspace -> SC:0Eh
-        ;; Enter -> 1C
-    ;; ,] 
-    
     cmp al,20H  ;;a space 
     jb CHECK_IF_ENTER 
     cmp al, ']'
@@ -988,13 +982,13 @@ GetCommand PROC
     cmp ah,1Ch ;; check if enter is pressed
     jne CHECK_IF_BACKSLASH
     mov finished_taking_input,1
-    jmp FinishedTakingChar
+    jmp PRINT_THE_CHAR
 
     CHECK_IF_BACKSLASH:
     cmp ah,0eh
     jne FinishedTakingChar  ;;NOT ANY OFTHE THREE CASES
     ;if size>0 then delete the last char and dec string
-    
+    READ_KEY
     cmp command_Size,0
     je FinishedTakingChar
     mov di,offset THE_COMMAND 
@@ -1006,6 +1000,7 @@ GetCommand PROC
     dec command_Size
     jmp FinishedTakingChar 
     PRINT_THE_CHAR:
+    READ_KEY
     ;then store The char and print it then inc the size
    cmp command_Size,15  ;; command is full  -> in order to not delete $ at the end
     je FinishedTakingChar
