@@ -307,7 +307,7 @@ timeInterval db 3 ;the shooting game apears/disappears every time interval
 	L_commandSize db 30
 	Actual_L_commandSize db ?
 	L_commandData db 30 dup('$')
-    
+
     R_command LABEL BYTE ; named the next it the same name 
 	R_commandSize db 30
 	Actual_R_commandSize db ?
@@ -536,16 +536,17 @@ START_My_GAME PROC
 	call BIRDGAME
     call GetCommand
     Update_the_Commands         ;; to be displayed in its place (L or R)
-    CMP finished_taking_input,1
+    CMP finished_taking_input,1           
     ;; THE PLAYER FINSHED TYPING
+    ;; WE WILL UPDATE chosen players Regs
     JNE NOT_FINISHED_INPUT_YET
     CALL EX_MAIN
     Reset_Command   ;;TODO: CHANGE IT TO RESET ALL OF THEM
     MOV finished_taking_input,0
+    ;;swap turns
+    SWAP_TURNS
     NOT_FINISHED_INPUT_YET:
     Wait_centi_seconds 1
-
-
 	JMP GAME_LOOP
 
 	QUIT_GAME_LOOP:

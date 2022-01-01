@@ -98,6 +98,7 @@ endm Reset_Command
 
 
 Update_the_Commands MACRO 
+    local check_p2,check_p3
     ;; if turn=1 mov to L_command else R_command
     cmp Game_turn,1 ;;first player
     jne check_p2
@@ -119,7 +120,17 @@ Update_the_Commands MACRO
     check_p3:
 ENDM Update_the_Commands
 
+SWAP_TURNS MACRO 
+    local l1, l2
 
+    cmp Game_turn,1
+    jne l1
+    mov Game_turn,2
+    jmp l2
+    l1:
+    mov Game_turn,1
+    l2:
+ENDM SWAP_TURNS
 DisplayString_AT_position_not_moving_cursor MACRO STR, pos
     ;assumes Text mode
     ;returns The cursor to its initial position before it ends
