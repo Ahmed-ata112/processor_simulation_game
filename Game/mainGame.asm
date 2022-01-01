@@ -1,4 +1,5 @@
 	include macr.inc
+    include ex_macr.inc
 	.286
 	.model small
 	.stack 64
@@ -21,7 +22,6 @@
 	
 	level1_msg db 'LEVEL 1 -- PRESS F1$' 
 	level2_msg db 'LEVEL 2 -- PRESS F2$' 
-	
 	choose_hidden_char db 'Choose a hidden char: $'
 	you_cannot_write_msg db 'You Cannot write char: $'
 	hidden_char db 0		;; The hiddden char chosen by current player
@@ -189,7 +189,8 @@
 		R_D db 0
 		R_E db 0
 		R_F db 0
-
+        L_CARRY DB 0
+        R_CARRY DB 0
 	ASC_TBL DB   '0','1','2','3','4','5','6','7','8','9'
         DB   'A','B','C','D','E','F'
 
@@ -500,6 +501,33 @@ timeInterval db 3 ;the shooting game apears/disappears every time interval
     forbidden_char db 'A'
     finished_taking_input db 0 ; just a flag to indicate we finished entering the string
     
+    
+    L_command LABEL BYTE ; named the next it the same name 
+	L_commandSize db 20
+	Actual_L_commandSize db ?
+	L_commandData db 20 dup('$')
+        
+    command_splited db 5 dup('$') ;';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;'
+    Operand1 db 5 dup('$')
+    Operand2 db 5 dup('$')
+    Two_Operands_Together_splited db 12 dup('$')
+
+
+    
+    Operand2_Value dw 0H 
+    Operand1_Value dw 0H
+    sizeIndex db 0                                                                             
+                                        
+                                        
+                                            ;MOV [00],AX DONE
+    HASH_Operand DW 0H
+    Operand_Value DW 0H
+    Operand DB 5 dup('$')
+                                         ;MOV [00],Al DONE
+    HASH_comand DW 0H                    ;MOV AX,[00] DONE
+    HASH_Operand2 DW 0H                  ;MOV Al,[00] DONE
+    HASH_Operand1 DW 0H                 ; ADD AX,[00] DONE
+
 
 
 .code
@@ -601,7 +629,9 @@ timeInterval db 3 ;the shooting game apears/disappears every time interval
 		MOV AH,4CH
 		INT 21H ;GO BACK TO DOS ;to end the program
 	main endp
-	
+
+
+	include Ex.asm
 
 	;To validate The input NAME
 	NAME_VALIDATION PROC
@@ -698,6 +728,12 @@ START_GAME PROC
     call UPDATE_VALUES_Displayed  ;; Update values displayed with ones in variables
 	call BIRDGAME
     call GetCommand
+    CMP finished_taking_input,1
+    JNE NOT_FINISHED_INPUT_YET
+    CALL EX_MAIN
+    Reset_Command
+    MOV finished_taking_input,0
+    NOT_FINISHED_INPUT_YET:
     Wait_centi_seconds 1
 
 
