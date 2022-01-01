@@ -134,8 +134,38 @@
      ;; command line left side
      CL_row_Right dw 1217h
      Points_BOX_right dw 0E22h
+        ; EX_MAIN -> COMMAND REG, _AX
+        ;; Values in regs
+        ;; L -> _   gAME_TURN 1 2       XCHG
+        ;;IF(1) - > SWAP L,_
 
-     ;; Values in regs
+		_AX dw 0 
+		_BX dw 0
+		_CX dw 0 
+		_DX dw 0
+		_SI dw 0
+		_DI dw 0
+		_SP dw 0
+		_BP dw 0
+		;DATA Segment
+		_00 db 0
+		_01 db 0
+		_02 db 0
+		_03 db 0
+		_04 db 0
+		_05 db 0
+		_06 db 0
+		_07 db 0
+		_08 db 0
+		_09 db 0
+		_A db 0
+		_B db 0
+		_C db 0
+		_D db 0
+		_E db 0
+		_F db 0
+
+
 		L_AX dw 0 
 		L_BX dw 0
 		L_CX dw 0 
@@ -507,10 +537,7 @@ GAME_WELCOME_PAGES PROC
 	LEVEL_SELECTION 	; just you choose the the level
 	LEVEL_PROCESSING	; according to the chosen -> you do that shit
 	INSTRUCTIONS_PAGE	;just to show The instructions of THE game for 10 seconds
-
 	;; let the Game begin
-
-
 	;; just to stop the program
 	;sis: jmp sis
 	ret
