@@ -661,9 +661,10 @@ CHAT_ROOM ENDP
 ;description
 START_GAME PROC
 
-	GAME_LOOP:
-	;; WE DRAW THE BACKGROUND - THE Values - 
 	ChangeVideoMode 13h   ;; CLEARS tHE SCREEN  
+	GAME_LOOP:
+	CLR_Screen_with_Scrolling_GRAPHICS_MODE   ;; CLEARS tHE SCREEN  
+	;; WE DRAW THE BACKGROUND - THE Values - 
 	call DRAW_BACKGROUND     ;;Draws The BackGround Image
     call UPDATE_VALUES_Displayed  ;; Update values displayed with ones in variables
 	call BIRDGAME
