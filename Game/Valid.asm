@@ -63,105 +63,105 @@ Check_memorytomemory MACRO des1, des2, Result_2  ;; check if it iss memory to me
 ENDM Check_memorytomemory
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  Invalid register name OR ADDRESING
 check_reg_name macro operand, RES
-
+Local A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,T,END252
 HASHING_op operand HASH_Operand
 
 MOV SI,offset HASH_Operand 
     ;; AX
     CMP [SI],24dH
-    JNZ CHECKBX7
+    JNZ A
     jmp END252
-    CHECKBX7:
+    A:
     ;; BX
     CMP [SI],252H
-     JNZ CHECKCX7
+     JNZ B
      jmp END252
-    CHECKCX7:
+    B:
     ;; CX 
     CMP [SI],257H
-    JNZ CHECKCX77
+    JNZ C
      jmp END252
-    CHECKCX77:
+    C:
     ;; DX                                  
     CMP [SI],25cH
-     JNZ CHECKSI7
+     JNZ D
     jmp END252
-    CHECKSI7:
+    D:
     ;; SI   
     CMP [SI],27aH
-     JNZ CHECKDI8
+     JNZ E
     jmp END252
-    CHECKDI8:
+    E:
     ;; DI   
     CMP [SI],22fH
-     JNZ CHECKSP8
+     JNZ F
     jmp END252
-    CHECKSP8:
+    F:
     ;; SP   
     CMP [SI],28fH
-     JNZ CHECKBP8
+     JNZ G
     jmp END252
-    CHECKBP8:
+    G:
     ;; BP   
     CMP [SI],23aH
-     JNZ CHECKAL8
+     JNZ H
     jmp END252
-    CHECKAL8:
+    H:
     ;; AL    
     CMP [SI],229H
-     JNZ CHECKBL8
+     JNZ I
     jmp END252
-    CHECKBL8:
+    I:
     ;; BL    
     CMP [SI],22eH
-     JNZ CHECKCL8
+     JNZ J
     jmp END252
-    CHECKCL8:
+    J:
     ;; CL   
     CMP [SI],233H
-     JNZ CHECKDL7
+     JNZ K
     jmp END252
-    CHECKDL7:
+    K:
     ;; DL   
     CMP [SI],238H      
-     JNZ CHECKAH7
+     JNZ L
     jmp END252
-    CHECKAH7:
+    L:
     ;; AH  
     CMP [SI],21dH
-     JNZ CHECKBH7
+     JNZ T
     jmp END252
-    CHECKBH7:
+    T:
     ;; BH   
     CMP [SI],222H
-     JNZ CHECKCH7
+     JNZ M
     jmp END252
-    CHECKCH7:
+    M:
     ;; CH   
     CMP [SI],227H
-     JNZ CHECKDH7
+     JNZ N
     jmp END252
-    CHECKDH7:
+    N:
     ;; DH  
     CMP [SI],22cH 
-     JNZ CHECK007
+     JNZ O
     jmp END252
-    CHECK007:
+    O:
 ;[SI]
     CMP [SI],4b2H 
-JNZ CHECK0017
+JNZ P
     jmp END252
-    CHECK0017:
+    P:
 ; [DI]
          CMP [SI],485H
-JNZ CHECK0027
+JNZ Q
     jmp END252
-    CHECK0027:
+    Q:
     ;; [BX] 
      CMP [SI],4acH 
-JNZ CHECK00277
+JNZ R
     jmp END252
-    CHECK00277:
+    R:
     MOV  RES,0
     END252:
 ENDM
@@ -329,4 +329,3 @@ CONT54321:
 Check_valid  ENDP
 
 END MAIN
-
