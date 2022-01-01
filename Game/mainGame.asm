@@ -1,61 +1,400 @@
 	include macr.inc
-	;.286
+    include ex_macr.inc
+	.286
 	.model small
 	.stack 64
-	.data
-	Enter_Name_message db 'Please enter Your Name: ', '$'
+	.data  
+
+    include arrs.inc        ; Contains all the arrays of images
+	nl db 10,13,'$'
+	Enter_Name_message0 db 'Press Enter key to continue ', '$'
+	Enter_Name_message db 'Please enter Your Name: ', '$' 
+	Enter_Name_message2 db 'Name MUST start with a letter (No digits or special characters)$'
 	Enter_Points_message db 'Please enter Initial Points: ', '$'  
 	Press_any_Key_message db 'press any key to continue...$'
 	MAIN_Screen_message1 db 'To Start Chatting press F1','$'
 	MAIN_Screen_message2 db 'To Start Game press F2$'  
 	MAIN_Screen_message3 db 'To end Program press ESC$'   
-	First_msg_in_notification_bar db 80 dup('$')
-	Second_msg_in_notification_bar db 80 dup('$')
+    STATUS_BAR_MSG db '_______________________________________________________________________________$'
+	INSTRUCTIONS_msg db 'SOME INSTRUCTIONS OF THE GAME... blA bla bla ... $'
+	
 
-	duummy1 db 'F1 is pressed','$'
-	duummy2 db 'F2 is pressed','$'
-
-	nl db 10,13
-    My_Initial_points dw ?
+	Sent_CHAT_INV_msg db 'You sent a chat Invitation','$'
+	Sent_Game_INV_msg db 'You sent a Game Invitation','$'
+	
+	level1_msg db 'LEVEL 1 -- PRESS F1$' 
+	level2_msg db 'LEVEL 2 -- PRESS F2$' 
+	choose_hidden_char db 'Choose a hidden char: $'
+	you_cannot_write_msg db 'You Cannot write char: $'
+	hidden_char db 0		;; The hiddden char chosen by current player
+	other_hidden_char db 'V' 
+	MY_REGs_msg db 'MY REGS$'
+	HIS_REGs_msg db 'HIS REGS$'
+	AX_msg db 'AX: $'
+	BX_msg db 'BX: $'
+	CX_msg db 'CX: $'
+	DX_msg db 'DX: $'
+	SI_msg db 'SI: $'
+	DI_msg db 'DI: $'
+	SP_msg db 'SP: $'
+	BP_msg db 'BP: $'
+	
+	separator_ db ': $'
+	
+	is_player_1_ready_for_game db 0
+	is_player_2_ready_for_game db 0
+	is_player_1_ready_for_chat db 0
+	is_player_2_ready_for_chat db 0
+    My_Initial_points dw 0
+	Game_Level db 0
+    Game_Turn db 1 ;; 1 for left player     2 for right 
+    
+  
 
     FirstName LABEL BYTE ; named the next it the same name 
-	FirstNameSize db 30
+	FirstNameSize db 20
 	ActualFirstNameSize db ?
-	FirstNameData db 30 dup('$')
+	FirstNameData db 20 dup('$')
+
+
+    SecondName LABEL BYTE ; named the next it the same name 
+	SecondNameSize db 20
+	ActualSecondNameSize db 4
+	SecondNameData db 'LINA',20 dup('$')
+	;;;;;;;;;-----------------positions----------;;;;
+     ;;for the left
+		ax_rec_l dw 0104h
+		cx_rec_l dw 0504h
+		bx_rec_l dw 0304h
+		dx_rec_l dw 0704h
+		si_rec_l dw 0904h
+		di_rec_l dw 0B04h
+		sp_rec_l dw 0D04h
+		Bp_rec_l dw 0F04h
+		;; Ds LeftSide
+		DS_0_left dw 030Bh
+		DS_1_left dw 040Bh
+		DS_2_left dw 050Bh
+		DS_3_left dw 060Bh
+		DS_4_left dw 070Bh
+		DS_5_left dw 080Bh
+		DS_6_left dw 090Bh
+		DS_7_left dw 0A0Bh
+		;; second column
+		DS_8_left dw 030eh
+		DS_9_left dw 040eh
+		DS_A_left dw 050eh
+		DS_B_left dw 060eh
+		DS_C_left dw 070eh
+		DS_D_left dw 080eh
+		DS_E_left dw 090eh
+		DS_F_left dw 0A0eh
+
+     ;; command line left side and points BOX
+         CL_row_left dw 1201h
+         Points_BOX_left dw 0E0Ch
+
+     ;; Balls
+		first_ball_left dw 0213h;
+		second_ball_left dw 0613h;
+		third_ball_left dw 0a13h;
+		forth_ball_left dw 0e13h;
+		fifth_ball_left dw 1213h;
+
+     ;;for the right
+		ax_rec_r dw 011Ah
+		cx_rec_r dw 051Ah
+		bx_rec_r dw 031Ah
+		dx_rec_r dw 071Ah
+		si_rec_r dw 091Ah
+		di_rec_r dw 0B1Ah
+		sp_rec_r dw 0D1Ah
+		Bp_rec_r dw 0F1Ah
+		;; Ds RightSide
+		DS_firstCol_right dw 0321h
+		DS_secondCol_right dw 0324h
+
+		DS_0_right dw 0321h
+		DS_1_right dw 0421h
+		DS_2_right dw 0521h
+		DS_3_right dw 0621h
+		DS_4_right dw 0721h
+		DS_5_right dw 0821h
+		DS_6_right dw 0921h
+		DS_7_right dw 0A21h
+     ;; s_right column
+		DS_8_right dw 0324h
+		DS_9_right dw 0424h
+		DS_A_right dw 0524h
+		DS_B_right dw 0624h
+		DS_C_right dw 0724h
+		DS_D_right dw 0824h
+		DS_E_right dw 0924h
+		DS_F_right dw 0A24h
+     ;; command line left side
+     CL_row_Right dw 1217h
+     Points_BOX_right dw 0E22h
+        ; EX_MAIN -> COMMAND REG, _AX
+        ;; Values in regs
+        ;; L -> _   gAME_TURN 1 2       XCHG
+        ;;IF(1) - > SWAP L,_
+
+		_AX dw 0 
+		_BX dw 0
+		_CX dw 0 
+		_DX dw 0
+		_SI dw 0
+		_DI dw 0
+		_SP dw 0
+		_BP dw 0
+		;DATA Segment
+		_00 db 0
+		_01 db 0
+		_02 db 0
+		_03 db 0
+		_04 db 0
+		_05 db 0
+		_06 db 0
+		_07 db 0
+		_08 db 0
+		_09 db 0
+		_A db 0
+		_B db 0
+		_C db 0
+		_D db 0
+		_E db 0
+		_F db 0
+
+
+		L_AX dw 0 
+		L_BX dw 0
+		L_CX dw 0 
+		L_DX dw 0
+		L_SI dw 0
+		L_DI dw 0
+		L_SP dw 0
+		L_BP dw 0
+		;;DATA Segment
+		L_00 db 0
+		L_01 db 0
+		L_02 db 0
+		L_03 db 0
+		L_04 db 0
+		L_05 db 0
+		L_06 db 0
+		L_07 db 0
+		L_08 db 0
+		L_09 db 0
+		L_A db 0
+		L_B db 0
+		L_C db 0
+		L_D db 0
+		L_E db 0
+		L_F db 0
+
+     ;; balls values
+        balls label byte
+		ball_0 db 0 ;;green
+		ball_1 db 0 ;;magenta
+		ball_2 db 0 ;;red
+		ball_3 db 0 ;;blue
+		ball_4 db 0 ;;yellow
+
+
+     ;; Values in regs
+		R_AX dw 0 
+		R_BX dw 0
+		R_CX dw 0 
+		R_DX dw 0
+		R_SI dw 0
+		R_DI dw 0
+		R_SP dw 0
+		R_BP dw 0
+		;;DATA Segment
+		R_00 db 0
+		R_01 db 0
+		R_02 db 0
+		R_03 db 0
+		R_04 db 0
+		R_05 db 0
+		R_06 db 0
+		R_07 db 0
+		R_08 db 0
+		R_09 db 0
+		R_A db 0
+		R_B db 0
+		R_C db 0
+		R_D db 0
+		R_E db 0
+		R_F db 0
+        L_CARRY DB 0
+        R_CARRY DB 0
+	ASC_TBL DB   '0','1','2','3','4','5','6','7','8','9'
+        DB   'A','B','C','D','E','F'
+
+
+	;;For The Graphics
+
+;;;;;;---------------SARAHHHHHHHHHHHHHHH;;;;;;;;;;;;;;;;;;;;;;;
+time_aux db 0
+
+
+
+birdX dw 0
+birdY dw 0Ah
+BirdWidth dw 13
+birdVelocity dw 4
 
 
 
 
+right_birdX dw 147
+right_birdY dw 0Ah
+right_BirdWidth dw 13
+right_birdVelocity dw 4
 
-	.code
+
+
+paddle_Width dw 20 
+paddle_x dw 5
+paddle_y dw 185 ;at the bottom of the 320*200 pixels screen
+paddle_velocity_x dw 10
+paddle_velocity_y dw 5
+paddleColor db 1011b
+paddleUp db 72 ; scan code of up arrow
+paddleDown db 80 ; scan code of down arrow
+paddleRight db 77 ; scan code of right arrow
+paddleLeft db 75 ; scan code of left arrow
+
+
+
+right_paddle_Width dw 20 
+right_paddle_x dw 160
+right_paddle_y dw 185 ;at the bottom of the 320*200 pixels screen
+right_paddle_velocity_x dw 10
+right_paddle_velocity_y dw 5
+right_paddleColor db 1101b
+right_paddleUp db 71 ; scan code of 7 when num lock is turned off
+right_paddleDown db 73 ; scan code of 9 when num lock is turned off
+right_paddleRight db 81 ; scan code of 1 when num lock is turned off
+right_paddleLeft db 79 ;  scan code of 3 when num lock is turned off
+
+
+
+ballWidth dw 9
+fireballColor db 0fh
+
+;left fireball
+fireBall_x dw ?
+fireBall_y dw 190
+fireBall_velocity_y dw 20
+ifFireIsPressed db 0
+fireScanCode db 53
+;right fireball
+right_fireBall_x dw ?
+right_fireBall_y dw 190
+right_fireBall_velocity_y dw 20
+right_ifFireIsPressed db 0
+right_fireScanCode db  04eh
+
+        ;green, light magenta, red, blue, yellow
+colors db  47,           36, 41,  54,    43
+        
+                  ;green, light magenta, red, blue, yellow
+pointsOfColors db       1,            2,   3,    4,      5  
+
+numOfShotBalls db 0,0,0,0,0
+
+colorIndex db 0
+birdColor db 47
+birdStatus db 1
+birdPoints db 1
+
+right_colorIndex db 0
+right_birdColor db 47
+right_birdStatus db 1
+right_birdPoints db 1
+
+
+playerPoints dw 0
+right_playerPoints dw 0
+
+
+gameStatus db 0
+prevTime db 0 ;variable used when checking if the time has changed
+timeInterval db 3 ;the shooting game apears/disappears every time interval
+
+;;;;-------------Comand Line Input------------;;;;;;
+    command LABEL BYTE ; named the next it the same name 
+	commandSize db 30
+    actualcommand_Size db 0 ;the actual size of input at the current time
+    THE_COMMAND db 30 dup('$')
+    forbidden_char db 'A'
+    finished_taking_input db 0 ; just a flag to indicate we finished entering the string
+    
+    
+    L_command LABEL BYTE ; named the next it the same name 
+	L_commandSize db 30
+	Actual_L_commandSize db ?
+	L_commandData db 30 dup('$')
+
+    R_command LABEL BYTE ; named the next it the same name 
+	R_commandSize db 30
+	Actual_R_commandSize db ?
+	R_commandData db 30 dup('$')
+        
+    command_splited db 5 dup('$') ;';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;'
+    Operand1 db 5 dup('$')
+    Operand2 db 5 dup('$')
+    Two_Operands_Together_splited db 12 dup('$')
+
+
+    
+    Operand2_Value dw 0H 
+    Operand1_Value dw 0H
+    sizeIndex db 0                                                                             
+                                        
+                                        
+                                            ;MOV [00],AX DONE
+    HASH_Operand DW 0H
+    Operand_Value DW 0H
+    Operand DB 5 dup('$')
+                                         ;MOV [00],Al DONE
+    HASH_comand DW 0H                    ;MOV AX,[00] DONE
+    HASH_Operand2 DW 0H                  ;MOV Al,[00] DONE
+    HASH_Operand1 DW 0H                 ; ADD AX,[00] DONE
+
+
+
+.code
 	main proc far
 	mov ax, @data
 	mov ds, ax
 	mov ES,AX ;; for string operations
+	;ChangeVideoMode 13h ;;clears screen and starts Video mode	
+	;call START_GAME
+	DisplayAgain:
+	CLR_Screen_with_Scrolling_TEXT_MODE 
 	
-    DisplayString Enter_Name_message
-    ReadString FirstName
+    call NAME_VALIDATION
+    FirstIsLetter:               ;jmp here if first character is a letter
 
-    DisplayString nl    ;print newline
-
-    DisplayString Enter_Points_message ; show mes
-
-    ReadNumberdec_in_ax ;; Read points and put it in ax
+    DisplayString_AT_position_not_moving_cursor Enter_Points_message 0818h ; show mes
+    MoveCursorTo 0921h
+    ReadNumberhexa_in_ax ;; Read points and put it in ax ;; TODO: See if you want this in hexa
     mov My_Initial_points,ax ;; initialize initial points
+    ;; Todo: get min and initialize the points
+    mov playerPoints,ax
+    mov right_playerPoints,ax
 
 	; now enter the main Screen
 	DisplayString nl
-	DisplayString Press_any_Key_message
-	mov ah,0
-	int 16h
+	DisplayString_AT_position_not_moving_cursor Press_any_Key_message 1018h 
+	Read_KEY
 
-	Main_Screen:
-		CLR_Screen_with_text_mode
-		DisplayString_AT_position_TEXTMODE MAIN_Screen_message1 ,0C16h
-		DisplayString_AT_position_TEXTMODE MAIN_Screen_message2 ,0D16h
-		DisplayString_AT_position_TEXTMODE MAIN_Screen_message3 ,0E16h
+	MAIN_LOOP:
 
-		MAIN_LOOP:
+		Main_Screen:
 			;; it shouldn't wait untill the user enters the KeY
 			;; 2 loops in the main
 			;; The first is to check if the user clicked any key
@@ -64,56 +403,488 @@
 			;; esc -> SC 01
 			;; F2 -> 3C   
 			;; F1 -> 3B
-			;UPDATE_notification_bar2 duummy1
-			;UPDATE_notification_bar2 duummy2
-			;UPDATE_notification_bar2 duummy1
-			check_key_pressed1: mov ah, 1
-			int 16h                      ;Get key pressed (do not wait for a key - AH:scancode, AL:ASCII)
-			jnz .continue ;; something is clicked
-			jmp no_thing_clicked
-			.continue:
-			
-			
-			;; check the type of the key
-			cmp ah,01 ; esc
-			jne continue2 
-			jmp QUIT_THIS_GAME
-			continue2:
-			cmp ah,3bh ;f1
-			jne check_f2
-			;in case of F1
-			UPDATE_notification_bar2 duummy1
-			
-			
-			check_f2:
-			cmp ah,3ch ; F2
-			jne no_valid_key
-			;in case of F2
-			UPDATE_notification_bar2 duummy2
-			
-			no_valid_key:
-			;; delete it from buffer
-			mov ah,07
-			int 21h
-			no_thing_clicked:
+			CLR_Screen_with_Scrolling_TEXT_MODE
+            DEAW_STATUS_BAR
+			DisplayString_AT_position_not_moving_cursor MAIN_Screen_message1 ,0C16h
+			DisplayString_AT_position_not_moving_cursor MAIN_Screen_message2 ,0D16h
+			DisplayString_AT_position_not_moving_cursor MAIN_Screen_message3 ,0E16h
+			check_key_pressed1:
+				mov ah, 1
+				int 16h           ;Get key pressed (do not wait for a key - AH:scancode, AL:ASCII)
 
-			;; the second loop is here but nothing to display now
+				jnz _continue ;; something is clicked
+				jmp no_thing_clicked
+				_continue:
+				
+				;; check the type of the key
+				cmp ah,1h ; esc
+				jne check_f1 
+				jmp QUIT_THIS_GAME
+				check_f1:
+				cmp ah,3bh ;f1
+				jne check_f2
+				;in case of F1
+				UPDATE_notification_bar Sent_CHAT_INV_msg
+				mov is_player_1_ready_for_chat,1 ;; make me ready and see if the other is ready to
+				cmp is_player_1_ready_for_chat,1
+				;;je LETS_Chat 	;;Player 2 is Ready TOO
+				mov is_player_2_ready_for_chat,1 ;; TODO: temproraly in PHASE 1 -> Pressing Twice Starts THE Chat Room
 
 
+				jmp remove_key_from_buffer
+				
+				check_f2:
+				cmp ah,3ch ; F2
+				jne remove_key_from_buffer
+				;in case of F2
+				UPDATE_notification_bar Sent_Game_INV_msg
+				mov is_player_1_ready_for_game,1 ;; make me ready and see if the other is ready to
+				cmp is_player_2_ready_for_game,1
+				je LETS_PLAY 	;;Player 2 is Ready TOO
+				mov is_player_2_ready_for_game,1 ;; TODO: temproraly in PHASE 1 -> Pressing Twice Starts THE GAME
 
+				remove_key_from_buffer:
+				;; delete The key from buffer
+				empitify_buffer
+				no_thing_clicked:
+				;; the second loop is here but nothing to display now
 			jmp check_key_pressed1
 			
-			
+			LETS_PLAY:
+			empitify_buffer			;; To make Sure That no bat chars are saved in Buffer
+			CALL GAME_WELCOME_PAGES 	;; For level selection and continue To GAME
+			CALL START_My_GAME
+			jmp QUIT_THIS_GAME
 
+			LETS_Chat:
+				empitify_buffer   ;; To make Sure That no bat chars are saved in Buffer
+				CAll CHAT_ROOM 		;;should BE THE CHAT.ASM but just For now 
+			jmp QUIT_THIS_GAME
 
-
-
-
-
-
-	QUIT_THIS_GAME:
-	MOV AH,4CH
-    INT 21H ;GO BACK TO DOS ;to end the program
+		QUIT_THIS_GAME:
+		MOV AH,4CH
+		INT 21H ;GO BACK TO DOS ;to end the program
 	main endp
+
+
+	include Ex.asm
+
+	;To validate The input NAME
+	NAME_VALIDATION PROC
+		DisplayString_AT_position_not_moving_cursor Enter_Name_message 0318h 
+		MoveCursorTo 0421h
+		ReadString FirstName
+		
+		cmp FirstNameData,'A'   ;check if first character is letter ;;we only allow range (A-Z and a-z)
+		jl  TRY_AGAIN_INPUT       
+		cmp FirstNameData,'z'
+		jg  TRY_AGAIN_INPUT
+		cmp FirstNameData,'`'
+		jg  NAME_IS_VALID
+		cmp FirstNameData,'['
+		jl  NAME_IS_VALID
+		TRY_AGAIN_INPUT:            ; if first character isn't a letter, clear screen and display a message to user
+		DisplayString_AT_position_not_moving_cursor Enter_Name_message2 0a04h
+		DisplayString_AT_position_not_moving_cursor Press_any_Key_message 0b04h 
+		mov al,'$'
+		mov di,offset FirstNameData  ;DI points to the target
+		mov cx,0                     ;count
+		mov cl,ActualFirstNameSize	 ; no need to reset The whole String
+		rep stosb                    ;copy $ into FirstNameData to reset it to all $
+		Read_KEY
+		jmp DisplayAgain             ;Display first screen again
+
+		NAME_IS_VALID:
+		ret
+	NAME_VALIDATION ENDP
+
+
+    dis2dig proc
+	; displays 2 digit number in AX
+	mov bl, 10
+    XOR BH,BH
+	div bl
+	mov dh, ah
 	
-	end main
+	mov ah, 0
+	
+    XOR BH,BH
+	div bl
+	mov dl, ah
+	
+	add dl, '0'
+	add dh, '0'
+	
+	MOV AL,DL  ;al contains the char to print   
+    mov ah, 0eh           ;0eh = 14 
+    mov bl, 0ch           ;Color is red
+    int 10h ; print char -> auto advances cursor
+	MOV AL,DH  ;al contains the char to print   
+    mov ah, 0eh           ;0eh = 14 
+    mov bl, 0ch           ;Color is red
+    int 10h ; print char -> auto advances cursor
+	ret
+	dis2dig endp
+;THE GAME AND LEVEL SELECTION
+GAME_WELCOME_PAGES PROC
+
+	ChangeVideoMode 3h ;;clears screen and starts Video mode	
+
+	DisplayString_AT_position_not_moving_cursor level1_msg 0a20h
+	DisplayString_AT_position_not_moving_cursor level2_msg 0c20h
+
+	;;LEVEL SELECTION  -> keep looping till a F1 or F2 Is Pressed
+	LEVEL_SELECTION 	; just you choose the the level
+	LEVEL_PROCESSING	; according to the chosen -> you do that shit
+	INSTRUCTIONS_PAGE	;just to show The instructions of THE game for 10 seconds
+	;; let the Game begin
+	;; just to stop the program
+	;sis: jmp sis
+	ret
+GAME_WELCOME_PAGES ENDP
+
+
+;description
+CHAT_ROOM PROC
+	ret
+CHAT_ROOM ENDP
+
+
+;would add another Your_Game ig i the one who recieved the invitation
+START_My_GAME PROC
+
+	ChangeVideoMode 13h   ;; CLEARS tHE SCREEN  
+    mov Game_turn,1 ;; player left starts the Game
+	GAME_LOOP:
+	CLR_Screen_with_Scrolling_GRAPHICS_MODE   ;; CLEARS tHE SCREEN  
+	;; WE DRAW THE BACKGROUND - THE Values - 
+	call DRAW_BACKGROUND     ;;Draws The BackGround Image
+    call UPDATE_VALUES_Displayed  ;; Update values displayed with ones in variables
+	call BIRDGAME
+    call GetCommand
+    Update_the_Commands         ;; to be displayed in its place (L or R)
+    CMP finished_taking_input,1           
+    ;; THE PLAYER FINSHED TYPING
+    ;; WE WILL UPDATE chosen players Regs
+    JNE NOT_FINISHED_INPUT_YET
+    CALL EX_MAIN
+    Reset_Command   ;;TODO: CHANGE IT TO RESET ALL OF THEM
+    MOV finished_taking_input,0
+    ;;swap turns
+    SWAP_TURNS
+    NOT_FINISHED_INPUT_YET:
+    Wait_centi_seconds 1
+	JMP GAME_LOOP
+
+	QUIT_GAME_LOOP:
+	RET
+START_My_GAME ENDP
+
+
+
+UPDATE_VALUES_Displayed PROC 
+        ;; 
+        ;; The Code could be massive but if no problems -> WHY NOT??
+        DISPLAY_num_in_HEX_ ax_rec_l, 4 ,L_Ax    
+        DISPLAY_num_in_HEX_ bx_rec_l, 4 ,L_Bx    
+        DISPLAY_num_in_HEX_ cx_rec_l, 4 ,L_Cx    
+        DISPLAY_num_in_HEX_ dx_rec_l, 4 ,L_Dx    
+        DISPLAY_num_in_HEX_ si_rec_l, 4 ,L_SI    
+        DISPLAY_num_in_HEX_ di_rec_l, 4 ,L_DI    
+        DISPLAY_num_in_HEX_ bp_rec_l, 4 ,L_BP    
+        DISPLAY_num_in_HEX_ sp_rec_l, 4 ,L_SP   
+
+        xor ah,ah
+        mov al, L_00 ;; its a byte
+        DISPLAY_num_in_HEX_ DS_0_left, 2 ,ax  
+        xor ah,ah
+        mov al, L_01 ;; its a byte
+        DISPLAY_num_in_HEX_ DS_1_left, 2 ,ax  
+        xor ah,ah
+        mov al, L_02 ;; its a byte
+        DISPLAY_num_in_HEX_ DS_2_left, 2 ,ax  
+        xor ah,ah
+        mov al, L_03 ;; its a byte
+        DISPLAY_num_in_HEX_ DS_3_left, 2 ,ax  
+        xor ah,ah
+        mov al, L_04 ;; its a byte
+        DISPLAY_num_in_HEX_ DS_4_left, 2 ,ax  
+        xor ah,ah
+        mov al, L_05 ;; its a byte
+        DISPLAY_num_in_HEX_ DS_5_left, 2 ,ax  
+        xor ah,ah
+        mov al, L_06 ;; its a byte
+        DISPLAY_num_in_HEX_ DS_6_left, 2 ,ax  
+        xor ah,ah
+        mov al, L_07 ;; its a byte
+        DISPLAY_num_in_HEX_ DS_7_left, 2 ,ax  
+        xor ah,ah
+        mov al, L_08 ;; its a byte
+        DISPLAY_num_in_HEX_ DS_8_left, 2 ,ax  
+        xor ah,ah
+        mov al, L_09 ;; its a byte
+        DISPLAY_num_in_HEX_ DS_9_left, 2 ,ax  
+        xor ah,ah
+        mov al, L_A ;; its a byte
+        DISPLAY_num_in_HEX_ DS_A_left, 2 ,ax  
+        xor ah,ah
+        mov al, L_B ;; its a byte
+        DISPLAY_num_in_HEX_ DS_B_left, 2 ,ax  
+        xor ah,ah
+        mov al, L_C ;; its a byte
+        DISPLAY_num_in_HEX_ DS_C_left, 2 ,ax  
+        xor ah,ah
+        mov al, L_D ;; its a byte
+        DISPLAY_num_in_HEX_ DS_D_left, 2 ,ax  
+        xor ah,ah
+        mov al, L_E ;; its a byte
+        DISPLAY_num_in_HEX_ DS_E_left, 2 ,ax  
+        xor ah,ah
+        mov al, L_F ;; its a byte
+        DISPLAY_num_in_HEX_ DS_F_left, 2 ,ax  
+
+        ;; The Balls
+        xor ah,ah
+        mov al, ball_0 ;; its a byte
+        DISPLAY_num_in_HEX_ first_ball_left, 2 ,ax  
+        xor ah,ah
+        mov al, ball_1 ;; its a byte
+        DISPLAY_num_in_HEX_ second_ball_left, 2 ,ax  
+        xor ah,ah
+        mov al, ball_2 ;; its a byte
+        DISPLAY_num_in_HEX_ third_ball_left, 2 ,ax  
+        xor ah,ah
+        mov al, ball_3 ;; its a byte
+        DISPLAY_num_in_HEX_ forth_ball_left, 2 ,ax  
+        xor ah,ah
+        mov al, ball_4 ;; its a byte
+        DISPLAY_num_in_HEX_ fifth_ball_left, 2 ,ax  
+     
+
+
+
+        ;; TODO : CHANGE THE REG TO THE OTHER SIDE REGS
+        DISPLAY_num_in_HEX_ ax_rec_r, 4 ,R_Ax    
+        DISPLAY_num_in_HEX_ bx_rec_r, 4 ,R_Bx    
+        DISPLAY_num_in_HEX_ cx_rec_r, 4 ,R_Cx    
+        DISPLAY_num_in_HEX_ dx_rec_r, 4 ,R_Dx    
+        DISPLAY_num_in_HEX_ si_rec_r, 4 ,R_SI    
+        DISPLAY_num_in_HEX_ di_rec_r, 4 ,R_DI    
+        DISPLAY_num_in_HEX_ bp_rec_r, 4 ,R_BP    
+        DISPLAY_num_in_HEX_ sp_rec_r, 4 ,R_SP   
+
+
+
+
+        xor ah,ah
+        mov al, R_00 ;; its a byte
+        DISPLAY_num_in_HEX_ DS_0_right, 2 ,ax  
+        xor ah,ah
+        mov al, R_01 ;; its a byte
+        DISPLAY_num_in_HEX_ DS_1_right, 2 ,ax  
+        xor ah,ah
+        mov al, R_02 ;; its a byte
+        DISPLAY_num_in_HEX_ DS_2_right, 2 ,ax  
+        xor ah,ah
+        mov al, R_03 ;; its a byte
+        DISPLAY_num_in_HEX_ DS_3_right, 2 ,ax  
+        xor ah,ah
+        mov al, R_04 ;; its a byte
+        DISPLAY_num_in_HEX_ DS_4_right, 2 ,ax  
+        xor ah,ah
+        mov al, R_05 ;; its a byte
+        DISPLAY_num_in_HEX_ DS_5_right, 2 ,ax  
+        xor ah,ah
+        mov al, R_06 ;; its a byte
+        DISPLAY_num_in_HEX_ DS_6_right, 2 ,ax  
+        xor ah,ah
+        mov al, R_07 ;; its a byte
+        DISPLAY_num_in_HEX_ DS_7_right, 2 ,ax  
+        xor ah,ah
+        mov al, R_08 ;; its a byte
+        DISPLAY_num_in_HEX_ DS_8_right, 2 ,ax  
+        xor ah,ah
+        mov al, R_09 ;; its a byte
+        DISPLAY_num_in_HEX_ DS_9_right, 2 ,ax  
+        xor ah,ah
+        mov al, R_A ;; its a byte
+        DISPLAY_num_in_HEX_ DS_A_right, 2 ,ax  
+        xor ah,ah
+        mov al, R_B ;; its a byte
+        DISPLAY_num_in_HEX_ DS_B_right, 2 ,ax  
+        xor ah,ah
+        mov al, R_C ;; its a byte
+        DISPLAY_num_in_HEX_ DS_C_right, 2 ,ax  
+        xor ah,ah
+        mov al, R_D ;; its a byte
+        DISPLAY_num_in_HEX_ DS_D_right, 2 ,ax  
+        xor ah,ah
+        mov al, R_E ;; its a byte
+        DISPLAY_num_in_HEX_ DS_E_right, 2 ,ax  
+        xor ah,ah
+        mov al, R_F ;; its a byte
+        DISPLAY_num_in_HEX_ DS_F_right, 2 ,ax  
+
+
+        ;;points
+        DISPLAY_num_in_HEX_ Points_BOX_left, 4 ,playerPoints  
+        DISPLAY_num_in_HEX_ Points_BOX_right, 4 ,right_playerPoints  
+        
+        ;;Command 
+        DisplayString_AT_position_and_move_cursor FirstNameData CL_row_left
+        mov dx,CL_row_left
+        add dl, ActualFirstNameSize ;;to move cursor
+        MoveCursorTo dx
+        DisplayString separator_ 
+        DisplayString L_commandData
+
+        DisplayString_AT_position_and_move_cursor SecondNameData CL_row_RIGHT
+        mov dx,CL_row_RIGHT
+        add dl, ActualSecondNameSize ;;to move cursor
+        MoveCursorTo dx
+        DisplayString separator_ 
+        DisplayString R_commandData
+        
+
+
+        ret
+UPDATE_VALUES_Displayed ENDP
+
+
+;To Draw The background
+DRAW_BACKGROUND PROC  
+    mov ah, 0ch
+	mov bx,  offset backGround_left
+	KeepDrawingLeft:
+			drawPixelWithOffset [bx], [bx+1], [bx+2],  0,  0
+			add bx, 3
+			cmp bx, offset back_leftSize
+	JNE KeepDrawingLeft
+
+        mov ah, 0ch
+	mov bx,  offset backGround_right
+	KeepDrawingright:
+			drawPixelWithOffset [bx], [bx+1], [bx+2],  160,  0
+			add bx, 3
+			cmp bx, offset back_rightSize
+	JNE KeepDrawingright
+
+
+
+        ret
+DRAW_BACKGROUND ENDP
+
+
+;; Draws the Bird 
+BIRDGAME PROC
+    
+    
+    
+
+    checkTimeInterval gamestatus, prevTime, timeInterval
+
+    Draw_IMG_with_color paddle_x,paddle_y,paddleImg,paddleColor,paddleSize
+    Draw_IMG_with_color right_paddle_x,right_paddle_y,right_paddleImg,right_paddleColor,right_paddleSize
+
+    movePaddle paddle_x,paddle_velocity_x,paddle_y,paddle_velocity_y,paddleUp,paddleDown,paddleRight,paddleLeft,135,0
+    movePaddle right_paddle_x,right_paddle_velocity_x,right_paddle_y,right_paddle_velocity_y,right_paddleUp,right_paddleDown,right_paddleRight,right_paddleLeft,295,150
+
+    ;checkTime
+
+    randomBirdColor birdStatus,birdColor,colorIndex
+    setBirdPointsWithTheCorrespondingColor colorIndex,birdPoints,pointsOfColors
+
+    randomBirdColor right_birdStatus,right_birdColor,right_colorIndex
+    setBirdPointsWithTheCorrespondingColor right_colorIndex,right_birdPoints,pointsOfColors
+
+    ;clearScreen 
+
+    cmp gamestatus,0
+    je skipDrawingBirds
+
+    ;left bird
+    Draw_IMG_with_color birdX,birdY,BirdImg,birdcolor,BirdSize
+    moveBird 148,0,birdVelocity,birdX
+
+
+    ;right bird
+    Draw_IMG_with_color right_birdX,right_birdY,right_BirdImg,right_birdcolor,right_BirdSize
+    moveBird 304,160,right_birdVelocity,right_birdX
+   
+    skipDrawingBirds:
+
+    checkForFire fireScanCode,paddle_x,paddle_width,BallSize,fireBall_x,fireBall_y,ifFireIsPressed,paddle_y
+ 
+    cmp ifFireIsPressed,0
+    je checkRight
+
+    moveFireBall fireBall_velocity_y,fireBall_y,ifFireIsPressed
+    Draw_IMG_with_color fireBall_x,fireBall_y,BallImg,fireballColor,BallSize
+    compareBirdWithBall birdX,fireBall_x,fireBall_y,BirdSize,0,birdStatus,playerPoints,birdPoints,colorIndex
+
+    checkRight: 
+    checkForFire right_fireScancode,right_paddle_x,right_paddle_width,BallSize,right_fireBall_x,right_fireBall_y,right_ifFireIsPressed,right_paddle_y
+
+    cmp right_ifFireIsPressed,0
+    je midDraw
+
+    moveFireBall right_fireBall_velocity_y,right_fireBall_y,right_ifFireIsPressed
+    Draw_IMG_with_color right_fireBall_x,right_fireBall_y,BallImg,fireballColor,BallSize
+    compareBirdWithBall right_birdX,right_fireBall_x,right_fireBall_y,right_BirdSize,160,right_birdStatus,right_playerPoints,right_birdPoints,right_colorIndex
+
+midDraw:
+    RET
+BIRDGAME ENDP
+
+GetCommand PROC
+    mov ah,1
+    int 16h ;-> looks at the buffer
+    jz FinishedTakingChar ;nothing is clicked
+
+    cmp al,20H  ;;a space 
+    jb CHECK_IF_ENTER11 
+    cmp al, ']'
+    ja CHECK_IF_ENTER11
+    JMP ADD_TO_COMMAND   ;;its a valid one 
+    
+    
+    CHECK_IF_ENTER11:
+    cmp ah,1Ch ;; check if enter is pressed
+    jne CHECK_IF_BACKSLASH11
+    mov finished_taking_input,1
+    jmp ADD_TO_COMMAND  ;; TO ADD THE ENTER
+
+    CHECK_IF_BACKSLASH11:
+    cmp ah,0eh
+    jne FinishedTakingChar  ;;NOT ANY OFTHE THREE CASES
+    ;if size>0 then delete the last char and dec string
+    READ_KEY
+    cmp actualcommand_Size,0
+    je FinishedTakingChar
+    mov di,offset THE_COMMAND 
+    mov bl,actualcommand_Size 
+    dec bl
+    xor bh,bh
+    add di,bx
+    mov byte ptr [di], '$'   
+    dec actualcommand_Size
+    jmp FinishedTakingChar 
+    ADD_TO_COMMAND:
+    READ_KEY
+    ;then store The char and print it then inc the size
+   cmp actualcommand_Size,15  ;; command is full  -> in order to not delete $ at the end
+    je FinishedTakingChar
+    mov di,offset THE_COMMAND 
+    mov bl,actualcommand_Size
+    xor bh,bh
+    add di,bx
+    mov [di],al ;;the char is moved to the end of string
+    inc actualcommand_Size
+    FinishedTakingChar:
+    ret
+GetCommand ENDP
+
+
+
+
+end main
