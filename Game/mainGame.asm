@@ -12,6 +12,7 @@
 	MAIN_Screen_message1 db 'To Start Chatting press F1','$'
 	MAIN_Screen_message2 db 'To Start Game press F2$'  
 	MAIN_Screen_message3 db 'To end Program press ESC$'   
+    STATUS_BAR_MSG db '_______________________________________________________________________________$'
 	INSTRUCTIONS_msg db 'SOME INSTRUCTIONS OF THE GAME... blA bla bla ... $'
 	
 
@@ -539,6 +540,7 @@ timeInterval db 3 ;the shooting game apears/disappears every time interval
 			;; F2 -> 3C   
 			;; F1 -> 3B
 			CLR_Screen_with_Scrolling_TEXT_MODE
+            DEAW_STATUS_BAR
 			DisplayString_AT_position_not_moving_cursor MAIN_Screen_message1 ,0C16h
 			DisplayString_AT_position_not_moving_cursor MAIN_Screen_message2 ,0D16h
 			DisplayString_AT_position_not_moving_cursor MAIN_Screen_message3 ,0E16h
@@ -630,6 +632,33 @@ timeInterval db 3 ;the shooting game apears/disappears every time interval
 		ret
 	NAME_VALIDATION ENDP
 
+
+    dis2dig proc
+	; displays 2 digit number in AX
+	mov bl, 10
+    XOR BH,BH
+	div bl
+	mov dh, ah
+	
+	mov ah, 0
+	
+    XOR BH,BH
+	div bl
+	mov dl, ah
+	
+	add dl, '0'
+	add dh, '0'
+	
+	MOV AL,DL  ;al contains the char to print   
+    mov ah, 0eh           ;0eh = 14 
+    mov bl, 0ch           ;Color is red
+    int 10h ; print char -> auto advances cursor
+	MOV AL,DH  ;al contains the char to print   
+    mov ah, 0eh           ;0eh = 14 
+    mov bl, 0ch           ;Color is red
+    int 10h ; print char -> auto advances cursor
+	ret
+	dis2dig endp
 ;THE GAME AND LEVEL SELECTION
 GAME_WELCOME_PAGES PROC
 

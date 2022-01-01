@@ -8,6 +8,7 @@ ENDM DisplayString
 MoveCursorTo MACRO pos
     push ax
     push dx
+    XOR bx,bx
     mov ah,2h
     mov dx,pos
     int 10h
@@ -77,7 +78,7 @@ DisplayString_AT_position_not_moving_cursor MACRO STR, pos
     mov ah,3
     int 10h ;; get cursor in dh-dl  
     mov si , dx ; save it To set it back at the end
-    mov bh,0       ;page number
+    
 
     mov dx,pos
     mov ah,2
@@ -112,15 +113,51 @@ UPDATE_notification_bar MACRO new_msg
     ;; updates the notification bar with a new message
     ;; done using Scrolling
     ;scroll the screen
-    mov ax, 0701h                ;Scroll Screen AH=06 (Scroll), AL=1 one line
+    mov ax, 0701h                ;Scroll Screen AH=07(Scroll DOWN), AL=1 one line
 	mov bh, 0Eh                   ;Normal attributes -> 07 ;; 0E-> yellow text
 	mov cx, 1700h                  ;from row 17h col 0
 	mov dx, 1850H                ;To end of screen
 	int 10h                      ;Clear the first line
 
+    MoveCursorTo 1700H
+	
+	; read time
+	
+	mov ah, 2ch
+	int 21h
 
-    DisplayString_AT_position_not_moving_cursor new_msg ,1705h ;print in the next row
+	
+	mov al, ch
+	mov ah, 0
+	call dis2dig
+	
+	
+    MOV AL,':'  ;al contains the char to print   
+    mov ah, 0eh           ;0eh = 14 
+    mov bl, 0ch           ;Color is red
+    int 10h ; print char -> auto advances cursor
+	
+	mov ah, 0
+	mov al, cl
+	
+	call dis2dig
+	
+	MOV AL,':'  ;al contains the char to print   
+    mov ah, 0eh           ;0eh = 14 
+    mov bl, 0ch           ;Color is red
+    int 10h ; print char -> auto advances cursor
+	MOV AL,' '  ;al contains the char to print   
+    mov ah, 0eh           ;0eh = 14 
+    mov bl, 0ch           ;Color is red
+    int 10h ; print char -> auto advances cursor
+	
+    DisplayString_AT_position_not_moving_cursor new_msg ,1707h ;print in the next row
 endm UPDATE_notification_bar
+
+DEAW_STATUS_BAR MACRO 
+    DisplayString_AT_position_not_moving_cursor STATUS_BAR_MSG ,1600h ;print in the next row
+    
+ENDM
 
 
 ;;There should be another clear with scrolling 
