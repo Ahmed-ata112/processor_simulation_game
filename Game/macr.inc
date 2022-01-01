@@ -71,6 +71,18 @@ INC_CURSOR MACRO N
 
 ENDM INC_CURSOR
 
+Reset_Command macro
+    xor CX,CX
+    mov CX, 30
+    mov di , offset THE_COMMAND
+    mov al, '$'
+    rep stosb 
+    MOV command_Size,0
+
+endm Reset_Command
+
+
+
 DisplayString_AT_position_not_moving_cursor MACRO STR, pos
     ;assumes Text mode
     ;returns The cursor to its initial position before it ends
