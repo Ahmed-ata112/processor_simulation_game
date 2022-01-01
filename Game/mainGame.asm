@@ -1051,7 +1051,7 @@ checkLeftPlayer:
 	
     cmp L_BP,105eh
     jne exitCheckValuesInRegisters
-
+leftPlayerWins:
     mov leftPlayerStatus,1 
     exitCheckValuesInRegisters:
 ret
