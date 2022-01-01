@@ -236,94 +236,94 @@
 
 	;;For The Graphics
 
-;;;;;;---------------SARAHHHHHHHHHHHHHHH;;;;;;;;;;;;;;;;;;;;;;;
-time_aux db 0
+    ;;;;;;---------------SARAHHHHHHHHHHHHHHH;;;;;;;;;;;;;;;;;;;;;;;
+    time_aux db 0
 
 
 
-birdX dw 0
-birdY dw 0Ah
-BirdWidth dw 13
-birdVelocity dw 4
+    birdX dw 0
+    birdY dw 0Ah
+    BirdWidth dw 13
+    birdVelocity dw 4
 
 
 
 
-right_birdX dw 147
-right_birdY dw 0Ah
-right_BirdWidth dw 13
-right_birdVelocity dw 4
+    right_birdX dw 147
+    right_birdY dw 0Ah
+    right_BirdWidth dw 13
+    right_birdVelocity dw 4
 
 
 
-paddle_Width dw 20 
-paddle_x dw 5
-paddle_y dw 185 ;at the bottom of the 320*200 pixels screen
-paddle_velocity_x dw 10
-paddle_velocity_y dw 5
-paddleColor db 1011b
-paddleUp db 72 ; scan code of up arrow
-paddleDown db 80 ; scan code of down arrow
-paddleRight db 77 ; scan code of right arrow
-paddleLeft db 75 ; scan code of left arrow
+    paddle_Width dw 20 
+    paddle_x dw 5
+    paddle_y dw 185 ;at the bottom of the 320*200 pixels screen
+    paddle_velocity_x dw 10
+    paddle_velocity_y dw 5
+    paddleColor db 1011b
+    paddleUp db 72 ; scan code of up arrow
+    paddleDown db 80 ; scan code of down arrow
+    paddleRight db 77 ; scan code of right arrow
+    paddleLeft db 75 ; scan code of left arrow
 
 
 
-right_paddle_Width dw 20 
-right_paddle_x dw 160
-right_paddle_y dw 185 ;at the bottom of the 320*200 pixels screen
-right_paddle_velocity_x dw 10
-right_paddle_velocity_y dw 5
-right_paddleColor db 1101b
-right_paddleUp db 71 ; scan code of 7 when num lock is turned off
-right_paddleDown db 73 ; scan code of 9 when num lock is turned off
-right_paddleRight db 81 ; scan code of 1 when num lock is turned off
-right_paddleLeft db 79 ;  scan code of 3 when num lock is turned off
+    right_paddle_Width dw 20 
+    right_paddle_x dw 160
+    right_paddle_y dw 185 ;at the bottom of the 320*200 pixels screen
+    right_paddle_velocity_x dw 10
+    right_paddle_velocity_y dw 5
+    right_paddleColor db 1101b
+    right_paddleUp db 71 ; scan code of 7 when num lock is turned off
+    right_paddleDown db 73 ; scan code of 9 when num lock is turned off
+    right_paddleRight db 81 ; scan code of 1 when num lock is turned off
+    right_paddleLeft db 79 ;  scan code of 3 when num lock is turned off
 
 
 
-ballWidth dw 9
-fireballColor db 0fh
+    ballWidth dw 9
+    fireballColor db 0fh
 
-;left fireball
-fireBall_x dw ?
-fireBall_y dw 190
-fireBall_velocity_y dw 20
-ifFireIsPressed db 0
-fireScanCode db 53
-;right fireball
-right_fireBall_x dw ?
-right_fireBall_y dw 190
-right_fireBall_velocity_y dw 20
-right_ifFireIsPressed db 0
-right_fireScanCode db  04eh
+    ;left fireball
+    fireBall_x dw ?
+    fireBall_y dw 190
+    fireBall_velocity_y dw 20
+    ifFireIsPressed db 0
+    fireScanCode db 53
+    ;right fireball
+    right_fireBall_x dw ?
+    right_fireBall_y dw 190
+    right_fireBall_velocity_y dw 20
+    right_ifFireIsPressed db 0
+    right_fireScanCode db  04eh
 
-        ;green, light magenta, red, blue, yellow
-colors db  47,           36, 41,  54,    43
-        
-                  ;green, light magenta, red, blue, yellow
-pointsOfColors db       1,            2,   3,    4,      5  
+            ;green, light magenta, red, blue, yellow
+    colors db  47,           36, 41,  54,    43
+            
+                    ;green, light magenta, red, blue, yellow
+    pointsOfColors db       1,            2,   3,    4,      5  
 
-numOfShotBalls db 0,0,0,0,0
+    numOfShotBalls db 0,0,0,0,0
 
-colorIndex db 0
-birdColor db 47
-birdStatus db 1
-birdPoints db 1
+    colorIndex db 0
+    birdColor db 47
+    birdStatus db 1
+    birdPoints db 1
 
-right_colorIndex db 0
-right_birdColor db 47
-right_birdStatus db 1
-right_birdPoints db 1
-
-
-playerPoints dw 0
-right_playerPoints dw 0
+    right_colorIndex db 0
+    right_birdColor db 47
+    right_birdStatus db 1
+    right_birdPoints db 1
 
 
-gameStatus db 0
-prevTime db 0 ;variable used when checking if the time has changed
-timeInterval db 3 ;the shooting game apears/disappears every time interval
+    playerPoints dw 0
+    right_playerPoints dw 0
+
+
+    gameStatus db 0
+    prevTime db 0 ;variable used when checking if the time has changed
+    timeInterval db 3 ;the shooting game apears/disappears every time interval
 
 ;;;;-------------Comand Line Input------------;;;;;;
     command LABEL BYTE ; named the next it the same name 
@@ -368,6 +368,12 @@ timeInterval db 3 ;the shooting game apears/disappears every time interval
     
     playersStatus db 0 ;; 0 -> nothing , 1 -> left palyer lost/right player won , 2 -> right player lost/left player won
 
+
+    IS_USED_POWERUP3 db 0 ;;TO INDICATE IF USED BEFORE
+    right_IS_USED_POWERUP3 db 0 ;;TO INDICATE IF USED BEFORE
+   
+    IS_USED_POWERUP4 db 0 ;;TO INDICATE IF USED BEFORE
+    right_IS_USED_POWERUP4 db 0 ;;TO INDICATE IF USED BEFORE
 
 .code
 	main proc far
@@ -1261,16 +1267,26 @@ CHECK_POWERUPS PROC
     check_if_F7:
     cmp ah,65       ;F7
     jne check_if_F8
+    READ_KEY ;;READ the f7
 
-    READ_KEY
+    cmp game_turn,1
+    jne check_if_the_other_game_turn
+    cmp IS_USED_POWERUP3,1
+    je FinishedCheckingPowerUps ;;no more tries
     CALL powerUp_3
     JMP FinishedCheckingPowerUps
-    
+    check_if_the_other_game_turn:
+    cmp right_IS_USED_POWERUP3,1
+    je FinishedCheckingPowerUps ;;no more tries
+    CALL powerUp_3
+    JMP FinishedCheckingPowerUps
+
 
     check_if_F8:
     cmp ah,66       ;F8
     jne check_if_F9
-
+    READ_KEY ;;READ the f8
+    call powerUp_4
     check_if_F9:
 
 
@@ -1346,19 +1362,63 @@ powerUp_3 PROC
     READ_KEY
     MOV forbidden_char ,AL
     sub playerPoints,8
+    mov IS_USED_POWERUP3,1
+
     JMP NOT_POWERUP_3
     exec_on_other3:
     cmp right_playerPoints,8 ;;consumes 3 points
     JNB RETSARAHTERR
     JMP NOT_POWERUP_3
     RETSARAHTERR:
-
     READ_KEY
     MOV right_forbidden_char ,AL
     sub RIGHT_playerPoints,8
+    mov right_IS_USED_POWERUP3,1
     NOT_POWERUP_3:
     RET
 powerUp_3 endP  
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+powerUp_4 PROC
+    cmp game_turn,1 ;checks if it's left player's turn 
+    jne checkIfItsRightPlayerTurn_powerUp_4
+    cmp playerPoints,30
+    jnb  skipme1
+    jmp exitPowerUp_4
+    skipme1:
+    sub playerPoints,30
+    jmp clearAllRegisters
+
+
+checkIfItsRightPlayerTurn_powerUp_4:
+
+    cmp right_playerPoints,30
+    jnb  SKIPME2
+    jmp exitPowerUp_4
+    SKIPME2:
+    sub RIGHT_playerPoints,30
+clearAllRegisters:
+
+    mov L_AX,0
+    mov L_BX,0
+    mov L_CX,0
+    mov L_DX,0
+    mov L_SI,0
+    mov L_DI,0
+    mov L_SP,0
+    mov L_BP,0
+    mov R_AX,0
+    mov R_BX,0
+    mov R_CX,0
+    mov R_DX,0
+    mov R_SI,0
+    mov R_DI,0
+    mov R_SP,0
+    mov R_BP,0
+exitPowerUp_4:
+ret
+powerUp_4 endp
 
 
 
