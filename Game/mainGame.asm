@@ -27,7 +27,7 @@
 	choose_hidden_char db 'Choose A Forbidden char: $'
 	you_cannot_write_msg db 'You Cannot write char: $'
 	forbidden_char db '?'       ;; The hiddden char chosen by current player
-	right_forbidden_char db 'E'
+	right_forbidden_char db 'R'
     contains_forbidden db 0
 	MY_REGs_msg db 'MY REGS$'
 	HIS_REGs_msg db 'HIS REGS$'
@@ -364,6 +364,9 @@ timeInterval db 3 ;the shooting game apears/disappears every time interval
     HASH_Operand2 DW 0H                  ;MOV Al,[00] DONE
     HASH_Operand1 DW 0H                 ; ADD AX,[00] DONE
 
+    target_value dw 105eh
+    
+    playersStatus db 0 ;; 0 -> nothing , 1 -> left palyer lost/right player won , 2 -> right player lost/left player won
 
 
 .code
@@ -581,6 +584,19 @@ START_My_GAME PROC
     ;;swap turns
     SWAP_TURNS
     NOT_FINISHED_INPUT_YET:
+    CALL checkValuesInRegisters
+    CALL checkIfAnyPlayerLost
+    
+    CMP playersStatus,1 ;; LEFT LOST
+    JNE CHECK_IF_RIGHT_LOST
+    JMP QUIT_GAME_LOOP
+    CHECK_IF_RIGHT_LOST:
+    CMP playersStatus,2 ;; Right LOST
+
+    JNE no_ONE_LOST_YET
+    JMP QUIT_GAME_LOOP
+    no_ONE_LOST_YET:
+
     Wait_centi_seconds 1
 	JMP GAME_LOOP
 
@@ -1143,4 +1159,82 @@ ret
 endp exchangeValuesInRegisters
 
 
+
+checkValuesInRegisters proc
+
+    mov ax,target_value
+
+    cmp R_AX,ax
+    je leftPlayerWins
+
+    cmp R_BX,ax
+    je leftPlayerWins
+    
+    cmp R_CX,ax
+    je leftPlayerWins
+    
+    cmp R_DX,ax
+    je leftPlayerWins
+    
+    cmp R_SI,ax
+    je leftPlayerWins
+    
+    cmp R_DI,ax
+    je leftPlayerWins
+    
+    cmp R_SP,ax
+    je leftPlayerWins
+    
+    cmp R_BP,ax
+    jne checkLeftPlayer
+
+
+    leftPlayerWins:
+    mov playersStatus,2 ;; RIGHT LOST LEFT WINS
+    jmp exitCheckValuesInRegisters
+
+checkLeftPlayer:
+	cmp L_AX,ax
+    je rightPlayerWins  
+	
+    cmp L_BX,ax
+    je rightPlayerWins 
+	
+    cmp L_CX,ax
+    je rightPlayerWins  
+	
+    cmp L_DX,ax
+    je rightPlayerWins 
+	
+    cmp L_SI,ax
+    je rightPlayerWins 
+	
+    cmp L_DI,ax
+    je rightPlayerWins 
+	
+    cmp L_SP,ax
+    je rightPlayerWins 
+	
+    cmp L_BP,ax
+    jne exitCheckValuesInRegisters
+rightPlayerWins:
+    mov playersStatus,1 
+    exitCheckValuesInRegisters:
+    ret
+checkValuesInRegisters endp 
+
+checkIfAnyPlayerLost proc 
+
+    cmp playerPoints,0
+    jg checkIfRightPlayerLost
+    mov playersStatus,1
+
+checkIfRightPlayerLost:
+    cmp right_playerPoints,0
+    jg exitCheckIfAnyPlayerLost
+    mov playersStatus,2
+
+    exitCheckIfAnyPlayerLost:
+ret
+checkIfAnyPlayerLost endp 
 end main
