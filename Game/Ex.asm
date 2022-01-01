@@ -1,4 +1,58 @@
- 
+include valid_in.inc
+
+Command_valid PROC
+
+CALL split_command
+split_operands Two_Operands_Together_splited Operand1 Operand2
+
+
+SizeMismatchValidation Operand1 Operand2 Command_valid
+MOV AL,Command_valid
+CMP AL,0    ; 0 -> INVALID   1-> VALID
+JNE C54321
+JMP CONT54321
+C54321:
+
+Check_memorytomemory Operand1 Operand2 Command_valid 
+MOV AL,Command_valid
+CMP AL,0    ; 0 -> INVALID   1-> VALID
+JNE C543212
+JMP CONT54321
+C543212:
+
+
+checkOperandsRegistersNames Operand1 Operand2 Command_valid
+MOV AL,Command_valid
+CMP AL,0    ; 0 -> INVALID   1-> VALID
+JNE C5432123
+JMP CONT54321
+C5432123:
+
+check_if_in_array valid_addressing_mode_regs, 3, 4, Operand1, Command_valid
+
+MOV AL,Command_valid
+CMP AL,0    ; 0 -> INVALID   1-> VALID
+JNE C54321234
+JMP CONT54321
+C54321234:
+
+
+check_if_in_array valid_addressing_mode_regs, 3, 4, Operand2, Command_valid
+
+MOV AL,Command_valid
+CMP AL,0    ; 0 -> INVALID   1-> VALID
+JNE C543212345
+JMP CONT54321
+C543212345:
+
+
+
+
+CONT54321:
+
+	  ret
+Command_valid  ENDP 
+
 ex_MAIN PROC 
 
     MOV DL,'N'

@@ -91,6 +91,8 @@ check_if_in_array macro arr, arr_len, element_size , op ,result
 
 check_if_in_array endm
 
+
+
     ;;  Hany
 split_operands MACRO source des1 des2 ; to split the two operand (des1->first oper && des2->second oper) 
 	    
@@ -119,16 +121,16 @@ moving2:
 
 ENDM split_operands
 
-Check_memorytomemory MACRO des1 des2 Result_2  ;; check if it iss memory to memory --  Result_2 = 1 if it is not valid and 0 for valid  
+Check_memorytomemory MACRO des1 des2 Result_2  ;; check if it iss memory to memory --  Result_2 = 0 if it is not valid and 1 for valid  
         
     cmp [des1],'['
     jnz no_bracket
     cmp [des2],'['
     jnz no_bracket
-    mov [Result_2],1
+    mov [Result_2],0
     jmp return
     no_bracket:
-    mov [Result_2],0
+    mov [Result_2],1
     return:
         
 ENDM Check_memorytomemory
