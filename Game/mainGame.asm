@@ -1247,24 +1247,25 @@ CHECK_POWERUPS PROC
     cmp ah,63       ;F5
     jne check_if_F6
     ;execute on your Procecceor
-
-    cmp game_turn,1
-    jne exec_on_other
-    cmp playerPoints,3 ;;consumes 3 points
-    jb FinishedCheckingPowerUps
-    EXECUTE_THECOMMAND_AT_SIDE 2
-    exec_on_other:
-    cmp right_playerPoints,3 ;;consumes 3 points
-    jb FinishedCheckingPowerUps
-    EXECUTE_THECOMMAND_AT_SIDE 1
+    READ_KEY
+    CALL powerUp_1
+    JMP FinishedCheckingPowerUps
     check_if_F6:
     cmp ah,64       ;F6
     jne check_if_F7
 
+    READ_KEY
+    CALL powerUp_2
+    JMP FinishedCheckingPowerUps
+    
     check_if_F7:
     cmp ah,65       ;F7
     jne check_if_F8
 
+    READ_KEY
+    CALL powerUp_3
+    JMP FinishedCheckingPowerUps
+    
 
     check_if_F8:
     cmp ah,66       ;F8
@@ -1280,13 +1281,84 @@ CHECK_POWERUPS ENDP
 
 
 ;execute a command at your proceccor
-powerUp_1 macro turn
-    
-    ReadString command
-    EXECUTE_THECOMMAND_AT_SIDE turn
+powerUp_1 PROC
+    cmp game_turn,1
+    jne exec_on_other1
+    cmp playerPoints,5 ;;consumes 3 points
+    JNB EDCESDAD
+    JMP NOT_POWERUP_1
+    EDCESDAD:
+    ReadString COMMAND
+    EXECUTE_THECOMMAND_AT_SIDE 2
+    SUB playerPoints,5
     Reset_Command
-endm powerUp_1 
+    JMP NOT_POWERUP_1
 
+    exec_on_other1:
+    cmp right_playerPoints,5 ;;consumes 3 points
+    JNB ASDASDASD
+    JMP NOT_POWERUP_1
+    ASDASDASD:
+    ReadString COMMAND
+    EXECUTE_THECOMMAND_AT_SIDE 1
+    SUB right_playerPoints,5
+    Reset_Command
+ NOT_POWERUP_1:
+    RET
+powerUp_1 endP  
+
+powerUp_2 PROC
+    cmp game_turn,1
+    jne exec_on_other2
+    cmp playerPoints,3 ;;consumes 3 points
+    JNB SARAH112
+    JMP NOT_POWERUP_2
+    SARAH112:
+    ReadString COMMAND
+    EXECUTE_THECOMMAND_AT_SIDE 2
+    EXECUTE_THECOMMAND_AT_SIDE 1
+    SUB playerPoints,3
+    Reset_Command
+    JMP NOT_POWERUP_2
+
+    exec_on_other2:
+    cmp right_playerPoints,3 ;;consumes 3 points
+    JNB RETSARAHTER
+    JMP NOT_POWERUP_2
+    RETSARAHTER:
+    ReadString COMMAND
+    EXECUTE_THECOMMAND_AT_SIDE 2
+    EXECUTE_THECOMMAND_AT_SIDE 1
+    SUB right_playerPoints,3
+    Reset_Command
+ NOT_POWERUP_2:
+    RET
+powerUp_2 endP  
+
+
+powerUp_3 PROC
+    cmp game_turn,1
+    jne exec_on_other3
+    cmp playerPoints,8 ;;consumes 3 points
+    JNB SARAH1112
+    JMP NOT_POWERUP_3
+    SARAH1112:
+    READ_KEY
+    MOV forbidden_char ,AL
+    sub playerPoints,8
+    JMP NOT_POWERUP_3
+    exec_on_other3:
+    cmp right_playerPoints,8 ;;consumes 3 points
+    JNB RETSARAHTERR
+    JMP NOT_POWERUP_3
+    RETSARAHTERR:
+
+    READ_KEY
+    MOV right_forbidden_char ,AL
+    sub RIGHT_playerPoints,8
+    NOT_POWERUP_3:
+    RET
+powerUp_3 endP  
 
 
 
