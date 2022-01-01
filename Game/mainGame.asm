@@ -1109,20 +1109,6 @@ endp checkIfAnyPlayerLost
 
 
 
-; checkIfAnyPlayerWon proc 
-
-;     cmp leftPlayerStatus,1
-;     je exitCheckIfAnyPlayerWon
-
-;     cmp rightPlayerStatus,1
-;     je exitCheckIfAnyPlayerWon
-
-;     exitCheckIfAnyPlayerWon:
-; ret
-; endp checkIfAnyPlayerWon
-
-
-
 exchangeValuesInRegisters proc 
 
     cmp game_turn,1
