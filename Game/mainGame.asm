@@ -488,7 +488,7 @@ right_birdPoints db 1
 playerPoints dw 0
 right_playerPoints dw 0
 
-leftPlayerStatus db 0 ;; 1 -> the player has won
+leftPlayerStatus db 0 ;; 1 -> the player has won 2-? the player has lost
 rightPlayerStatus db 0
 
 
@@ -999,64 +999,81 @@ GetCommand ENDP
 checkValuesInRegisters proc
 
     cmp R_AX,105eh
-    je rightPlayerWins
+    je leftPlayerWins
 
     cmp R_BX,105eh
-    je rightPlayerWins
+    je leftPlayerWins
     
     cmp R_CX,105eh
-    je rightPlayerWins
+    je leftPlayerWins
     
     cmp R_DX,105eh
-    je rightPlayerWins
+    je leftPlayerWins
     
     cmp R_SI,105eh
-    je rightPlayerWins
+    je leftPlayerWins
     
     cmp R_DI,105eh
-    je rightPlayerWins
+    je leftPlayerWins
     
     cmp R_SP,105eh
-    je rightPlayerWins
+    je leftPlayerWins
     
     cmp R_BP,105eh
-    je rightPlayerWins
+    je leftPlayerWins
 
     jne checkLeftPlayer
 
-    rightPlayerWins:
-    mov rightPlayerStatus,1
+    leftPlayerWins:
+    mov leftPlayerStatus,1
     jmp exitCheckValuesInRegisters
 
 checkLeftPlayer:
 	cmp L_AX,105eh
-    je leftPlayerWins  
+    je rightPlayerWins  
 	
     cmp L_BX,105eh
-    je leftPlayerWins 
+    je rightPlayerWins 
 	
     cmp L_CX,105eh
-    je leftPlayerWins  
+    je rightPlayerWins  
 	
     cmp L_DX,105eh
-    je leftPlayerWins 
+    je rightPlayerWins 
 	
     cmp L_SI,105eh
-    je leftPlayerWins 
+    je rightPlayerWins 
 	
     cmp L_DI,105eh
-    je leftPlayerWins 
+    je rightPlayerWins 
 	
     cmp L_SP,105eh
-    je leftPlayerWins 
+    je rightPlayerWins 
 	
     cmp L_BP,105eh
     jne exitCheckValuesInRegisters
-leftPlayerWins:
-    mov leftPlayerStatus,1 
+rightPlayerWins:
+    mov rightPlayerStatus,1 
     exitCheckValuesInRegisters:
 ret
 endp checkValuesInRegisters
+
+checkIfAnyPlayerLost proc 
+
+    cmp playerPoints,0
+    jg checkIfRightPlayerLost
+    mov leftPlayerStatus,2
+
+checkIfRightPlayerLost:
+    cmp right_playerPoints,0
+    jg exitCheckIfAnyPlayerLost
+    mov rightPlayerStatus,2
+
+    exitCheckIfAnyPlayerLost:
+ret
+endp checkIfAnyPlayerLost
+
+
 
 checkIfAnyPlayerWon proc 
 
