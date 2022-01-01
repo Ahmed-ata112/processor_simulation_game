@@ -488,6 +488,10 @@ right_birdPoints db 1
 playerPoints dw 0
 right_playerPoints dw 0
 
+leftPlayerStatus db 0 ;; 1 -> the player has won
+rightPlayerStatus db 0
+
+
 
 gameStatus db 0
 prevTime db 0 ;variable used when checking if the time has changed
@@ -667,6 +671,7 @@ START_GAME PROC
 	call DRAW_BACKGROUND     ;;Draws The BackGround Image
     call UPDATE_VALUES_Displayed  ;; Update values displayed with ones in variables
 	call BIRDGAME
+    call checkValuesInRegisters
     call GetCommand
     Wait_centi_seconds 1
 
@@ -990,6 +995,78 @@ GetCommand PROC
 GetCommand ENDP
 
 
+checkValuesInRegisters proc
 
+    cmp R_AX,105eh
+    je rightPlayerWins
+
+    cmp R_BX,105eh
+    je rightPlayerWins
+    
+    cmp R_CX,105eh
+    je rightPlayerWins
+    
+    cmp R_DX,105eh
+    je rightPlayerWins
+    
+    cmp R_SI,105eh
+    je rightPlayerWins
+    
+    cmp R_DI,105eh
+    je rightPlayerWins
+    
+    cmp R_SP,105eh
+    je rightPlayerWins
+    
+    cmp R_BP,105eh
+    je rightPlayerWins
+
+    jne checkLeftPlayer
+
+    rightPlayerWins:
+    mov rightPlayerStatus,1
+    jmp exitCheckValuesInRegisters
+
+checkLeftPlayer:
+	cmp L_AX,105eh
+    je leftPlayerWins  
+	
+    cmp L_BX,105eh
+    je leftPlayerWins 
+	
+    cmp L_CX,105eh
+    je leftPlayerWins  
+	
+    cmp L_DX,105eh
+    je leftPlayerWins 
+	
+    cmp L_SI,105eh
+    je leftPlayerWins 
+	
+    cmp L_DI,105eh
+    je leftPlayerWins 
+	
+    cmp L_SP,105eh
+    je leftPlayerWins 
+	
+    cmp L_BP,105eh
+    jne exitCheckValuesInRegisters
+
+    mov leftPlayerStatus,1 
+    exitCheckValuesInRegisters:
+ret
+endp checkValuesInRegisters
+
+checkIfAnyPlayerWon proc 
+
+    cmp leftPlayerStatus,1
+    je exitCheckIfAnyPlayerWon
+
+    cmp rightPlayerStatus,1
+    je exitCheckIfAnyPlayerWon
+
+    exitCheckIfAnyPlayerWon:
+ret
+endp checkIfAnyPlayerWon
 
 end main
