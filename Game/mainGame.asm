@@ -1,4 +1,4 @@
-	include macr.inc
+    include macr.inc
     include ex_macr.inc
 	.286
 	.model small
@@ -15,7 +15,7 @@
 	MAIN_Screen_message1 db 'To Start Chatting press F1','$'
 	MAIN_Screen_message2 db 'To Start Game press F2$'  
 	MAIN_Screen_message3 db 'To end Program press ESC$'   
-    STATUS_BAR_MSG db '_______________________________________________________________________________$'
+    STATUS_BAR_MSG db '___________________________$'
 	INSTRUCTIONS_msg db 'SOME INSTRUCTIONS OF THE GAME... blA bla bla ... $'
 	
 
@@ -364,7 +364,7 @@ timeInterval db 3 ;the shooting game apears/disappears every time interval
     HASH_Operand2 DW 0H                  ;MOV Al,[00] DONE
     HASH_Operand1 DW 0H                 ; ADD AX,[00] DONE
 
-
+	Command_valid DB ? ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 .code
 	main proc far
@@ -373,6 +373,21 @@ timeInterval db 3 ;the shooting game apears/disappears every time interval
 	mov ES,AX ;; for string operations
 	;ChangeVideoMode 13h ;;clears screen and starts Video mode	
 	;call START_GAME
+ ;CALL Check_valid;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	
+	PUSH AX
+
+	;MOV AL,Command_valid
+	;CMP AL,1
+	;JNE NOT_VALID
+	CALL EX_MAIN
+	;NOT_VALID:
+
+	POP AX
+
+
+
+
 	DisplayAgain:
 	CLR_Screen_with_Scrolling_TEXT_MODE 
 	
@@ -567,7 +582,16 @@ START_My_GAME PROC
     ;; THE PLAYER FINSHED TYPING
     ;; WE WILL UPDATE chosen players Regs
     JNE NOT_FINISHED_INPUT_YET
-    CALL EX_MAIN
+
+	;CALL Check_valid;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	
+	PUSH AX
+	MOV AL,Command_valid
+	CMP AL,1
+	JNE NOT_VALID
+	CALL EX_MAIN
+	NOT_VALID:
+
     Reset_Command   ;;TODO: CHANGE IT TO RESET ALL OF THEM
     MOV finished_taking_input,0
     ;;swap turns
