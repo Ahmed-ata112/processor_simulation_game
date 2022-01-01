@@ -975,14 +975,14 @@ GetCommand PROC
     jb CHECK_IF_ENTER 
     cmp al, ']'
     ja CHECK_IF_ENTER
-    JMP PRINT_THE_CHAR   ;;its a valid one 
+    JMP ADD_TO_COMMAND   ;;its a valid one 
     
     
     CHECK_IF_ENTER:
     cmp ah,1Ch ;; check if enter is pressed
     jne CHECK_IF_BACKSLASH
     mov finished_taking_input,1
-    jmp PRINT_THE_CHAR
+    jmp ADD_TO_COMMAND
 
     CHECK_IF_BACKSLASH:
     cmp ah,0eh
@@ -999,7 +999,7 @@ GetCommand PROC
     mov byte ptr [di], '$'   
     dec command_Size
     jmp FinishedTakingChar 
-    PRINT_THE_CHAR:
+    ADD_TO_COMMAND:
     READ_KEY
     ;then store The char and print it then inc the size
    cmp command_Size,15  ;; command is full  -> in order to not delete $ at the end
