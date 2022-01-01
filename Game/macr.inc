@@ -577,6 +577,7 @@ ENDM Convert_OP_TO_HEXA
 
 
 
+
 moveBird macro limit,start,x_velocity,x_coordinate
 local finish
     mov ax,x_velocity
@@ -614,88 +615,159 @@ checkTime macro
     mov time_aux,dl  ;update time
 endm checkTime 
 
+getTime macro 
+   mov ah,2ch ;get the system time
+    int 21h    ;ch=hour  cl=minute  dh=seconds  dl=1/100seconds
+    mov prevTime,dh  ;update time
 
-movePaddle macro 
-    local exitMacro,checkLeft,semiExitMacro,vvvv,checkRightPaddleRightControl,checkRightPaddleLeftControl
+endm getTime
+
+
+
+checkXBoundaries macro
+        MOV AX,WINDOW_WIDTH
+        sub ax,8 ;subtract ball width
+		cmp ball_x,ax ;check if the x coordinate of the ball is stil within the range
+        jae finish ;jump to finish lable in main if it's done passing the whole width
+endm checkXBoundaries      
+
+
+
+drawPaddle macro
+local drawP
+    mov cx,paddle_x ;set initial column (x)
+    mov dx,paddle_y ;set initial row (y)
+drawP:
+            MOV AH,0Ch                   ;set the configuration to writing a pixel
+			MOV AL,5h 					 ;choose purple as color
+			MOV BH,00h 					 ;set the page number 
+			INT 10h   
+            INC CX     					 ;CX = CX + 1
+			MOV AX,CX          	  		 ;CX - paddle_left > paddle_width  (Y -> We go to the next line,N -> We continue to the next column
+			SUB AX,paddle_x
+			CMP AX,paddle_width
+			JNG drawP
+
+            MOV CX,paddle_x 			 ;the CX register goes back to the initial column
+			INC DX       				 ;we advance one line
+			
+			MOV AX,DX             		 ;DX - paddle_y > paddle_height (Y -> we exit this procedure,N -> we continue to the next line
+			SUB AX,paddle_y
+			CMP AX,paddle_height
+			JNG drawP
+
+
+
+    mov cx,right_paddle_x ;set initial column (x)
+    mov dx,right_paddle_y ;set initial row (y)
+drawP2:
+            MOV AH,0Ch                   ;set the configuration to writing a pixel
+			MOV AL,9h 					 ;choose purple as color
+			MOV BH,00h 					 ;set the page number 
+			INT 10h   
+            INC CX     					 ;CX = CX + 1
+			MOV AX,CX          	  		 ;CX - paddle_left > paddle_width  (Y -> We go to the next line,N -> We continue to the next column
+			SUB AX,right_paddle_x
+			CMP AX,right_paddle_width
+			JNG drawP2
+
+            MOV CX,right_paddle_x 			 ;the CX register goes back to the initial column
+			INC DX       				 ;we advance one line
+			
+			MOV AX,DX             		 ;DX - paddle_y > paddle_height (Y -> we exit this procedure,N -> we continue to the next line
+			SUB AX,right_paddle_y
+			CMP AX,right_paddle_height
+			JNG drawP2
+
+endm drawPaddle
+
+
+movePaddle macro paddle_x,paddle_velocity_x,paddle_y,paddle_velocity_y,upControl,downControl,rightControl,leftControl,rightlimit,leftlimit 
+    local exitMacro,checkLeft,checkUp,checkDown
     ;check if any key is being pressed (if not, exit this macro) [int ah 01/16]
     ;zf =0 -> a key is pressed  
     mov ah,1
     int 16h
     jz exitMacro ;exists the macro since no key is pressed
     
+    
+
+;checks right control
+    cmp ah,rightControl ;77 -> scan code of right arrow
+    jne checkLeft ;checks if it's the left arrow
+
     mov ah,0 
     int 16h
     ; ah -> scan code  al -> ascii
-
-    ;right arrow-> move right   left arrow-> move left
-    cmp ah,77 ;77 -> scan code of right arrow
-    jne checkLeft ;checks if it's the left arrow
-    mov ax,paddle_velocity
+    mov ax,paddle_velocity_x
     mov bx,paddle_x
     add bx,ax
-    cmp bx,135
+    cmp bx,rightlimit
     ja exitmacro
     add paddle_x,ax ;increases the paddle x-coordinate with the corresponding velocity --> moves it to the right
     jmp exitMacro
 checkLeft:
-    cmp ah,75 ;75 -> scan code of left arrow
-    jne checkRightPaddleRightControl ;if
-    mov ax,paddle_velocity
+    cmp ah,leftControl ;75 -> scan code of left arrow
+    jne checkUp ;if
+    mov ah,0 
+    int 16h
+    ; ah -> scan code  al -> ascii
+    mov ax,paddle_velocity_x
     mov bx,paddle_x
     sub bx,ax
-    cmp bx,0
+    cmp bx,leftlimit
     jle exitMacro
     sub paddle_x,ax ;decreases the paddle x-coordinate with the corresponding velocity --> moves it to the left
     jmp exitMacro
-
-
-checkRightPaddleRightControl: ;-> s is pressed
-
-    cmp al,'d' ;77 -> scan code of right arrow
-    jne checkRightPaddleLeftControl ;checks if it's the left arrow
-    mov ax,right_paddle_velocity
-    mov bx,right_paddle_x
-    add bx,ax
-    cmp bx,300
-    ja exitmacro
-    add right_paddle_x,ax ;increases the paddle x-coordinate with the corresponding velocity --> moves it to the right
+checkUp:
+    cmp ah,upControl ;72 -> scan code of up arrow
+    jne checkDown ;if
+    mov ah,0 
+    int 16h
+    ; ah -> scan code  al -> ascii
+    mov ax,paddle_velocity_y
+    mov bx,paddle_y
+    sub bx,ax
+    cmp bx,20
+    jle exitMacro
+    sub paddle_y,ax ;decreases the paddle y-coordinate with the corresponding velocity --> moves it to the left
     jmp exitMacro
 
- checkRightPaddleLeftControl: ;-> a is pressed
-    cmp al,'a' ;77 -> scan code of right arrow
-    jne exitMacro ;checks if it's the left arrow
-    mov ax,right_paddle_velocity
-    mov bx,right_paddle_x
-    sub bx,ax
-    cmp bx,160
-    jb exitmacro
-    sub right_paddle_x,ax
+checkDown:
+    cmp ah,downControl ;80 -> scan code of down arrow
+    jne exitMacro
+    mov ah,0 
+    int 16h
+    ; ah -> scan code  al -> ascii
+    mov ax,paddle_velocity_y
+    mov bx,paddle_y
+    add bx,ax
+    cmp bx,188
+    jae exitMacro
+    add paddle_y,ax ;decreases the paddle x-coordinate with the corresponding velocity --> moves it to the left
+
 exitMacro:
   
 endm movePaddle
 
 
-checkForFire macro 
+checkForFire macro fireScanCode,paddle_x,paddle_width,Ballsize,fireBall_x,fireBall_y,ifFireIsPressed,paddle_y
     local exitMacro,ro7Henak,rightPaddleFire
     ;check if any key is being pressed (if not, exit this macro) [int ah 01/16]
     mov ah,1
     int 16h
     jz exitMacro
-    cmp ah,80 ;80 -> scan code of down arrow
-    je ro7Henak
-
-    cmp al,'s'
-    jne exitmacro
+    cmp ah,fireScanCode ;80 -> scan code of down arrow
+    jne exitMacro
 
     ;if a key is being pressed -> check which one it is
-    ro7Henak:
+    
     mov ah,0 
     int 16h
     ; ah -> scan code  al -> ascii
 
     ;we reached here, meaning the key pressed is down arrow
-    cmp ah,80 ;80 -> scan code of down arrow
-    jne rightPaddleFire
+   
     ;we need to get the center x coordinate of the paddle, make the ball fire starting from that point 
     ;using the y coordinte of the paddle (192) to avoid the ball touching the paddle
     mov ax,paddle_x
@@ -707,27 +779,15 @@ checkForFire macro
     sub ax,bx
   
     mov fireBall_x,ax
-    mov fireBall_y,190
+    mov ax,paddle_y
+    mov fireBall_y,ax
     mov ifFireIsPressed,1
-    jmp exitMacro
-
-    rightPaddleFire:
-    mov ax,right_paddle_x
-    mov bx,right_paddle_width
-    shr bx,1
-    add ax,bx
-    mov bx,BallSize
-    shr bx,2
-    sub ax,bx
-  
-    mov right_fireBall_x,ax
-    mov right_fireBall_y,190
-    mov right_ifFireIsPressed,1
+   
     exitMacro:
 
 endm checkForFire
 
-compareBirdWithBall macro ball_x,fireBall_x,fireBall_y,BALL_SIZE,startOfBird,birdStatus,playerPoints,birdPoints
+compareBirdWithBall macro ball_x,fireBall_x,fireBall_y,BALL_SIZE,startOfBird,birdStatus,playerPoints,birdPoints,colorIndex
 local notInTheRangeOfTheBird
     
     cmp fireBall_y,20
@@ -748,9 +808,13 @@ local notInTheRangeOfTheBird
     mov al,birdPoints
     mov ah,0
     add playerPoints,ax
-    
     mov ball_x,startOfBird
     mov birdStatus,0
+    mov si,offset balls
+    mov bl,colorIndex
+    mov bh,0
+    add si,bx
+    inc byte ptr [si]
     notInTheRangeOfTheBird:
 
 endm compareBirdWithBall
@@ -761,10 +825,11 @@ randomBirdColor macro birdStatus,birdColor,colorIndex
 local exitMacro
     cmp birdStatus,0
     jne exitMacro
-    ;dx has the seconds and 1/100 seconds from the previous "check time" macro
-    mov ah,2ch ;get the system time
-    int 21h    ;ch=hour  cl=minute  dh=seconds  dl=1/100seconds
     
+    mov ah,2ch ;get the system time
+    int 21h    ;ch=hour  cl=minute  dh=seconds  dl=1/100seconds 
+  
+   
     mov  ax, dx
     xor  dx, dx
     mov  cx, 5    
@@ -790,14 +855,35 @@ mov birdPoints,al
 
 endm setBirdPointsWithTheCorrespondingColor
 
+checkTimeInterval macro gameStatus,prevTime,timeInterval
+local exit
+    mov ah,2ch ;get the system time
+    int 21h    ;ch=hour  cl=minute  dh=seconds  dl=1/100seconds 
+  
+    mov al,dh
+    mov ah,0
+    mov bx,0
+    mov bl,timeInterval
+    div bl
+    cmp ah,0 ; --> checks if the current time is divisible by 10
+    jne exit ; --> if not, does nothing
+    cmp dh,prevTime  ; --> if it is, then checks if it's the same second as before
+                     ; the proccessor is fast and it checks the same second many times and causes undesirable toggling
+                     
+    je exit
+    mov prevTime,dh ; reaching here meaning it's not the same previous second, so we TOGGLE the state of the game
+    
+    cmp gameStatus,1
+    jne changeToOne ;--> if the game status isn't 1 (is 0), change it to one
+    
+    mov gameStatus,0
+    jmp exit    
+    
+    changeToOne:   
+    mov gameStatus,1
 
 
+    exit:
 
-
-
-
-
-
-
-
+endm checkTimeInterval
 
