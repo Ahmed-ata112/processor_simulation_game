@@ -1059,7 +1059,7 @@ checkValuesInRegisters proc
     jne checkLeftPlayer
 
     leftPlayerWins:
-    mov playersStatus,2
+    mov playersStatus,2 ;; RIGHT LOST LEFT WINS
     jmp exitCheckValuesInRegisters
 
 checkLeftPlayer:
@@ -1090,7 +1090,7 @@ rightPlayerWins:
     mov playersStatus,1 
     exitCheckValuesInRegisters:
 ret
-endp checkValuesInRegisters
+checkValuesInRegisters endp 
 
 checkIfAnyPlayerLost proc 
 
@@ -1105,7 +1105,7 @@ checkIfRightPlayerLost:
 
     exitCheckIfAnyPlayerLost:
 ret
-endp checkIfAnyPlayerLost
+checkIfAnyPlayerLost endp 
 
 
 
