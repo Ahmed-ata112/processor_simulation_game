@@ -594,9 +594,10 @@ endm moveBird
 moveFireBall macro velocity,yCoordinate,ifPressed
 local finish
     mov ax,velocity
+    sub ax,Ballsize
     sub yCoordinate,ax
     cmp yCoordinate,15
-    ja finish
+    jg finish
     mov ifPressed,0
     finish:
 endm moveFireBall
