@@ -1760,7 +1760,7 @@ put_Operand PROC
     
 ;     ;; A  
     
-    CMP [SI],3a1H 
+    CMP [SI],431H 
      JNZ CHECKB1
       movmlA1:
     mov ax,Operand_Value;; CODE 
@@ -1775,7 +1775,7 @@ put_Operand PROC
     
 ;     ;; B  
     
-    CMP [SI],3a4H 
+    CMP [SI],434H 
     jz asdasd1
      Jmp CHECKC1
     asdasd1:
@@ -1792,7 +1792,7 @@ put_Operand PROC
     
 ;     ;; C  
     
-    CMP [SI],3a7H 
+    CMP [SI],437H 
      JNZ CHECKD1
       movmlC1:
     mov ax,Operand_Value;; CODE
@@ -1807,7 +1807,7 @@ put_Operand PROC
     
 ;     ;; D  
     
-    CMP [SI],3aaH 
+    CMP [SI],43aH 
      JNZ CHECKE1
       movmlD1:
     mov ax,Operand_Value;; CODE
@@ -1822,7 +1822,7 @@ put_Operand PROC
     
 ;     ;; E  
     
-    CMP [SI],3adH 
+    CMP [SI],43dH 
      JNZ CHECKF1
       movmlE1:
     mov ax,Operand_Value;; CODE
@@ -1837,7 +1837,7 @@ put_Operand PROC
     
 ;     ;; F  
     
-    CMP [SI],3b0H 
+    CMP [SI],440H 
     JNZ CHECKmlSI1 
     movmlF1:
     mov ax,Operand_Value;; CODE
