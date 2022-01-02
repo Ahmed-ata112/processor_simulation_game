@@ -2,11 +2,19 @@
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     Check_valid PROC
     CALL split_command
-    split_operands Two_Operands_Together_splited Operand1 Operand2
-    cmp Operand2,'$' ;if empty, assume Command_valid is 0 initally
-    jne validationnn
 
+    cmp command_splited,'N' ;if empty, assume Command_valid is 0 initally
+    jne validationnn
+    RET
     validationnn:
+
+    cmp command_splited,'C' ;if empty, assume Command_valid is 0 initally
+    jne validationnn2
+    RET
+    validationnn2:
+    split_operands Two_Operands_Together_splited Operand1 Operand2
+
+
     cmp Operand1,'[' ; memory locaion operand (type 1)
     je  Valid_Memory_Location1
     cmp Operand1, 'A'
@@ -100,13 +108,14 @@
     REP STOSB
 
 
+    MOV AX,0H
     MOV HASH_comand,AX
     MOV HASH_Operand2,AX
     MOV HASH_Operand1,AX
 
 
     ret
-    endp  Check_valid
+Check_valid endp
 
     checkOperandsRegistersNames macro FirstOperandData,SecondOperandData,result     
         local finish                          
