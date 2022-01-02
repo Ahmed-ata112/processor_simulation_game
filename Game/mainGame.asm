@@ -9,8 +9,10 @@
 	nl db 10,13,'$'
 	Enter_Name_message0 db 'Press Enter key to continue ', '$'
 	Enter_Name_message db 'Please enter Your Name: ', '$' 
+	Enter_SECOND_Name_message db 'Please enter second Name: ', '$' 
 	Enter_Name_message2 db 'Name MUST start with a letter (No digits or special characters)$'
 	Enter_Points_message db 'Please enter Initial Points: ', '$'  
+	Enter_other_Points_message db 'Second player, Please enter Initial Points: ', '$'  
 	Press_any_Key_message db 'press any key to continue...$'
 	MAIN_Screen_message1 db 'To Start Chatting press F1','$'
 	MAIN_Screen_message2 db 'To Start Game press F2$'  
@@ -25,7 +27,7 @@
 	level1_msg db 'LEVEL 1 -- PRESS F1$' 
 	level2_msg db 'LEVEL 2 -- PRESS F2$' 
 	choose_hidden_char db 'Choose A Forbidden char: $'
-	you_cannot_write_msg db 'You Cannot write char: $'
+	choose_hidden_char2 db 'Choose SECOND Forbidden char: $'
 	forbidden_char db '?'       ;; The hiddden char chosen by current player
 	right_forbidden_char db 'R'
     contains_forbidden db 0
@@ -57,11 +59,11 @@
 	ActualFirstNameSize db ?
 	FirstNameData db 20 dup('$')
 
-
     SecondName LABEL BYTE ; named the next it the same name 
 	SecondNameSize db 20
-	ActualSecondNameSize db 4
-	SecondNameData db 'LINA',20 dup('$')
+	ActualSecondNameSize db ?
+	SecondNameData db 20 dup('$')
+
 	;;;;;;;;;-----------------positions----------;;;;
      ;;for the left
 		ax_rec_l dw 0104h
@@ -388,15 +390,22 @@
 	CLR_Screen_with_Scrolling_TEXT_MODE 
 	
     call NAME_VALIDATION
-    FirstIsLetter:               ;jmp here if first character is a letter
-
-    DisplayString_AT_position_not_moving_cursor Enter_Points_message 0818h ; show mes
-    MoveCursorTo 0921h
+    DisplayString_AT_position_not_moving_cursor Enter_Points_message 0518h ; show mes
+    MoveCursorTo 0621h
     ReadNumberhexa_in_ax ;; Read points and put it in ax ;; TODO: See if you want this in hexa
     mov My_Initial_points,ax ;; initialize initial points
     ;; Todo: get min and initialize the points
     mov playerPoints,ax
+
+    ;;PLAYER 2
+    call NAME_VALIDATION2
+    DisplayString_AT_position_not_moving_cursor Enter_other_Points_message 0A18h ; show mes
+    MoveCursorTo 0B21h
+    ReadNumberhexa_in_ax ;; Read points and put it in ax ;; TODO: See if you want this in hexa
     mov right_playerPoints,ax
+
+    FIX_POINTS_MIN
+
 
 	; now enter the main Screen
 	DisplayString nl
@@ -508,6 +517,34 @@ NAME_VALIDATION PROC
 		NAME_IS_VALID:
 		ret
 	NAME_VALIDATION ENDP
+
+NAME_VALIDATION2 PROC
+		DisplayString_AT_position_not_moving_cursor Enter_SECOND_Name_message 0818h 
+		MoveCursorTo 0921h
+		ReadString SecondName
+		
+		cmp SecondNameData,'A'   ;check if first character is letter ;;we only allow range (A-Z and a-z)
+		jl  TRY_AGAIN_INPUT2       
+		cmp SecondNameData,'z'
+		jg  TRY_AGAIN_INPUT2
+		cmp SecondNameData,'`'
+		jg  NAME2_IS_VALID
+		cmp SecondNameData,'['
+		jl  NAME2_IS_VALID
+		TRY_AGAIN_INPUT2:            ; if first character isn't a letter, clear screen and display a message to user
+		DisplayString_AT_position_not_moving_cursor Enter_Name_message2 0a04h
+		DisplayString_AT_position_not_moving_cursor Press_any_Key_message 0b04h 
+		mov al,'$'
+		mov di,offset SecondNameData  ;DI points to the target
+		mov cx,0                     ;count
+		mov cl,ActualSecondNameSize	 ; no need to reset The whole String
+		rep stosb                    ;copy $ into FirstNameData to reset it to all $
+		Read_KEY
+		jmp DisplayAgain             ;Display first screen again
+
+		NAME2_IS_VALID:
+		ret
+	NAME_VALIDATION2 ENDP
 
 
 dis2dig proc

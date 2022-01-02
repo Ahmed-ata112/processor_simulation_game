@@ -6,6 +6,24 @@ DisplayString MACRO STR
 ENDM DisplayString   
 
 
+FIX_POINTS_MIN MACRO 
+    MOV AX,playerPoints
+    CMP AX,right_playerPoints
+    JB FIRST_IS_LESS
+    MOV AX,right_playerPoints
+    MOV playerPoints,AX
+    JMP FININ
+    FIRST_IS_LESS:
+    MOV right_playerPoints,AX
+
+
+
+    FININ:
+
+ENDM FIX_POINTS_MIN
+
+
+
 
 EXECUTE_THECOMMAND_AT_SIDE MACRO turn
     local skip_excuting_the_command
@@ -477,6 +495,14 @@ LEVEL_PROCESSING macro
     DisplayString_AT_position_and_move_cursor choose_hidden_char 0304h
     Read_KEY
     mov forbidden_char,al
+    mov dl,al
+	mov ah,2     ;; to display the the char into screen (echo)
+	int 21h
+
+
+    DisplayString_AT_position_and_move_cursor choose_hidden_char2 032Ah
+    Read_KEY
+    mov right_forbidden_char,al
     mov dl,al
 	mov ah,2     ;; to display the the char into screen (echo)
 	int 21h
