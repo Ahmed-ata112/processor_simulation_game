@@ -272,7 +272,7 @@
 
 
     right_paddle_Width dw 20 
-    right_paddle_x dw 160
+    right_paddle_x dw 170
     right_paddle_y dw 185 ;at the bottom of the 320*200 pixels screen
     right_paddle_velocity_x dw 10
     right_paddle_velocity_y dw 5
@@ -323,9 +323,9 @@
     right_playerPoints dw 0
 
 
-    gameStatus db 0
+    gameStatus db 1
     prevTime db 0 ;variable used when checking if the time has changed
-    timeInterval db 3 ;the shooting game apears/disappears every time interval
+    timeInterval db 8 ;the shooting game apears/disappears every time interval
 
 ;;;;-------------Comand Line Input------------;;;;;;
     command LABEL BYTE ; named the next it the same name 
@@ -857,15 +857,15 @@ BIRDGAME PROC
     Draw_IMG_with_color right_paddle_x,right_paddle_y,right_paddleImg,right_paddleColor,right_paddleSize
 
     movePaddle paddle_x,paddle_velocity_x,paddle_y,paddle_velocity_y,paddleUp,paddleDown,paddleRight,paddleLeft,135,0
-    movePaddle right_paddle_x,right_paddle_velocity_x,right_paddle_y,right_paddle_velocity_y,right_paddleUp,right_paddleDown,right_paddleRight,right_paddleLeft,295,150
+    movePaddle right_paddle_x,right_paddle_velocity_x,right_paddle_y,right_paddle_velocity_y,right_paddleUp,right_paddleDown,right_paddleRight,right_paddleLeft,295,165
 
     ;checkTime
 
-    randomBirdColor birdStatus,birdColor,colorIndex
+    randomBirdColor birdColor,colorIndex
     setBirdPointsWithTheCorrespondingColor colorIndex,birdPoints,pointsOfColors
 
-    randomBirdColor right_birdStatus,right_birdColor,right_colorIndex
-    setBirdPointsWithTheCorrespondingColor right_colorIndex,right_birdPoints,pointsOfColors
+    ;randomBirdColor right_birdStatus,right_birdColor,colorIndex
+    setBirdPointsWithTheCorrespondingColor colorIndex,right_birdPoints,pointsOfColors
 
     ;clearScreen 
 
@@ -876,13 +876,13 @@ BIRDGAME PROC
 
 
     ;left bird
-    moveBird 135,0,birdVelocity,birdX
     Draw_IMG_with_color birdX,birdY,BirdImg,birdcolor,BirdSize
 
 
     ;right bird
-    moveBird 304,180,right_birdVelocity,right_birdX
-    Draw_IMG_with_color right_birdX,right_birdY,right_BirdImg,right_birdcolor,right_BirdSize
+    ;moveBird 304,180,right_birdVelocity,right_birdX
+    Draw_IMG_with_color right_birdX,right_birdY,right_BirdImg,birdcolor,right_BirdSize
+    moveBird 135,0,birdVelocity,birdX
    
     skipDrawingBirds:
 
@@ -906,7 +906,7 @@ BIRDGAME PROC
 
     moveFireBall right_fireBall_velocity_y,right_fireBall_y,right_ifFireIsPressed
     Draw_IMG_with_color right_fireBall_x,right_fireBall_y,BallImg,fireballColor,BallSize
-    compareBirdWithBall right_birdX,right_fireBall_x,right_fireBall_y,right_BirdSize,160,right_birdStatus,right_playerPoints,right_birdPoints,right_colorIndex
+    compareBirdWithBall right_birdX,right_fireBall_x,right_fireBall_y,right_BirdSize,160,birdStatus,right_playerPoints,right_birdPoints,colorIndex
 
 midDraw:
     checkTimeInterval gamestatus, prevTime, timeInterval

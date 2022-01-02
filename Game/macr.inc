@@ -718,17 +718,24 @@ ENDM Convert_OP_TO_HEXA
 
 
 moveBird macro limit,start,x_velocity,x_coordinate
-local finish,resetXCoordinate
+local finish,clearGame
     mov ax,x_coordinate
-    cmp ax,start
-    jl resetXCoordinate
-    mov ax,x_velocity
-    add x_coordinate,ax
-    cmp x_coordinate,limit
-    jb finish
- resetXCoordinate:   mov x_coordinate,start
-    
-   finish:
+    mov bx,x_velocity
+    add bx,ax ;;adds the velocity to the coordinate
+    cmp bx,limit
+    ja clearGame
+    mov x_coordinate,bx
+    mov right_birdX,bx
+   
+    jmp finish
+
+clearGame:
+    mov gamestatus,0
+    mov x_coordinate,start
+    mov right_birdX,start
+   
+    finish:
+    add right_birdX,160
 endm moveBird
 
 
@@ -880,16 +887,21 @@ local notInTheRangeOfTheBird
     mov bh,0
     add si,bx
     inc byte ptr [si]
+    mov gamestatus,0
+    mov birdX,0
+    mov right_birdX,160
     notInTheRangeOfTheBird:
 
 endm compareBirdWithBall
 
 
 
-randomBirdColor macro birdStatus,birdColor,colorIndex
+randomBirdColor macro birdColor,colorIndex
 local exitMacro
     cmp birdStatus,0
     jne exitMacro
+    ; cmp right_birdStatus,0
+    ; jne exitmacro
     
     mov ah,2ch ;get the system time
     int 21h    ;ch=hour  cl=minute  dh=seconds  dl=1/100seconds 
@@ -938,17 +950,17 @@ local exit
     je exit
     mov prevTime,dh ; reaching here meaning it's not the same previous second, so we TOGGLE the state of the game
 
-    cmp gameStatus,1
-    jne changeToOne ;--> if the game status isn't 1 (is 0), change it to one
-
-    mov gameStatus,0
-    mov ax,birdX
-    xchg right_birdX,ax
-    xchg ax,birdx
-    jmp exit
-
-    changeToOne:
+    cmp gameStatus,0
+    ;jne changeToOne ;--> if the game status isn't 1 (is 0), change it to one
+    jne exit
     mov gameStatus,1
+    ; mov ax,birdX
+    ; xchg right_birdX,ax
+    ; xchg ax,birdx
+    ;jmp exit
+
+    ; changeToOne:
+    ; mov gameStatus,1
 
 
     exit:
