@@ -579,12 +579,15 @@ ENDM Convert_OP_TO_HEXA
 
 
 moveBird macro limit,start,x_velocity,x_coordinate
-local finish
+local finish,resetXCoordinate
+    mov ax,x_coordinate
+    cmp ax,start
+    jl resetXCoordinate
     mov ax,x_velocity
     add x_coordinate,ax
     cmp x_coordinate,limit
     jb finish
-    mov x_coordinate,start
+ resetXCoordinate:   mov x_coordinate,start
     
    finish:
 endm moveBird
@@ -820,6 +823,9 @@ local exit
     jne changeToOne ;--> if the game status isn't 1 (is 0), change it to one
     
     mov gameStatus,0
+    mov ax,birdX
+    xchg right_birdX,ax
+    xchg ax,birdx
     jmp exit    
     
     changeToOne:   

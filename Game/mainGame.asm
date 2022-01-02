@@ -153,6 +153,7 @@
 		_D db 0
 		_E db 0
 		_F db 0
+         _CARRY db 0
 
      ;; Values in regs
 		L_AX dw 0 
@@ -216,6 +217,8 @@
 		R_D db 0
 		R_E db 0
 		R_F db 0
+        L_CARRY DB 0
+        R_CARRY DB 0
 
 	ASC_TBL DB   '0','1','2','3','4','5','6','7','8','9'
         DB   'A','B','C','D','E','F'
@@ -915,11 +918,6 @@ DRAW_BACKGROUND ENDP
 
 ;; Draws the Bird 
 BIRDGAME PROC
-    
-    
-    
-
-    checkTimeInterval gamestatus, prevTime, timeInterval
 
     Draw_IMG_with_color paddle_x,paddle_y,paddleImg,paddleColor,paddleSize
     Draw_IMG_with_color right_paddle_x,right_paddle_y,right_paddleImg,right_paddleColor,right_paddleSize
@@ -938,24 +936,28 @@ BIRDGAME PROC
     ;clearScreen 
 
     cmp gamestatus,0
-    je skipDrawingBirds
+    jne skipSkipDrawingBirds
+    jmp skipDrawingBirds
+    skipSkipDrawingBirds:
+
 
     ;left bird
+    moveBird 135,0,birdVelocity,birdX
     Draw_IMG_with_color birdX,birdY,BirdImg,birdcolor,BirdSize
-    moveBird 148,0,birdVelocity,birdX
 
 
     ;right bird
+    moveBird 304,180,right_birdVelocity,right_birdX
     Draw_IMG_with_color right_birdX,right_birdY,right_BirdImg,right_birdcolor,right_BirdSize
-    moveBird 304,160,right_birdVelocity,right_birdX
    
     skipDrawingBirds:
 
     checkForFire fireScanCode,paddle_x,paddle_width,BallSize,fireBall_x,fireBall_y,ifFireIsPressed,paddle_y
  
     cmp ifFireIsPressed,0
-    je checkRight
-
+    jne skipCheckRight
+    jmp checkRight
+    skipCheckRight:
     moveFireBall fireBall_velocity_y,fireBall_y,ifFireIsPressed
     Draw_IMG_with_color fireBall_x,fireBall_y,BallImg,fireballColor,BallSize
     compareBirdWithBall birdX,fireBall_x,fireBall_y,BirdSize,0,birdStatus,playerPoints,birdPoints,colorIndex
@@ -964,13 +966,16 @@ BIRDGAME PROC
     checkForFire right_fireScancode,right_paddle_x,right_paddle_width,BallSize,right_fireBall_x,right_fireBall_y,right_ifFireIsPressed,right_paddle_y
 
     cmp right_ifFireIsPressed,0
-    je midDraw
+    jne skipJmp
+    jmp midDraw
+    skipJmp:
 
     moveFireBall right_fireBall_velocity_y,right_fireBall_y,right_ifFireIsPressed
     Draw_IMG_with_color right_fireBall_x,right_fireBall_y,BallImg,fireballColor,BallSize
     compareBirdWithBall right_birdX,right_fireBall_x,right_fireBall_y,right_BirdSize,160,right_birdStatus,right_playerPoints,right_birdPoints,right_colorIndex
 
 midDraw:
+    checkTimeInterval gamestatus, prevTime, timeInterval
     RET
 BIRDGAME ENDP
 
@@ -1111,9 +1116,10 @@ checkIfAnyPlayerLost endp
 
 exchangeValuesInRegisters proc 
 
-    cmp game_turn,1
-    jne exchangeRightPlayerRegisters
-
+    cmp game_turn,2
+    JE RTRTRTRT
+    jMP exchangeRightPlayerRegisters
+        RTRTRTRT:
         mov ax,L_AX
         xchg  _AX,ax
         mov L_AX,ax
@@ -1212,8 +1218,13 @@ exchangeValuesInRegisters proc
         xchg  _F,ah
         mov L_F,ah
         
+        mov ah,L_CARRY 
+        xchg  _CARRY,ah
+        mov L_CARRY,ah
+
         
-       
+        
+       jmp ouououlou
 exchangeRightPlayerRegisters:
 
         mov ax,R_AX
@@ -1314,11 +1325,159 @@ exchangeRightPlayerRegisters:
         xchg  _F,ah
         mov R_F,ah
 
+        mov ah,R_CARRY 
+        xchg  _CARRY,ah
+        mov R_CARRY,ah
+
+ouououlou:
 ret
 endp exchangeValuesInRegisters
 
 
+; powerUp_4 PROC
+;     cmp game_turn,1 ;checks if it's left player's turn 
+;     jne checkIfItsRightPlayerTurn_powerUp_4
+;     cmp playerPoints,30
+;     jb midMidExitPowerUp_4
+;     sub playerPoints,30
+;     jae clearAllRegisters
+
+
+; checkIfItsRightPlayerTurn_powerUp_4:
+
+;     cmp right_playerPoints,30
+;     jb midMidExitPowerUp_4
+;     sub right_playerPoints,30
+
+
+; clearAllRegisters:
+;     mov L_AX,0
+;     mov L_BX,0
+;     mov L_CX,0
+;     mov L_DX,0
+;     mov L_SI,0
+;     mov L_DI,0
+;     mov L_SP,0
+;     mov L_BP,0
+;     jmp skippppppp
+; midMidExitPowerUp_4: jmp midExitPowerUp_4
+
+;     skippppppp:
+;     mov L_00,0
+;     mov L_01,0
+;     mov L_02,0
+;     mov L_03,0
+;     mov L_04,0
+;     mov L_05,0
+;     mov L_06,0
+;     mov L_07,0
+;     mov L_08,0
+;     mov L_09,0
+;     mov L_A ,0
+;     mov L_B ,0
+;     mov L_C ,0
+;     mov L_D ,0
+;     mov L_E ,0
+;     mov L_F ,0
+;     jmp skipExitPowerUp4
+; midExitPowerUp_4: jmp almostExitingPowerUp_4
+
+; skipExitPowerUp4:
+;     mov R_AX,0
+;     mov R_BX,0
+;     mov R_CX,0
+;     mov R_DX,0
+;     mov R_SI,0
+;     mov R_DI,0
+;     mov R_SP,0
+;     mov R_BP,0
+;     jmp skippppppppppppp
+; almostExitingPowerUp_4: jmp exitPowerUp_4
+; skippppppppppppp:
+;     mov R_00,0
+;     mov R_01,0
+;     mov R_02,0
+;     mov R_03,0
+;     mov R_04,0
+;     mov R_05,0
+;     mov R_06,0
+;     mov R_07,0
+;     mov R_08,0
+;     mov R_09,0
+;     mov R_A ,0
+;     mov R_B ,0
+;     mov R_C ,0
+;     mov R_D ,0
+;     mov R_E ,0
+;     mov R_F ,0
+
+; exitPowerUp_4:
+; ret
+; powerUp_4 endp
+
+
+
+; powerUp_5 proc 
+;     cmp game_turn,1
+;     jne checkIfItsRightPlayerTurn_powerUp_5
+;     cmp playerPoints,7
+;     jb meow
+;     sub playerPoints,7
+;     jmp changeTargetValue
+
+; checkIfItsRightPlayerTurn_powerUp_5:
+;     cmp right_playerPoints,7
+; meow:
+;     jb midexitPowerUp_5
+;     sub right_playerPoints,7
+
+; changeTargetValue:
+;     ReadNumberhexa_in_ax ;;reads new target value
+;     cmp L_AX,ax
+;     je exitPowerUp_5
+;     cmp L_BX,ax
+;     je exitPowerUp_5
+;     cmp L_CX,ax
+;     je exitPowerUp_5
+;     cmp L_DX,ax
+;     je exitPowerUp_5
+;     cmp L_SI,ax
+;     je exitPowerUp_5
+;     cmp L_DI,ax
+;     je exitPowerUp_5
+;     cmp L_SP,ax
+;     je exitPowerUp_5
+;     cmp L_BP,ax
+;     je exitPowerUp_5
+;     jmp skipipipip
+;  midexitPowerUp_5:  jmp exitPowerUp_5     
+;  skipipipip:
+;     cmp R_AX,ax
+;     je exitPowerUp_5
+;     cmp R_BX,ax
+;     je exitPowerUp_5
+;     cmp R_CX,ax
+;     je exitPowerUp_5
+;     cmp R_DX,ax
+;     je exitPowerUp_5
+;     cmp R_SI,ax
+;     je exitPowerUp_5
+;     cmp R_DI,ax
+;     je exitPowerUp_5
+;     cmp R_SP,ax
+;     je exitPowerUp_5
+;     cmp R_BP,ax
+;     je exitPowerUp_5
+
+;     mov target_value,ax    
+
+
+; exitPowerUp_5:
+
+; powerUp_5 endp
+
 
 end main
+
 
 
