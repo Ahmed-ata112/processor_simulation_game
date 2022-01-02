@@ -18,7 +18,16 @@
 	MAIN_Screen_message2 db 'To Start Game press F2$'  
 	MAIN_Screen_message3 db 'To end Program press ESC$'   
     STATUS_BAR_MSG db '_______________________________________________________________________________$'
-	INSTRUCTIONS_msg db 'SOME INSTRUCTIONS OF THE GAME... blA bla bla ... $'
+	INSTRUCTIONS_msg db 'SOME INSTRUCTIONS OF THE GAME $'
+    INSTRUCTIONS_msg1 db 'F3 FOR INLINE GAME CHAT $'
+    INSTRUCTIONS_msg2 db 'F4 TO LEAVE THE GAME $'
+    INSTRUCTIONS_msg3 db 'F1 TO EXECUTE A COMMAND ON YOUR OPPONENTS PROCESSOR $'
+    INSTRUCTIONS_msg4 db 'F2 TO EXECUTE A COMMAND ON YOUR OWN PROCESSOR $'
+    INSTRUCTIONS_msg5 db 'F5 TO EXECUTE A COMMAND ON YOUR OWN PROCESSOR -5 POINTS-$'
+    INSTRUCTIONS_msg6 db 'F6 TO EXECUTE A COMMAND ON BOTH PROCESSORS -3 POINTS-$'
+    INSTRUCTIONS_msg7 db 'F7 TO CHANGE THE FORBIDDEN CHARACTER ONLY ONCE -8 POINTS-$'
+    INSTRUCTIONS_msg8 db 'F8 TO CLEAR ALL REGISTERS -30 POINTS (USED ONCE)$'
+    INSTRUCTIONS_msg9 db 'F9 TO CHANGE THE TARGET VALUE -7 POINTS (USED ONCE)$'
 	Sent_CHAT_INV_msg db 'You sent a chat Invitation','$'
 	Sent_Game_INV_msg db 'You sent a Game Invitation','$'
 	level1_msg db 'LEVEL 1 -- PRESS F1$' 
@@ -89,6 +98,9 @@
 		DS_D_left dw 080eh
 		DS_E_left dw 090eh
 		DS_F_left dw 0A0eh
+        l_CARRY_LEFT DW 0F09h
+        forbidden_char_left DW 0110h
+        TARGET_VALUE_BOX DW 0012H
 
      ;; command line left side and points BOX
          CL_row_left dw 1201h
@@ -131,6 +143,8 @@
 		DS_D_right dw 0824h
 		DS_E_right dw 0924h
 		DS_F_right dw 0A24h
+        R_CARRY_RIGHT DW 0F1Fh
+        forbidden_char_right DW 0126h
      ;; command line left side
      CL_row_Right dw 1217h
      Points_BOX_right dw 0E22h
@@ -658,7 +672,7 @@ START_My_GAME PROC
     ;; THE PLAYER FINSHED TYPING
     ;; WE WILL UPDATE chosen players Regs
     mov Command_valid,1
-    call Check_valid
+   ; call Check_valid
     cmp Command_valid,0H ;;invalid
     jne execute_command_valid
     ;; command is not valid 
@@ -793,6 +807,9 @@ UPDATE_VALUES_Displayed PROC
         xor ah,ah
         mov al, L_F ;; its a byte
         DISPLAY_num_in_HEX_ DS_F_left, 2 ,ax  
+        xor ah,ah
+        mov al, L_cARRY ;; its a byte
+        DISPLAY_num_in_HEX_ l_CARRY_LEFT, 1 ,ax  
 
         ;; The Balls
         xor ah,ah
@@ -823,6 +840,7 @@ UPDATE_VALUES_Displayed PROC
         DISPLAY_num_in_HEX_ di_rec_r, 4 ,R_DI    
         DISPLAY_num_in_HEX_ bp_rec_r, 4 ,R_BP    
         DISPLAY_num_in_HEX_ sp_rec_r, 4 ,R_SP   
+        DISPLAY_num_in_HEX_ TARGET_VALUE_BOX, 4 ,TARGET_VALUE   
 
 
 
@@ -876,6 +894,32 @@ UPDATE_VALUES_Displayed PROC
         mov al, R_F ;; its a byte
         DISPLAY_num_in_HEX_ DS_F_right, 2 ,ax  
 
+        xor ah,ah
+        mov al, R_CARRY ;; its a byte
+        DISPLAY_num_in_HEX_ R_CARRY_RIGHT, 1 ,ax 
+
+
+        cmp game_level,2
+        je dont_print_forbidden
+        MoveCursorTo forbidden_char_LEFT
+        xor ah,ah
+        mov al, forbidden_char ;; its a byte 
+         mov ah, 0eh           ;0eh = 14 
+         mov bl, 0ch           ;Color is red
+         int 10h ; print char -> auto advances cursor
+        xor ah,ah
+        mov al, right_forbidden_char ;; its a byte
+        MoveCursorTo forbidden_char_RIGHT
+        xor ah,ah
+        mov al, right_forbidden_char ;; its a byte 
+         mov ah, 0eh           ;0eh = 14 
+         mov bl, 0ch           ;Color is red
+         int 10h ; print char -> auto advances cursor
+
+        Draw_IMG 125 5  forb_char forb_char_size
+        Draw_IMG 301 5  forb_char forb_char_size
+
+        dont_print_forbidden:
 
         ;;points
         DISPLAY_num_in_HEX_ Points_BOX_left, 4 ,playerPoints  
