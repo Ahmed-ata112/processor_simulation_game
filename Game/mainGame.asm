@@ -843,11 +843,6 @@ DRAW_BACKGROUND ENDP
 
 ;; Draws the Bird 
 BIRDGAME PROC
-    
-    
-    
-
-    checkTimeInterval gamestatus, prevTime, timeInterval
 
     Draw_IMG_with_color paddle_x,paddle_y,paddleImg,paddleColor,paddleSize
     Draw_IMG_with_color right_paddle_x,right_paddle_y,right_paddleImg,right_paddleColor,right_paddleSize
@@ -866,39 +861,46 @@ BIRDGAME PROC
     ;clearScreen 
 
     cmp gamestatus,0
-    je skipDrawingBirds
+    jne skipSkipDrawingBirds
+    jmp skipDrawingBirds
+    skipSkipDrawingBirds:
+
 
     ;left bird
+    moveBird 135,0,birdVelocity,birdX
     Draw_IMG_with_color birdX,birdY,BirdImg,birdcolor,BirdSize
-    moveBird 148,0,birdVelocity,birdX
 
 
     ;right bird
+    moveBird 304,180,right_birdVelocity,right_birdX
     Draw_IMG_with_color right_birdX,right_birdY,right_BirdImg,right_birdcolor,right_BirdSize
-    moveBird 304,160,right_birdVelocity,right_birdX
    
     skipDrawingBirds:
 
     checkForFire fireScanCode,paddle_x,paddle_width,BallSize,fireBall_x,fireBall_y,ifFireIsPressed,paddle_y
  
     cmp ifFireIsPressed,0
-    je checkRight
-
+    jne skipCheckRight
+    jmp checkRight
+    skipCheckRight:
     moveFireBall fireBall_velocity_y,fireBall_y,ifFireIsPressed
     Draw_IMG_with_color fireBall_x,fireBall_y,BallImg,fireballColor,BallSize
     compareBirdWithBall birdX,fireBall_x,fireBall_y,BirdSize,0,birdStatus,playerPoints,birdPoints,colorIndex
-
     checkRight: 
+
     checkForFire right_fireScancode,right_paddle_x,right_paddle_width,BallSize,right_fireBall_x,right_fireBall_y,right_ifFireIsPressed,right_paddle_y
 
     cmp right_ifFireIsPressed,0
-    je midDraw
+    jne skipJmp
+    jmp midDraw
+    skipJmp:
 
     moveFireBall right_fireBall_velocity_y,right_fireBall_y,right_ifFireIsPressed
     Draw_IMG_with_color right_fireBall_x,right_fireBall_y,BallImg,fireballColor,BallSize
     compareBirdWithBall right_birdX,right_fireBall_x,right_fireBall_y,right_BirdSize,160,right_birdStatus,right_playerPoints,right_birdPoints,right_colorIndex
 
 midDraw:
+    checkTimeInterval gamestatus, prevTime, timeInterval
     RET
 BIRDGAME ENDP
 

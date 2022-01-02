@@ -718,107 +718,33 @@ ENDM Convert_OP_TO_HEXA
 
 
 moveBird macro limit,start,x_velocity,x_coordinate
-local finish
+local finish,resetXCoordinate
+    mov ax,x_coordinate
+    cmp ax,start
+    jl resetXCoordinate
     mov ax,x_velocity
     add x_coordinate,ax
     cmp x_coordinate,limit
     jb finish
-    mov x_coordinate,start
+ resetXCoordinate:   mov x_coordinate,start
     
    finish:
 endm moveBird
 
 
-
 moveFireBall macro velocity,yCoordinate,ifPressed
 local finish
     mov ax,velocity
+    sub ax,Ballsize
     sub yCoordinate,ax
-    cmp yCoordinate,15
-    ja finish
+    cmp yCoordinate,5
+    jg finish
     mov ifPressed,0
     finish:
 endm moveFireBall
 
 
 
-checkTime macro
- local check_time
- check_time:
-    mov ah,2ch ;get the system time
-    int 21h    ;ch=hour  cl=minute  dh=seconds  dl=1/100seconds
-    
-    cmp dl,time_aux  ;is the current time equal to the prev one?
-    je check_time    ;if it's the same, check again
-                     ;if different --> draw, move...               
-    mov time_aux,dl  ;update time
-endm checkTime 
-
-getTime macro 
-   mov ah,2ch ;get the system time
-    int 21h    ;ch=hour  cl=minute  dh=seconds  dl=1/100seconds
-    mov prevTime,dh  ;update time
-
-endm getTime
-
-
-
-checkXBoundaries macro
-        MOV AX,WINDOW_WIDTH
-        sub ax,8 ;subtract ball width
-		cmp ball_x,ax ;check if the x coordinate of the ball is stil within the range
-        jae finish ;jump to finish lable in main if it's done passing the whole width
-endm checkXBoundaries      
-
-
-
-drawPaddle macro
-local drawP
-    mov cx,paddle_x ;set initial column (x)
-    mov dx,paddle_y ;set initial row (y)
-drawP:
-            MOV AH,0Ch                   ;set the configuration to writing a pixel
-			MOV AL,5h 					 ;choose purple as color
-			MOV BH,00h 					 ;set the page number 
-			INT 10h   
-            INC CX     					 ;CX = CX + 1
-			MOV AX,CX          	  		 ;CX - paddle_left > paddle_width  (Y -> We go to the next line,N -> We continue to the next column
-			SUB AX,paddle_x
-			CMP AX,paddle_width
-			JNG drawP
-
-            MOV CX,paddle_x 			 ;the CX register goes back to the initial column
-			INC DX       				 ;we advance one line
-			
-			MOV AX,DX             		 ;DX - paddle_y > paddle_height (Y -> we exit this procedure,N -> we continue to the next line
-			SUB AX,paddle_y
-			CMP AX,paddle_height
-			JNG drawP
-
-
-
-    mov cx,right_paddle_x ;set initial column (x)
-    mov dx,right_paddle_y ;set initial row (y)
-drawP2:
-            MOV AH,0Ch                   ;set the configuration to writing a pixel
-			MOV AL,9h 					 ;choose purple as color
-			MOV BH,00h 					 ;set the page number 
-			INT 10h   
-            INC CX     					 ;CX = CX + 1
-			MOV AX,CX          	  		 ;CX - paddle_left > paddle_width  (Y -> We go to the next line,N -> We continue to the next column
-			SUB AX,right_paddle_x
-			CMP AX,right_paddle_width
-			JNG drawP2
-
-            MOV CX,right_paddle_x 			 ;the CX register goes back to the initial column
-			INC DX       				 ;we advance one line
-			
-			MOV AX,DX             		 ;DX - paddle_y > paddle_height (Y -> we exit this procedure,N -> we continue to the next line
-			SUB AX,right_paddle_y
-			CMP AX,right_paddle_height
-			JNG drawP2
-
-endm drawPaddle
 
 
 movePaddle macro paddle_x,paddle_velocity_x,paddle_y,paddle_velocity_y,upControl,downControl,rightControl,leftControl,rightlimit,leftlimit 
@@ -998,7 +924,7 @@ checkTimeInterval macro gameStatus,prevTime,timeInterval
 local exit
     mov ah,2ch ;get the system time
     int 21h    ;ch=hour  cl=minute  dh=seconds  dl=1/100seconds 
-  
+
     mov al,dh
     mov ah,0
     mov bx,0
@@ -1008,17 +934,20 @@ local exit
     jne exit ; --> if not, does nothing
     cmp dh,prevTime  ; --> if it is, then checks if it's the same second as before
                      ; the proccessor is fast and it checks the same second many times and causes undesirable toggling
-                     
+
     je exit
     mov prevTime,dh ; reaching here meaning it's not the same previous second, so we TOGGLE the state of the game
-    
+
     cmp gameStatus,1
     jne changeToOne ;--> if the game status isn't 1 (is 0), change it to one
-    
+
     mov gameStatus,0
-    jmp exit    
-    
-    changeToOne:   
+    mov ax,birdX
+    xchg right_birdX,ax
+    xchg ax,birdx
+    jmp exit
+
+    changeToOne:
     mov gameStatus,1
 
 
