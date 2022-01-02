@@ -5,10 +5,10 @@
 	;MOV AL,Command_valid
 	;CMP AL,1
 	;JNE NOT_VALID
-	CALL EX_MAIN
+	; CALL EX_MAIN
 	;NOT_VALID:
 
-	POP AX
+	; POP AX
 ex_MAIN PROC 
 
     MOV DL,'N'
