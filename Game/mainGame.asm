@@ -1725,6 +1725,59 @@ RESET_ALL_VARS PROC
     mov _CARRY, 0
 
 
+    mov L_Ax, 0
+    mov L_BX, 0
+    mov L_CX, 0
+    mov L_DX, 0
+    mov L_SI, 0
+    mov L_DI, 0
+    mov L_SP, 0
+    mov L_BP, 0
+    mov L_00, 0
+    mov L_01, 0
+    mov L_02, 0
+    mov L_03, 0
+    mov L_04, 0
+    mov L_05, 0
+    mov L_06, 0
+    mov L_07, 0
+    mov L_08, 0
+    mov L_09, 0
+    mov L_A, 0
+    mov L_B, 0
+    mov L_C, 0
+    mov L_D, 0
+    mov L_E, 0
+    mov L_F, 0
+    mov L_CARRY, 0
+
+    mov R_Ax, 0
+    mov R_BX, 0
+    mov R_CX, 0
+    mov R_DX, 0
+    mov R_SI, 0
+    mov R_DI, 0
+    mov R_SP, 0
+    mov R_BP, 0
+    mov R_00, 0
+    mov R_01, 0
+    mov R_02, 0
+    mov R_03, 0
+    mov R_04, 0
+    mov R_05, 0
+    mov R_06, 0
+    mov R_07, 0
+    mov R_08, 0
+    mov R_09, 0
+    mov R_A, 0
+    mov R_B, 0
+    mov R_C, 0
+    mov R_D, 0
+    mov R_E, 0
+    mov R_F, 0
+    mov R_CARRY, 0
+
+
 
     RET
 RESET_ALL_VARS ENDP
