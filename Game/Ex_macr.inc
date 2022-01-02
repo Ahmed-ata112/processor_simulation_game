@@ -105,7 +105,7 @@ Convert_OP_TO_HEXA MACRO OPERAND, size_Index
 
     
     SKIP_THE_ZEROS:
-    CMP [DI],'0'
+    CMP [DI],BYTE PTR '0'
     JNE L1
     INC DI    
     JMP SKIP_THE_ZEROS
