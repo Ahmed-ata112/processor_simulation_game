@@ -5,14 +5,27 @@ DisplayString MACRO STR
             int 21h
 ENDM DisplayString   
 
+
+
+EXECUTE_THECOMMAND_AT_SIDE MACRO turn
+    local skip_excuting_the_command
+    call CHECK_FORBIDDEN_CHARS    ;; returns value in contains_forbidden
+    cmp contains_forbidden,1    ;; the command had a forbidden char
+    je skip_excuting_the_command
+    mov al, turn       ;;send Game_turn to determine which player to execute commands on
+    CALL exchangeValuesInRegisters
+    CALL EX_MAIN
+    mov al, turn       ;;send Game_turn to determine which player to execute commands on
+    CALL exchangeValuesInRegisters
+    skip_excuting_the_command:
+ENDM EXECUTE_THECOMMAND_AT_SIDE
+
+
 MoveCursorTo MACRO pos
-    push ax
-    push dx
+    XOR bx,bx
     mov ah,2h
     mov dx,pos
     int 10h
-    pop dx
-    pop ax
 ENDM MoveCursorTo
 
 ReadString MACRO PromptMessage
@@ -70,6 +83,70 @@ INC_CURSOR MACRO N
 
 ENDM INC_CURSOR
 
+Reset_Command macro
+    xor CX,CX
+    mov CX, 30
+    mov di , offset THE_COMMAND
+    mov al, '$'
+    rep stosb 
+    MOV actualcommand_Size,0
+
+
+    xor CX,CX
+    mov CX, 30
+    mov di , offset L_commandData
+    mov al, '$'
+    rep stosb 
+    MOV Actual_L_commandSize,0
+
+
+    xor CX,CX
+    mov CX, 30
+    mov di , offset r_commandData
+    mov al, '$'
+    rep stosb 
+    MOV Actual_r_commandSize,0
+    
+
+
+
+endm Reset_Command
+
+
+Update_the_Commands MACRO 
+    local check_p2,check_p3
+    ;; if turn=1 mov to L_command else R_command
+    cmp Game_turn,1 ;;first player
+    jne check_p2
+    xor ch,ch
+    mov cl,commandSize
+    mov Actual_L_commandSize,cl
+    mov si,offset THE_COMMAND
+    mov di ,offset L_commandData
+    rep movsb
+    check_p2:
+    cmp Game_turn,2 ;;second player
+    jne check_p3
+    xor ch,ch
+    mov cl,commandSize
+    mov Actual_R_commandSize,cl
+    mov si , offset THE_COMMAND
+    mov di , offset R_commandData
+    rep movsb
+    check_p3:
+ENDM Update_the_Commands
+
+SWAP_TURNS MACRO 
+    local l1, l2
+
+    cmp Game_turn,1
+    jne l1
+    mov Game_turn,2
+    jmp l2
+    l1:
+    mov Game_turn,1
+    l2:
+ENDM SWAP_TURNS
 DisplayString_AT_position_not_moving_cursor MACRO STR, pos
     ;assumes Text mode
     ;returns The cursor to its initial position before it ends
@@ -77,7 +154,7 @@ DisplayString_AT_position_not_moving_cursor MACRO STR, pos
     mov ah,3
     int 10h ;; get cursor in dh-dl  
     mov si , dx ; save it To set it back at the end
-    mov bh,0       ;page number
+    
 
     mov dx,pos
     mov ah,2
@@ -112,15 +189,51 @@ UPDATE_notification_bar MACRO new_msg
     ;; updates the notification bar with a new message
     ;; done using Scrolling
     ;scroll the screen
-    mov ax, 0701h                ;Scroll Screen AH=06 (Scroll), AL=1 one line
+    mov ax, 0701h                ;Scroll Screen AH=07(Scroll DOWN), AL=1 one line
 	mov bh, 0Eh                   ;Normal attributes -> 07 ;; 0E-> yellow text
 	mov cx, 1700h                  ;from row 17h col 0
 	mov dx, 1850H                ;To end of screen
 	int 10h                      ;Clear the first line
 
+    MoveCursorTo 1700H
+	
+	; read time
+	
+	mov ah, 2ch
+	int 21h
 
-    DisplayString_AT_position_not_moving_cursor new_msg ,1705h ;print in the next row
+	
+	mov al, ch
+	mov ah, 0
+	call dis2dig
+	
+	
+    MOV AL,':'  ;al contains the char to print   
+    mov ah, 0eh           ;0eh = 14 
+    mov bl, 0ch           ;Color is red
+    int 10h ; print char -> auto advances cursor
+	
+	mov ah, 0
+	mov al, cl
+	
+	call dis2dig
+	
+	MOV AL,':'  ;al contains the char to print   
+    mov ah, 0eh           ;0eh = 14 
+    mov bl, 0ch           ;Color is red
+    int 10h ; print char -> auto advances cursor
+	MOV AL,' '  ;al contains the char to print   
+    mov ah, 0eh           ;0eh = 14 
+    mov bl, 0ch           ;Color is red
+    int 10h ; print char -> auto advances cursor
+	
+    DisplayString_AT_position_not_moving_cursor new_msg ,1707h ;print in the next row
 endm UPDATE_notification_bar
+
+DEAW_STATUS_BAR MACRO 
+    DisplayString_AT_position_not_moving_cursor STATUS_BAR_MSG ,1600h ;print in the next row
+    
+ENDM
 
 
 ;;There should be another clear with scrolling 
@@ -363,7 +476,7 @@ LEVEL_PROCESSING macro
     ChangeVideoMode 3h ;;CLR Screen
     DisplayString_AT_position_and_move_cursor choose_hidden_char 0304h
     Read_KEY
-    mov hidden_char,al
+    mov forbidden_char,al
     mov dl,al
 	mov ah,2     ;; to display the the char into screen (echo)
 	int 21h
@@ -607,29 +720,6 @@ endm moveFireBall
 
 
 
-checkTime macro
- local check_time
- check_time:
-    mov ah,2ch ;get the system time
-    int 21h    ;ch=hour  cl=minute  dh=seconds  dl=1/100seconds
-    
-    cmp dl,time_aux  ;is the current time equal to the prev one?
-    je check_time    ;if it's the same, check again
-                     ;if different --> draw, move...               
-    mov time_aux,dl  ;update time
-endm checkTime 
-
-getTime macro 
-   mov ah,2ch ;get the system time
-    int 21h    ;ch=hour  cl=minute  dh=seconds  dl=1/100seconds
-    mov prevTime,dh  ;update time
-
-endm getTime
-
-
-
-
-
 
 movePaddle macro paddle_x,paddle_velocity_x,paddle_y,paddle_velocity_y,upControl,downControl,rightControl,leftControl,rightlimit,leftlimit 
     local exitMacro,checkLeft,checkUp,checkDown
@@ -638,8 +728,10 @@ movePaddle macro paddle_x,paddle_velocity_x,paddle_y,paddle_velocity_y,upControl
     mov ah,1
     int 16h
     jz exitMacro ;exists the macro since no key is pressed
- 
- ;checks right control
+    
+    
+
+;checks right control
     cmp ah,rightControl ;77 -> scan code of right arrow
     jne checkLeft ;checks if it's the left arrow
 
@@ -745,7 +837,8 @@ local notInTheRangeOfTheBird
     sub ax,8
     cmp ax,fireBall_x
 
-    ja notInTheRangeOfTheBird ;not in the same row --> behind it    
+    ja notInTheRangeOfTheBird
+    ;not in the same row --> behind it
     add ax,BALL_SIZE
     add ax,8
     cmp ax,fireBall_x
@@ -805,7 +898,7 @@ checkTimeInterval macro gameStatus,prevTime,timeInterval
 local exit
     mov ah,2ch ;get the system time
     int 21h    ;ch=hour  cl=minute  dh=seconds  dl=1/100seconds 
-  
+
     mov al,dh
     mov ah,0
     mov bx,0
@@ -815,24 +908,33 @@ local exit
     jne exit ; --> if not, does nothing
     cmp dh,prevTime  ; --> if it is, then checks if it's the same second as before
                      ; the proccessor is fast and it checks the same second many times and causes undesirable toggling
-                     
+
     je exit
     mov prevTime,dh ; reaching here meaning it's not the same previous second, so we TOGGLE the state of the game
-    
+
     cmp gameStatus,1
     jne changeToOne ;--> if the game status isn't 1 (is 0), change it to one
-    
+
     mov gameStatus,0
     mov ax,birdX
     xchg right_birdX,ax
     xchg ax,birdx
-    jmp exit    
-    
-    changeToOne:   
+    jmp exit
+
+    changeToOne:
     mov gameStatus,1
 
 
     exit:
 
 endm checkTimeInterval
+
+
+
+
+
+
+
+
+
 

@@ -1,16 +1,11 @@
-;; Hany && Mena
-
-DisplayString MACRO STR                     ;DIV CL
-            mov ah,9h                      
-            mov dx,offset STR               ;MUL CL
-            int 21h                         
-ENDM DisplayString                          
 HASHING MACRO STR ,HASH                      ;CLC
     local moving111                         ;SHL
     mov SI,offset STR                       ;SAR
     mov DI, offset HASH                     ;ROR
+    MOV AX,0H
+    MOV [DI],AX
     mov al,'$' ;; to check END              ;RCL
-    MOV [DI],0H                             ;RCR
+    ;MOV [DI],WORD ptr 0H                             ;RCR
                                             ;ROL
     MOV BX,[DI]
     MOV CL,[SI]
@@ -39,8 +34,10 @@ HASHING_op MACRO STR, HASH
     local moving111        
     mov SI,offset STR
     mov DI, offset HASH
+    MOV AX,0H
+    MOV [DI],AX
     mov al,'$' ;; to check END
-    MOV [DI],0H 
+    ;MOV [DI],WORD ptr 0H 
                   
     MOV BX,[DI]
     MOV CL,[SI]
@@ -97,15 +94,16 @@ split_operands MACRO source, des1, des2 ; to split the two operand (des1->first 
     mov [DI],AH
 
 ENDM split_operands                                                                                         
-Convert_OP_TO_HEXA MACRO OPERAND 
-    local l1, l2, numb, SKIP_NUM, end_of_op,FINISHED
+Convert_OP_TO_HEXA MACRO OPERAND, size_Index
+    local l1, l2, numb, SKIP_NUM, end_of_op,FINISHED, TF
 
     ;;STORES THE RESULT in AX
     mov cx,0
     mov dx,0
     MOV DI, offset OPERAND
     l1: 
-        cmp [DI],'$'
+        MOV DL,'$'
+        cmp [DI],DL
         je end_of_op
         inc cx  ;;counter  (LENTGH OF STRING)
         mov dl, [DI] ;; store it to proccedd
@@ -131,6 +129,12 @@ Convert_OP_TO_HEXA MACRO OPERAND
     CMP CX,0 ;;STRING WAS EMPTY
     JE FINISHED
     
+
+    CMP CX,3
+    JL TF
+    MOV size_Index,1
+    TF:
+
      l2:
     ; pop and multi then add to dx
     pop ax

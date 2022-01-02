@@ -1,70 +1,24 @@
-;; Hany && Mena
-include Ex_macr.inc
-
-
-.MODEL SMALL
-.STACK 64
-.DATA 
-
-
-_AX dw 1234h
-_BX dw 50H
-_CX dw 2H
-_DX dw 1000H
-_SI dw ?
-_DI dw ?
-_SP dw ?
-_BP dw ?
-
-
-_00 db 56h
-_01 db 78H
-_02 db ?
-_03 db ?
-_04 db ?
-_05 db ?
-_06 db ?
-_07 db ?
-_08 db ?
-_09 db ?
-_A  db ?
-_B  db ?
-_C  db ?
-_D  db ?
-_E  db ?
-_F  db ? 
-
-command_splited db 5 dup('$') 
-Operand1 db 5 dup('$')
-Operand2 db 5 dup('$')
-Two_Operands_Together_splited db 10 dup('$')   
-
-
  
-Operand2_Value dw ? 
-Operand1_Value dw ?
-sizeIndex db 0                                                                             
-                                       
-                                       
-                                           ;MOV [00],AX DONE
-HASH_Operand DW ?
-Operand_Value DW ?
-Operand DB 5 dup('$')
-                                           ;MOV [00],Al DONE
-HASH_comand DW ?                                  ;MOV AX,[00] DONE
-HASH_Operand2 DW ?                         ;MOV Al,[00] DONE
-HASH_Operand1 DW ?                         ; ADD AX,[00] DONE
-                                           ;ADC DX,BX  DONE
-command DB 'MOV [00],AXe','$'                ;SUB DX,BX  DONE   ;SBB DX,BX DONE
-                                            ;................................................
-.code                                       ;DIV CX
-MAIN PROC far
+ex_MAIN PROC 
 
-    MOV AX,@DATA
-	MOV DS,AX
-	mov es,ax
-    
-	DisplayString command
+    MOV DL,'N'
+    MOV SI, OFFSET THE_COMMAND
+    CMP DL, [SI]
+    JNE C50
+    JMP  EN
+    C50:
+
+
+    MOV DL,'C'
+    CMP DL, [SI]
+    JNE C501
+    MOV AL,0
+    MOV _CARRY,AL
+    JMP  EN
+    C501:
+
+
+	  ;DisplayString command
     ;Convert_OP_TO_HEXA Operand1
     CALL split_command
     split_operands Two_Operands_Together_splited Operand1 Operand2
@@ -74,22 +28,7 @@ MAIN PROC far
     
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     
-    MOV AX,HASH_Operand1
-
-    MOV HASH_Operand,AX
-
-
-
-
-    MOV SI,offset Operand1
-    MOV DI, offset Operand
-    MOV CX,5
-    REP STOSB
-
-    CALL check_Operand     ;; 0 for byte, 1 for word
-
-    MOV AX, Operand_Value
-    MOV Operand1_Value,AX 
+    
 
 
     MOV AX,HASH_Operand2
@@ -100,26 +39,90 @@ MAIN PROC far
     MOV SI,offset Operand2
     MOV DI, offset Operand
     MOV CX,5
-    REP STOSB
+    REP MOVSB
 
     CALL check_Operand
 
     MOV AX, Operand_Value
     MOV Operand2_Value,AX 
+
+
+    MOV AX,HASH_Operand1
+
+    MOV HASH_Operand,AX
+
+
+
+
+    MOV SI,offset Operand1
+    MOV DI, offset Operand
+    MOV CX,5
+    REP MOVSB
+
+    CALL check_Operand     ;; 0 for byte, 1 for word
+
+    MOV AX, Operand_Value
+    MOV Operand1_Value,AX 
     
     
-    CALL check_command                
-     
-    HLT
-	     
-MAIN ENDP     
+    CALL check_command          
+    EN:
+
+    ;OPERAND1 , 2
+
+    MOV AL,'$'
+    MOV DI, offset command_splited
+    MOV CX,5
+    REP STOSB
+
+    MOV AL,'$'
+    MOV DI, offset Operand1
+    MOV CX,5
+    REP STOSB
+
+    MOV AL,'$'
+    MOV DI, offset Operand2
+    MOV CX,5
+    REP STOSB
+
+    MOV AL,'$'
+    MOV DI, offset Two_Operands_Together_splited
+    MOV CX,12
+    REP STOSB
+
+    MOV AX,0H
+
+    MOV Operand2_Value,AX
+    MOV Operand1_Value,AX
+    MOV sizeIndex ,AL
+    MOV HASH_Operand,AX
+    MOV Operand_Value,AX
+
+    MOV AL,'$'
+    MOV DI, offset Operand
+    MOV CX,5
+    REP STOSB
+
+
+    MOV HASH_comand,AX
+    MOV HASH_Operand2,AX
+    MOV HASH_Operand1,AX
+    
+
+
+    
+
+
+
+	  ret
+ex_MAIN  ENDP     
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 
 
 ;; split operand and store it in split_command 
 ;; split operands and store it in Two_Operands_Together_splited
 split_command               PROC
-    mov SI, offset command
+    mov SI, offset THE_COMMAND
     mov DI, offset command_splited
     mov al,' ' ;; to check space
 moving11:	
@@ -160,6 +163,10 @@ check_command                PROC
      MOV HASH_Operand,BX
     MOV Operand_Value,AX
 
+    MOV AX,0
+    RCL AL,1
+    MOV _CARRY,AL
+
     CALL put_Operand
     
     CHECK1:
@@ -179,13 +186,19 @@ check_command                PROC
     MOV AX,Operand1_Value
     MOV BX,Operand2_Value
     
-    ADC AX,BX
-    
+    ADD AX,BX
+    MOV BH,00H
+    MOV BL,_CARRY
+    ADD AX,BX
      
 
     MOV BX,HASH_Operand1 
      MOV HASH_Operand,BX
     MOV Operand_Value,AX
+
+    MOV AX,0
+    RCL AL,1
+    MOV _CARRY,AL
 
     CALL put_Operand    
     CHECK2:
@@ -196,7 +209,7 @@ check_command                PROC
      JNZ CHECK3
     
     ;; CODE                    
-    DisplayString command_splited
+    
     
     
     MOV AX,Operand1_Value
@@ -209,6 +222,10 @@ check_command                PROC
 MOV BX,HASH_Operand1 
      MOV HASH_Operand,BX
     MOV Operand_Value,AX
+
+    MOV AX,0
+    RCL AL,1
+    MOV _CARRY,AL
 
     CALL put_Operand    
     
@@ -227,13 +244,20 @@ MOV BX,HASH_Operand1
     MOV AX,Operand1_Value
     MOV BX,Operand2_Value
     
-    SBB AX,BX
+    SUB AX,BX
+    MOV BH,00H
+    MOV BL,_CARRY
+    SUB AX,BX
     
      
     
 MOV BX,HASH_Operand1 
      MOV HASH_Operand,BX
     MOV Operand_Value,AX
+
+    MOV AX,0
+    RCL AL,1
+    MOV _CARRY,AL
 
     CALL put_Operand    
     
@@ -256,7 +280,8 @@ MOV BX,HASH_Operand1
     
     CMP CL,1
     JNE BYTE1
-    MOV AX,_AX                                  ;;;;;;    div error div overflow
+    MOV AX,_AX
+    MOV DX,_DX                                  ;;;;;;    div error div overflow
     DIV BX
                                                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     
@@ -282,7 +307,7 @@ MOV BX,HASH_Operand1
     MOV AX,_AX                                                     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     DIV BL
     
-     MOV HASH_Operand1,24DH
+    MOV HASH_Operand1,24DH
                                                                     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     MOV BX,HASH_Operand1 
      MOV HASH_Operand,BX
@@ -338,6 +363,10 @@ MOV BX,HASH_Operand1
      MOV HASH_Operand,BX
     MOV Operand_Value,AX
 
+    MOV AX,0
+    RCL AL,1
+    MOV _CARRY,AL
+
     CALL put_Operand    
     CONT1:
     
@@ -374,6 +403,10 @@ MOV BX,HASH_Operand1
      MOV HASH_Operand,BX
     MOV Operand_Value,AX
 
+
+    MOV AL,0
+    MOV _CARRY,AL
+
     CALL put_Operand        
     CHECK8:
     
@@ -393,6 +426,9 @@ MOV BX,HASH_Operand1
     MOV BX,HASH_Operand1 
      MOV HASH_Operand,BX
     MOV Operand_Value,AX
+
+    MOV AL,0
+    MOV _CARRY,AL
 
     CALL put_Operand    
     
@@ -414,6 +450,10 @@ MOV BX,HASH_Operand1
     MOV BX,HASH_Operand1 
      MOV HASH_Operand,BX
     MOV Operand_Value,AX
+
+
+    MOV AL,0
+    MOV _CARRY,AL
 
     CALL put_Operand    
     
@@ -442,6 +482,10 @@ MOV BX,HASH_Operand1
      MOV BX,HASH_Operand1 
      MOV HASH_Operand,BX
     MOV Operand_Value,AX
+
+    MOV AX,0
+    RCL AL,1
+    MOV _CARRY,AL
 
     CALL put_Operand    
     
@@ -492,11 +536,6 @@ MOV BX,HASH_Operand1
     ;; CLC   
     
     CMP [SI],2B9H
-     JNZ CHECK14
-    
-    ;; CODE
-    CLC
-    
     CHECK14:
     
     ;; SHL   
@@ -513,6 +552,11 @@ MOV BX,HASH_Operand1
      MOV BX,HASH_Operand1 
      MOV HASH_Operand,BX
     MOV Operand_Value,AX
+
+
+    MOV AX,0
+    RCL AL,1
+    MOV _CARRY,AL
 
     CALL put_Operand    
     
@@ -533,6 +577,10 @@ MOV BX,HASH_Operand1
      MOV HASH_Operand,BX
     MOV Operand_Value,AX
 
+    MOV AX,0
+    RCL AL,1
+    MOV _CARRY,AL
+
     CALL put_Operand    
     
     CHECK17:
@@ -552,11 +600,15 @@ MOV BX,HASH_Operand1
      MOV HASH_Operand,BX
     MOV Operand_Value,AX
 
+    MOV AX,0
+    RCL AL,1
+    MOV _CARRY,AL
+
     CALL put_Operand    
     
     CHECK18:
     
-    ;; RCL   
+    ;; RCL   ;...........................
     
     CMP [SI],2F5H 
      JNZ CHECK19
@@ -564,6 +616,12 @@ MOV BX,HASH_Operand1
     ;; CODE 
     MOV AX,Operand1_Value
      MOV CX,Operand2_Value
+
+    MOV BH,00H
+    MOV BL,_CARRY
+    SHR BL,1
+
+
      RCL AX,CL
      
      
@@ -571,11 +629,15 @@ MOV BX,HASH_Operand1
      MOV HASH_Operand,BX
     MOV Operand_Value,AX
 
+    MOV AX,0
+    RCL AL,1
+    MOV _CARRY,AL
+
     CALL put_Operand    
     
     CHECK19: 
     
-    ;; RCR   
+    ;; RCR   ;.............................
     
     CMP [SI],307H 
      JNZ CHECK20
@@ -583,12 +645,21 @@ MOV BX,HASH_Operand1
     ;; CODE 
     MOV AX,Operand1_Value
      MOV CX,Operand2_Value
+
+    MOV BH,00H
+    MOV BL,_CARRY
+    SHR BL,1
+
      RCR AX,CL
      
      
      MOV BX,HASH_Operand1 
      MOV HASH_Operand,BX
     MOV Operand_Value,AX
+
+    MOV AX,0
+    RCL AL,1
+    MOV _CARRY,AL
 
     CALL put_Operand    
     
@@ -609,6 +680,10 @@ MOV BX,HASH_Operand1
      MOV HASH_Operand,BX
     MOV Operand_Value,AX
 
+    MOV AX,0
+    RCL AL,1
+    MOV _CARRY,AL
+
     CALL put_Operand    
     
     CHECK21:  
@@ -628,7 +703,7 @@ check_Operand proc
     mov ax,_AX;; CODE       
     mov Operand_Value,ax
     mov sizeIndex,1h 
-    jmp end
+    jmp END2
 
     CHECKBX:
     
@@ -641,7 +716,7 @@ check_Operand proc
     mov ax,_BX;; CODE                                               
      mov Operand_Value,ax 
      mov sizeIndex,1h
-    jmp end
+    jmp END2
 
     CHECKCX:
     
@@ -654,7 +729,7 @@ check_Operand proc
     mov ax,_CX;; CODE
      mov Operand_Value,ax 
      mov sizeIndex,1h                   
-    jmp end
+    jmp END2
     CHECKDX:
     
     ;; DX   
@@ -665,7 +740,7 @@ check_Operand proc
     mov ax,_DX;; CODE
      mov Operand_Value,ax
      mov sizeIndex,1h
-    jmp end
+    jmp END2
     CHECKSI:
     
     ;; SI   
@@ -676,7 +751,7 @@ check_Operand proc
     mov ax,_SI;; CODE
      mov Operand_Value,ax
      mov sizeIndex,1h
-    jmp end
+    jmp END2
     CHECKDI:
     
     ;;  ja
@@ -689,7 +764,7 @@ check_Operand proc
     mov ax,_DI;; CODE
      mov Operand_Value,ax
      mov sizeIndex,1h
-    jmp end
+    jmp END2
     CHECKSP:
     
     ;; SP   
@@ -700,7 +775,7 @@ check_Operand proc
     mov ax,_SP;; CODE
      mov Operand_Value,ax 
      mov sizeIndex,1h
-    jmp end
+    jmp END2
     CHECKBP:
     
     ;; BP   
@@ -711,7 +786,7 @@ check_Operand proc
     mov ax,_BP;; CODE
      mov Operand_Value,ax
      mov sizeIndex,1h
-    jmp end
+    jmp END2
     CHECKAL:
     
     ;; AL    
@@ -723,7 +798,7 @@ check_Operand proc
     mov Ah,00H
     mov Operand_Value,ax
     ;mov sizeIndex,0h
-    jmp end
+    jmp END2
     CHECKBL:
     
     ;; BL    
@@ -735,7 +810,7 @@ check_Operand proc
     MOV AH,00H 
      mov Operand_Value,ax 
        ;mov sizeIndex,0h
-    jmp end
+    jmp END2
     CHECKCL:
     
     ;; CL   
@@ -747,7 +822,7 @@ check_Operand proc
     MOV AH,00H
      mov Operand_Value,ax
        ;mov sizeIndex,0h
-    jmp end
+    jmp END2
     CHECKDL:
     
     ;; DL   
@@ -759,7 +834,7 @@ check_Operand proc
     MOV AH,00H
      mov Operand_Value,ax
        ;mov sizeIndex,0h
-    jmp end
+    jmp END2
     CHECKAH:
     
     
@@ -773,7 +848,7 @@ check_Operand proc
     MOV AH,00H                              
      mov Operand_Value,ax
        ;mov sizeIndex,0h
-    jmp end
+    jmp END2
     CHECKBH:
     
     ;; BH   
@@ -786,7 +861,7 @@ check_Operand proc
     MOV AH,00H
      mov Operand_Value,ax
        ;mov sizeIndex,0h
-    jmp end
+    jmp END2
     CHECKCH:
     
     ;; CH   
@@ -799,7 +874,7 @@ check_Operand proc
     MOV AH,00H
      mov Operand_Value,ax
        ;mov sizeIndex,0h
-    jmp end
+    jmp END2
     CHECKDH:
     
     ;; DH  
@@ -812,7 +887,7 @@ check_Operand proc
     MOV AH,00H
      mov Operand_Value,ax
        ;mov sizeIndex,0h
-    jmp end
+    jmp END2
     CHECK00:
     
     ;; 00  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;TO CHECK
@@ -823,10 +898,10 @@ check_Operand proc
     mov aL,_00
     MOV AH,_01                                          
     mov Operand_Value,ax
-    jmp end
+    jmp END2
     CHECK01:
     
-;     ;; 01  
+  ;     ;; 01  
     
     CMP [SI],401H 
     JNZ CHECK02
@@ -835,10 +910,10 @@ check_Operand proc
     MOV AH,_02
      mov Operand_Value,ax
   ;mov sizeIndex,0h 
-    jmp end
+    jmp END2
     CHECK02:
     
-;     ;; 02  
+  ;     ;; 02  
     
     CMP [SI],404H 
      JNZ CHECK03
@@ -847,10 +922,10 @@ check_Operand proc
     MOV AH,_03 
      mov Operand_Value,ax
   ;mov sizeIndex,0h 
-    jmp end
+    jmp END2
     CHECK03:
     
-;     ;; 03  
+ ;; 03  
     
     CMP [SI],407H 
      JNZ CHECK04
@@ -859,10 +934,10 @@ check_Operand proc
     MOV AH,_04
      mov Operand_Value,ax
   ;mov sizeIndex,0h 
-     jmp end
+     jmp END2
     CHECK04:
     
-;     ;; 04  
+    ;     ;; 04  
     
     CMP [SI],40aH 
      JNZ CHECK05
@@ -871,7 +946,7 @@ check_Operand proc
     MOV AH,_05
      mov Operand_Value,ax
   ;mov sizeIndex,0h 
- jmp end    
+ jmp END2    
     CHECK05:
     
 ;     ;; 05  
@@ -883,7 +958,7 @@ check_Operand proc
     MOV AH,_06 
      mov Operand_Value,ax
   ;mov sizeIndex,0h
- jmp end    
+ jmp END2    
     CHECK06:
     
 ;     ;; 06  
@@ -895,7 +970,7 @@ check_Operand proc
     MOV AH,_07 
      mov Operand_Value,ax
   ;mov sizeIndex,0h
- jmp end    
+ jmp END2    
     CHECK07:
     
 ;     ;; 07  
@@ -907,7 +982,7 @@ check_Operand proc
     MOV AH,_08 
      mov Operand_Value,ax
   ;mov sizeIndex,0h
- jmp end   
+ jmp END2   
     CHECK08:
     
 ;     ;; 08  
@@ -919,7 +994,7 @@ check_Operand proc
     MOV AH,_09
      mov Operand_Value,ax
   ;mov sizeIndex,0h 
- jmp end       
+ jmp END2       
     CHECK09:
     
 ;     ;; 09  
@@ -931,7 +1006,7 @@ check_Operand proc
     MOV AH,_A 
      mov Operand_Value,ax 
   ;mov sizeIndex,0h
- jmp end    
+ jmp END2    
     CHECKA:
     
 ;     ;; A  
@@ -943,7 +1018,7 @@ check_Operand proc
     MOV AH,_B 
      mov Operand_Value,aX
   ;mov sizeIndex,0h
- jmp end     
+ jmp END2     
     CHECKB:
     
 ;     ;; B  
@@ -955,7 +1030,7 @@ check_Operand proc
     MOV AH,_C 
      mov Operand_Value,ax
   ;mov sizeIndex,0h
- jmp end     
+ jmp END2     
     CHECKC:
     
 ;     ;; C  
@@ -967,7 +1042,7 @@ check_Operand proc
     MOV AH,_D
      mov Operand_Value,ax
   ;mov sizeIndex,0h 
- jmp end     
+ jmp END2     
     CHECKD:
     
 ;     ;; D  
@@ -979,7 +1054,7 @@ check_Operand proc
     MOV AH,_E
      mov Operand_Value,ax
   ;mov sizeIndex,0h 
- jmp end     
+ jmp END2     
     CHECKE:
     
 ;     ;; E  
@@ -991,7 +1066,7 @@ check_Operand proc
      MOV AH,_F
       mov Operand_Value,ax
         ;mov sizeIndex,0h 
-  jmp end         
+  jmp END2         
      CHECKF:
    
      ;; F  
@@ -1003,7 +1078,7 @@ check_Operand proc
      MOV AH,_00
      mov Operand_Value,ax
        ;mov sizeIndex,0h 
-     jmp end 
+     jmp END2 
          
      CHECKmlSI:
     
@@ -1116,11 +1191,11 @@ jnz escape14
     ; ;
     
      ;RegisterIndirect_Addressing_Mode _SI 
-         jmp end              
+         jmp end2             
      CHECKmlDI:
         ; ;; [DI]
          CMP [SI],485H  
-         jnz escape17
+         jz escape17
      jmp CHECKmlBX
      escape17:
 
@@ -1215,7 +1290,7 @@ jnz escape14
      CHECKmlBX:
          ;; [BX] 
      CMP [SI],4acH 
-      jnz escape34
+      jz escape34
      jmp CHECKdata
      escape34:
         
@@ -1304,14 +1379,14 @@ jnz escape14
     
     ; ;RegisterIndirect_Addressing_Mode _BX                                               
    CHECKdata:
-    Convert_OP_TO_HEXA Operand 
+    Convert_OP_TO_HEXA Operand sizeIndex
     mov Operand_Value,ax
  
-    end:
+    end2:
             
     ret
 
-ENDp check_Operand
+check_Operand ENDp
 
 
 put_Operand PROC
@@ -1434,7 +1509,7 @@ put_Operand PROC
     mov ax,Operand_Value;; CODE 
     mov bx,_BX
     mov bl,al
-    mov _bX,bx
+    mov _BX,bx
     jmp end1
     CHECKCL1:
     
@@ -1989,6 +2064,4 @@ put_Operand PROC
             
     RET
 
-endP put_Operand 
-
-END MAIN
+ put_Operand endP
