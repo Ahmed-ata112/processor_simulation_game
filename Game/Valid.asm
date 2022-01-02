@@ -1,10 +1,30 @@
 ;;MENNA
 SizeMismatchValidation MACRO op1,op2,result    
-
+;;;;;;;;;;;;;;;;;;;;;
+mov bx,0
+mov cx,0  ;count
+cmp [op2],0
+jne count_data
+inc bx ;skip zero
+count_data:
+cmp [op2+bx],'$'
+je finish
+inc BX
+inc cx
+jmp count_data
+cmp cx,3
+jge 2bytes
+mov ax,1 ;1byte
+jmp start
+2bytes;
+mov ax,2
+start:
 check_op_size_mismatch op1,op2,result
 cmp result,0
 je finish
-check_op_size_mismatch op2,op1,result       
+check_op_size_mismatch op2,op1,result 
+;;;;;;;;;;;;;;;;;;;;
+
 finish:       
        
 ENDM SizeMismatchValidation
@@ -22,6 +42,8 @@ check_op_size_mismatch MACRO op1, op2, result
     je NOTvalid
     cmp op2+1,'P'                  ;_H,BP/_H,SP
     je NOTvalid
+    cmp ax,2
+    je NOTvalid
     
     CheckL:  
     cmp op1+1,'L'                  ;op1=_L
@@ -33,7 +55,10 @@ check_op_size_mismatch MACRO op1, op2, result
     cmp op2+1,'I'                  ;_L,SI/_L,DI
     je NOTvalid
     cmp op2+1,'P'                  ;_L,BP/_L,SP
-    je NOTvalid 
+    je NOTvalid
+    cmp ax,2
+    je NOTvalid
+
     valid:
     mov result,1 
     jmp end
@@ -63,105 +88,105 @@ Check_memorytomemory MACRO des1, des2, Result_2  ;; check if it iss memory to me
 ENDM Check_memorytomemory
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  Invalid register name OR ADDRESING
 check_reg_name macro operand, RES
-
+Local A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,T,END252
 HASHING_op operand HASH_Operand
 
 MOV SI,offset HASH_Operand 
     ;; AX
     CMP [SI],24dH
-    JNZ CHECKBX7
+    JNZ A
     jmp END252
-    CHECKBX7:
+    A:
     ;; BX
     CMP [SI],252H
-     JNZ CHECKCX7
+     JNZ B
      jmp END252
-    CHECKCX7:
+    B:
     ;; CX 
     CMP [SI],257H
-    JNZ CHECKCX77
+    JNZ C
      jmp END252
-    CHECKCX77:
+    C:
     ;; DX                                  
     CMP [SI],25cH
-     JNZ CHECKSI7
+     JNZ D
     jmp END252
-    CHECKSI7:
+    D:
     ;; SI   
     CMP [SI],27aH
-     JNZ CHECKDI8
+     JNZ E
     jmp END252
-    CHECKDI8:
+    E:
     ;; DI   
     CMP [SI],22fH
-     JNZ CHECKSP8
+     JNZ F
     jmp END252
-    CHECKSP8:
+    F:
     ;; SP   
     CMP [SI],28fH
-     JNZ CHECKBP8
+     JNZ G
     jmp END252
-    CHECKBP8:
+    G:
     ;; BP   
     CMP [SI],23aH
-     JNZ CHECKAL8
+     JNZ H
     jmp END252
-    CHECKAL8:
+    H:
     ;; AL    
     CMP [SI],229H
-     JNZ CHECKBL8
+     JNZ I
     jmp END252
-    CHECKBL8:
+    I:
     ;; BL    
     CMP [SI],22eH
-     JNZ CHECKCL8
+     JNZ J
     jmp END252
-    CHECKCL8:
+    J:
     ;; CL   
     CMP [SI],233H
-     JNZ CHECKDL7
+     JNZ K
     jmp END252
-    CHECKDL7:
+    K:
     ;; DL   
     CMP [SI],238H      
-     JNZ CHECKAH7
+     JNZ L
     jmp END252
-    CHECKAH7:
+    L:
     ;; AH  
     CMP [SI],21dH
-     JNZ CHECKBH7
+     JNZ T
     jmp END252
-    CHECKBH7:
+    T:
     ;; BH   
     CMP [SI],222H
-     JNZ CHECKCH7
+     JNZ M
     jmp END252
-    CHECKCH7:
+    M:
     ;; CH   
     CMP [SI],227H
-     JNZ CHECKDH7
+     JNZ N
     jmp END252
-    CHECKDH7:
+    N:
     ;; DH  
     CMP [SI],22cH 
-     JNZ CHECK007
+     JNZ O
     jmp END252
-    CHECK007:
+    O:
 ;[SI]
     CMP [SI],4b2H 
-JNZ CHECK0017
+JNZ P
     jmp END252
-    CHECK0017:
+    P:
 ; [DI]
          CMP [SI],485H
-JNZ CHECK0027
+JNZ Q
     jmp END252
-    CHECK0027:
+    Q:
     ;; [BX] 
      CMP [SI],4acH 
-JNZ CHECK00277
+JNZ R
     jmp END252
-    CHECK00277:
+    R:
     MOV  RES,0
     END252:
 ENDM
@@ -203,7 +228,7 @@ ENDM
 ;     mov result,1
 ;     finish:
 
-; check_if_in_array endm
+; endm check_if_in_array
 
 
 include macr.inc
@@ -217,7 +242,7 @@ Command_valid db 1
 validRegNamesArr db  'AX','BX','CX','DX'
                  db  'AH','AL','BH','BL','CH','CL','DH','DL'
                  db  'CS','IP','SS','SP'
-                 db  'BP','SI','DI','DS','ES'
+                 db  'BP','SI','DI','DS','ES',
 
 validRegNamesArrSize db  21d 
 
@@ -226,7 +251,7 @@ HASH_Operand DW 0H
 A_arr_len db 3
 A_element_size db 4
 
-valid_addressing_mode_regs db '[BX]','[SI]','[DI]'
+valid_addressing_mode_regs db '[BX]','[SI]','[DI]','[00]','[01]','[02]','[03]', '[04]', '[05]', '[06]', '[07]', '[08]', '[09]', '[0A]', '[0B]', '[0C]', '[0D]', '[0E]','[0F]'
 
 command_splited db 5 dup('$') ;';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;'
     Operand1 db 5 dup('$')
@@ -290,37 +315,120 @@ split_command               ENDP
 
 
 
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 Check_valid PROC
 ; mov ax,1h
 ; mov Command_valid,al
 CALL split_command
 split_operands Two_Operands_Together_splited Operand1 Operand2
+
+cmp Operand2,'$' ;if empty, assume Command_valid is 0 initally
+jne validationnn
+
+
+validationnn:
+cmp Operand1,'[' ; memory locaion operand (type 1)
+je  Valid_Memory_Location
+cmp Operand1, 'A'
+jl check_op2
+cmp Operand1,'Z'
+jg End_End       ; it is not a valid reg name, else it is a register
+jmp Reg_Operand1
+; if operand is memory location
+Valid_Memory_Location1:
+check_if_in_array valid_addressing_mode_regs 19 4 Operand1 Command_valid
+cmp Command_valid,0
+je End_End
+jmp check_op2
+
+Reg_Operand1:
+validRegNamesArr 21 2 Operand1 Command_valid ;check if operand1 is not one of the array element, it's INVALID
+cmp Command_valid,0
+je End_End   ;jmp to end
+
+
+check_op2:  
+cmp Operand2,'[' ; memory locaion operand (type 1)
+je  Valid_Memory_Location2
+cmp Operand2, 'A'
+jl  Rest
+cmp Operand2,'Z'
+jg End_End       ; it is not a valid reg name, else it is a register
+
+Valid_Memory_Location2:
+check_if_in_array valid_addressing_mode_regs 19 4 Operand2 Command_valid
+cmp Command_valid,0
+je End_End
+
+Reg_Operand2:
+validRegNamesArr 21 2 Operand2 Command_valid ;check if operand1 is not one of the array element, it's INVALID
+jmp End_End
+
+Rest:
+SizeMismatchValidation  Operand1 Operand2 Command_valid
+cmp Command_valid,0
+je End_End 
+Check_memorytomemory  Operand1 Operand2 Command_valid
+cmp Command_valid,0
+je End_End 
+
+End_End:
+endp  Check_valid
+
+checkOperandsRegistersNames macro FirstOperandData,SecondOperandData,result     
+      local finish                          
+      check_if_in_array  validRegNamesArr,validRegNamesArrSize,ActualfirstOperandSize, FirstOperandData,result
+      cmp result,0
+      je finish
+      check_if_in_array  validRegNamesArr,validRegNamesArrSize,ActualSecondOperandSize, SecondOperandData,result
+      finish:                          
+endm checkOperandsRegistersNames    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 SizeMismatchValidation Operand1 Operand2 Command_valid
 MOV AL,Command_valid
 CMP AL,0    ; 0 -> INVALID   1-> VALID
 JNE C54321
 JMP CONT54321
 C54321:
-Check_memorytomemory Operand1 Operand2 Command_valid 
-MOV AL,Command_valid
-CMP AL,0    ; 0 -> INVALID   1-> VALID
-JNE C543212
-JMP CONT54321
-C543212:
-
-check_reg_name Operand1 Command_valid
-MOV AL,Command_valid
-CMP AL,0    ; 0 -> INVALID   1-> VALID
-JNE C54321235
-JMP CONT54321
-C54321235:
-
-check_reg_name Operand2 Command_valid
-MOV AL,Command_valid
-CMP AL,0    ; 0 -> INVALID   1-> VALID
-JNE C5432123
-JMP CONT54321
+ Check_memorytomemory Operand1 Operand2 Command_valid 
+ MOV AL,Command_valid
+ CMP AL,0    ; 0 -> INVALID   1-> VALID
+ JNE C543212
+ JMP CONT54321
+ C543212:
+ check_reg_name Operand1 Command_valid
+ MOV AL,Command_valid
+ CMP AL,0    ; 0 -> INVALID   1-> VALID
+ JNE C54321235
+ JMP CONT54321
+ C54321235:
+ check_reg_name Operand2 Command_valid
+ MOV AL,Command_valid
+ CMP AL,0    ; 0 -> INVALID   1-> VALID
+ JNE C5432123
+ JMP CONT54321
 C5432123:
 
 
