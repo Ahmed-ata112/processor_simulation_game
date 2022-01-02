@@ -44,8 +44,6 @@ Send {f2}
 
 Send {f2}
 
-
-
 Send,
 (
 Q
@@ -56,10 +54,17 @@ Send,
 (
 T
 )
-  
+
+Send,
+(
+15893258ACFBD65E4A587D5C2F57012569A752253D69552012593201478523698500
+)
 Send,{Enter}
 
+  
 
+
+sleep 10000
 
 Send,
 (
@@ -80,10 +85,10 @@ Send,{f2}
 
 Send,
 (
-MOV BX,5F3
+MOV BX,05F3
 )
     
-Send,{f2}
+Send,{f1}
 
 
 Send,
@@ -91,7 +96,7 @@ Send,
 MOV BX,20F3
 )
     
-Send,{f2}
+Send,{f1}
 
 
 Send,
@@ -115,15 +120,15 @@ Send,
 MOV DX,54F
 )
   
-Send,{f2}
+Send,{f1}
 
 
 Send,
 (
-MOV DX,B470
+MOV DX,0B47
 )
   
-Send,{f2}
+Send,{f1}
 
 
 Send,
@@ -136,7 +141,7 @@ Send,{f2}
 
 Send,
 (
-MOV SI,A
+MOV SI,0A
 )
   
 Send,{f2}
@@ -147,7 +152,7 @@ Send,
 MOV DI,123
 )
   
-Send,{f2}
+Send,{f1}
 
 
 Send,
@@ -155,7 +160,7 @@ Send,
 MOV DI,856
 )
   
-Send,{f2}
+Send,{f1}
 
 
 Send,
@@ -180,7 +185,7 @@ Send,
 MOV BP,1   
 )
   
-Send,{f2}
+Send,{f1}
 
 
 Send,
@@ -188,7 +193,7 @@ Send,
 MOV BP,8
 )
   
-Send,{f2}
+Send,{f1}
 
 Send,
 (

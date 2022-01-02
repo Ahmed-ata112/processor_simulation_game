@@ -72,6 +72,7 @@ Send {f1}
 
 
 
+
 Send,
 (
 Q
@@ -83,8 +84,9 @@ Send,
 T
 )
   
-Send,{f1}
+Send,{Enter}
 
+sleep 10000
 
 Send,
 (
@@ -144,7 +146,7 @@ Send,{f1}
 
 Send,
 (
-MOV DX,B470
+MOV DX,0B47
 )
   
 Send,{f1}
@@ -160,7 +162,7 @@ Send,{f1}
 
 Send,
 (
-MOV SI,A
+MOV SI,0A
 )
   
 Send,{f1}
