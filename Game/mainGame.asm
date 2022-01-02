@@ -1401,7 +1401,6 @@ powerUp_1 PROC
  NOT_POWERUP_1:
     RET
 powerUp_1 endP  
-
 powerUp_2 PROC
     cmp game_turn,1
     jne exec_on_other2
