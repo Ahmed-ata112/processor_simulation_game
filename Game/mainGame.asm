@@ -374,6 +374,8 @@
    
     IS_USED_POWERUP4 db 0 ;;TO INDICATE IF USED BEFORE
     right_IS_USED_POWERUP4 db 0 ;;TO INDICATE IF USED BEFORE
+    IS_USED_POWERUP6 db 0 ;;TO INDICATE IF USED BEFORE
+    right_IS_USED_POWERUP6 db 0 ;;TO INDICATE IF USED BEFORE
 
 .code
 	main proc far
@@ -1246,8 +1248,9 @@ checkIfAnyPlayerLost endp
 CHECK_POWERUPS PROC
      mov ah,1
     int 16h ;-> looks at the buffer
-    jz FinishedCheckingPowerUps ;nothing is clicked
-
+    jnz xserdc
+    jmp FinishedCheckingPowerUps ;nothing is clicked
+    xserdc:
     ;; f5 to f9 are the POWERUps
     ;; f5 ->sc63
     cmp ah,63       ;F5
@@ -1282,13 +1285,40 @@ CHECK_POWERUPS PROC
     JMP FinishedCheckingPowerUps
 
 
-    check_if_F8:
+check_if_F8:
     cmp ah,66       ;F8
     jne check_if_F9
     READ_KEY ;;READ the f8
-    call powerUp_4
-    check_if_F9:
 
+    cmp game_turn,1
+    jne check_if_the_other_game_turn2
+    cmp IS_USED_POWERUP4,1
+    je FinishedCheckingPowerUps ;;no more tries
+    CALL powerUp_4
+    JMP FinishedCheckingPowerUps
+    check_if_the_other_game_turn2:
+    cmp right_IS_USED_POWERUP4,1
+    je FinishedCheckingPowerUps ;;no more tries
+    CALL powerUp_4
+    JMP FinishedCheckingPowerUps
+    check_if_F9:
+    cmp ah,67       ;F9
+    jne check_if_F10
+    READ_KEY ;;READ the f9
+
+    cmp game_turn,1
+    jne check_if_the_other_game_turn3
+    cmp IS_USED_POWERUP6,1
+    je FinishedCheckingPowerUps ;;no more tries
+    CALL powerUp_6
+    JMP FinishedCheckingPowerUps
+    check_if_the_other_game_turn3:
+    cmp right_IS_USED_POWERUP6,1
+    je FinishedCheckingPowerUps ;;no more tries
+    CALL powerUp_6
+    JMP FinishedCheckingPowerUps
+
+    check_if_F10:
 
     FinishedCheckingPowerUps:
     ret
@@ -1378,7 +1408,6 @@ powerUp_3 PROC
     RET
 powerUp_3 endP  
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 powerUp_4 PROC
     cmp game_turn,1 ;checks if it's left player's turn 
@@ -1388,6 +1417,7 @@ powerUp_4 PROC
     jmp exitPowerUp_4
     skipme1:
     sub playerPoints,30
+    MOV IS_USED_POWERUP4,1
     jmp clearAllRegisters
 
 
@@ -1397,6 +1427,7 @@ checkIfItsRightPlayerTurn_powerUp_4:
     jnb  SKIPME2
     jmp exitPowerUp_4
     SKIPME2:
+    MOV right_IS_USED_POWERUP4,1
     sub RIGHT_playerPoints,30
 clearAllRegisters:
 
@@ -1421,6 +1452,70 @@ ret
 powerUp_4 endp
 
 
+
+powerUp_6 proc 
+    cmp game_turn,1
+    jne checkIfItsRightPlayerTurn_powerUp_6
+    cmp playerPoints,7
+    JNB SKIPSARAH1
+    jmp exitPowerUp_6
+    SKIPSARAH1:
+    jmp changeTargetValue
+
+checkIfItsRightPlayerTurn_powerUp_6:
+    cmp right_playerPoints,7
+    JNB SKIPSARAH2
+    jmp exitPowerUp_6
+    SKIPSARAH2:
+
+
+changeTargetValue:
+    ReadNumberhexa_in_ax ;;reads new target value
+    cmp L_AX,ax
+    je exitPowerUp_6
+    cmp L_BX,ax
+    je exitPowerUp_6
+    cmp L_CX,ax
+    je exitPowerUp_6
+    cmp L_DX,ax
+    je exitPowerUp_6
+    cmp L_SI,ax
+    je exitPowerUp_6
+    cmp L_DI,ax
+    je exitPowerUp_6
+    cmp L_SP,ax
+    je exitPowerUp_6
+    cmp L_BP,ax
+    je exitPowerUp_6
+    cmp R_AX,ax
+    je exitPowerUp_6
+    cmp R_BX,ax
+    je exitPowerUp_6
+    cmp R_CX,ax
+    je exitPowerUp_6
+    cmp R_DX,ax
+    je exitPowerUp_6
+    cmp R_SI,ax
+    je exitPowerUp_6
+    cmp R_DI,ax
+    je exitPowerUp_6
+    cmp R_SP,ax
+    je exitPowerUp_6
+    cmp R_BP,ax
+    je exitPowerUp_6
+    mov target_value,ax
+
+    CMP GAME_TURN,1
+    JNE other_player_is_playing
+    sub playerPoints,7
+    mov IS_USED_POWERUP6,1
+    jmp exitPowerUp_6
+    other_player_is_playing:
+    mov right_IS_USED_POWERUP6,1
+    sub right_playerPoints,7
+exitPowerUp_6:
+    RET
+powerUp_6 endp
 
 
 
