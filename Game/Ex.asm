@@ -8,7 +8,6 @@ ex_MAIN PROC
     JMP  EN
     C50:
 
-
     MOV DL,'C'
     CMP DL, [SI]
     JNE C501
@@ -22,6 +21,18 @@ ex_MAIN PROC
     ;Convert_OP_TO_HEXA Operand1
     CALL split_command
     split_operands Two_Operands_Together_splited Operand1 Operand2
+
+
+    ; CMP OPERAND1,'0'
+    ; JNE ASDASDWZ
+
+    ; MOV SI, OFFSET OPERAND1+1
+    ; MOV DI, OFFSET OPERAND1
+    ; MOV CX,4
+    
+
+    ;ASDASDWZ:
+
     HASHING command_splited HASH_comand    
     HASHING_op Operand1 HASH_Operand1
     HASHING_op Operand2 HASH_Operand2 
@@ -38,7 +49,7 @@ ex_MAIN PROC
 
     MOV SI,offset Operand2
     MOV DI, offset Operand
-    MOV CX,5
+    MOV CX,10
     REP MOVSB
 
     CALL check_Operand
@@ -56,9 +67,8 @@ ex_MAIN PROC
 
     MOV SI,offset Operand1
     MOV DI, offset Operand
-    MOV CX,5
+    MOV CX,10
     REP MOVSB
-
     CALL check_Operand     ;; 0 for byte, 1 for word
 
     MOV AX, Operand_Value
@@ -72,22 +82,22 @@ ex_MAIN PROC
 
     MOV AL,'$'
     MOV DI, offset command_splited
-    MOV CX,5
+    MOV CX,10
     REP STOSB
 
     MOV AL,'$'
     MOV DI, offset Operand1
-    MOV CX,5
+    MOV CX,10
     REP STOSB
 
     MOV AL,'$'
     MOV DI, offset Operand2
-    MOV CX,5
+    MOV CX,10
     REP STOSB
 
     MOV AL,'$'
     MOV DI, offset Two_Operands_Together_splited
-    MOV CX,12
+    MOV CX,22
     REP STOSB
 
     MOV AX,0H
@@ -100,7 +110,7 @@ ex_MAIN PROC
 
     MOV AL,'$'
     MOV DI, offset Operand
-    MOV CX,5
+    MOV CX,10
     REP STOSB
 
 
