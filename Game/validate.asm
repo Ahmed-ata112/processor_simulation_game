@@ -3,15 +3,17 @@
     Check_valid PROC
     CALL split_command
 
-    cmp command_splited,'N' ;if empty, assume Command_valid is 0 initally
-    jne validationnn
-    RET
-    validationnn:
+    ; cmp command_splited,'N' ;if empty, assume Command_valid is 0 initally
+    ; jne validationnn
+    ; RET
+    ; validationnn:
 
-    cmp command_splited,'C' ;if empty, assume Command_valid is 0 initally
-    jne validationnn2
-    RET
-    validationnn2:
+    ; cmp command_splited,'C' ;if empty, assume Command_valid is 0 initally
+    ; jne validationnn2
+    ; RET
+    ; validationnn2:
+
+    
     split_operands Two_Operands_Together_splited Operand1 Operand2
 
 
