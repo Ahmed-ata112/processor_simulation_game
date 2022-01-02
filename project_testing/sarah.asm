@@ -88,7 +88,8 @@ endm is_brackets_with_number_in_it
 op1 db '[BL]'
 op2 db 'ax'
 
-valid_addressing_mode_regs db '[BX]','[SI]','[DI]'    
+valid_addressing_mode_regs db '[BX]','[SI]','[DI]','[00]',  '[01]','[02]','[03]', '[04]', '[05]', '[06]', '[07]', '[08]', '[09]', '[0A]', '[0B]', '[0C]', '[0D]', '[0E]','[0F]'  
+
 result4 db 0ffh
 
 
