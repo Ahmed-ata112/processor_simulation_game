@@ -1031,7 +1031,7 @@ check_Operand proc
     
 ;     ;; A  
     
-    CMP [SI],3a1H 
+    CMP [SI],431H 
      JNZ CHECKB
       movmlA:
     mov aL,_A
@@ -1043,7 +1043,7 @@ check_Operand proc
     
 ;     ;; B  
     
-    CMP [SI],3a4H 
+    CMP [SI],434H 
      JNZ CHECKC
       movmlB:
     mov aL,_B
@@ -1055,7 +1055,7 @@ check_Operand proc
     
 ;     ;; C  
     
-    CMP [SI],3a7H 
+    CMP [SI],437H 
      JNZ CHECKD
       movmlC:
     mov aL,_C
@@ -1067,7 +1067,7 @@ check_Operand proc
     
 ;     ;; D  
     
-    CMP [SI],3aaH 
+    CMP [SI],43AH 
      JNZ CHECKE
       movmlD:
     mov aL,_D
@@ -1079,7 +1079,7 @@ check_Operand proc
     
 ;     ;; E  
    
-     CMP [SI],3adH 
+     CMP [SI],43DH 
       JNZ CHECKF
        movmlE:
      mov aL,_E
@@ -1091,7 +1091,7 @@ check_Operand proc
    
      ;; F  
    
-     CMP [SI],3b0H 
+     CMP [SI],440H 
      JNZ CHECKmlSI 
      movmlF:
      mov aL,_F
