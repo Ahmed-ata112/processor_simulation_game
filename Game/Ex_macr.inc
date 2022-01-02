@@ -102,6 +102,14 @@ Convert_OP_TO_HEXA MACRO OPERAND, size_Index
     mov cx,0 
     mov dx,0
     MOV DI, offset OPERAND
+
+    
+    SKIP_THE_ZEROS:
+    CMP [DI],'0'
+    JNE L1
+    INC DI    
+    JMP SKIP_THE_ZEROS
+
     l1: 
         MOV DL,'$'
         cmp [DI],DL
