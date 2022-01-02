@@ -574,27 +574,20 @@ LEVEL_PROCESSING macro
 
 endm LEVEL_PROCESSING
 
-WAIT_seconds_TIME MACRO n_SECONDS
+WAIT_10_seconds_TIME MACRO 
     local L1
-    mov AH,2Ch
-    int 21h ;; Get System Time
-    mov bl,dh ;;current seconds
-    add bl,n_seconds
-
-    L1:
-    mov AH,2Ch
-    int 21h ;; Get System Time
-    cmp dh,bl ;;didn't reach our time yet
-    jne L1
-ENDM WAIT_seconds_TIME
+    ;; waits for 10 seconds
+    mov dx,9680
+    mov cx,98
+    mov ah,86h
+    int 15h
+ENDM WAIT_10_seconds_TIME
 
 WAIT_One_centi_second_TIME MACRO 
     local L1
     mov AH,2Ch
     int 21h ;; Get System Time
     mov bl, dl ;;current seconds ; 0-99
-    
-
     L1:
     mov AH,2Ch
     int 21h ;; Get System Time
@@ -616,7 +609,7 @@ INSTRUCTIONS_PAGE macro
     ChangeVideoMode 3H
     DisplayString_AT_position_and_move_cursor INSTRUCTIONS_msg 0A14h
     ;;should display different messages 
-    WAIT_seconds_TIME 3 ;; WAITS FOR 10 SECONDS
+    WAIT_10_seconds_TIME  ;; WAITS FOR 10 SECONDS
     ;;
 endm INSTRUCTIONS_PAGE
 
@@ -967,6 +960,16 @@ local exit
 
 endm checkTimeInterval
 
+
+Draw_blank_line MACRO 
+
+    mov ax, 0700h                ;Scroll Screen AH=07(Scroll DOWN), AL=1 one line
+	mov bh, 00                   ;Normal attributes -> 07 ;; 0E-> yellow text
+	mov cx, 0700h                  ;from row 17h col 0
+	mov dx, 1250H                ;To end of screen
+	int 10h                      ;Clear the first line
+
+ENDM Draw_blank_line
 
 
 

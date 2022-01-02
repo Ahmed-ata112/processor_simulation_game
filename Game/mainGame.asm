@@ -19,11 +19,8 @@
 	MAIN_Screen_message3 db 'To end Program press ESC$'   
     STATUS_BAR_MSG db '_______________________________________________________________________________$'
 	INSTRUCTIONS_msg db 'SOME INSTRUCTIONS OF THE GAME... blA bla bla ... $'
-	EMPTY_STRING DB '                                $'
-
 	Sent_CHAT_INV_msg db 'You sent a chat Invitation','$'
 	Sent_Game_INV_msg db 'You sent a Game Invitation','$'
-	
 	level1_msg db 'LEVEL 1 -- PRESS F1$' 
 	level2_msg db 'LEVEL 2 -- PRESS F2$' 
 	choose_hidden_char db 'Choose A Forbidden char: $'
@@ -370,6 +367,22 @@
     
     playersStatus db 0 ;; 0 -> nothing , 1 -> left palyer lost/right player won , 2 -> right player lost/left player won
 
+    POWERUP1_MSG DB 'YOU CHOSED POWER-UP 1$'  
+    POWERUP1_MSG2 DB 'PLEASE ENTER COMMAND TO EXECUTE$'
+ 
+    POWERUP2_MSG DB 'YOU CHOSED POWER-UP 2$'  
+    POWERUP2_MSG2 DB 'PLEASE ENTER COMMAND TO EXECUTE$'
+    POWERUP3_MSG DB 'YOU CHOSED POWER-UP 3$'  
+    POWERUP3_MSG2 DB 'ENTER FORBIDDEN CHAR (ONLY ONCE)$'
+    
+    POWERUP5_MSG DB 'YOU CHOSED POWER-UP 5$'  
+    POWERUP5_MSG2 DB 'ENTER NEW TARGET VALUE (ONLY ONCE)$'
+
+    EXIT_MSG DB 'YOU EXIT THE GAME$'
+    EXIT_MSG2 DB 'PLAYER 1 POINTS: $'
+    EXIT_MSG3 DB 'PLAYER 2 POINTS: $'
+    EXIT_MSG4 DB 'THE WINNER OF THE GAME IS: $'
+
 
     IS_USED_POWERUP3 db 0 ;;TO INDICATE IF USED BEFORE
     right_IS_USED_POWERUP3 db 0 ;;TO INDICATE IF USED BEFORE
@@ -541,7 +554,7 @@ NAME_VALIDATION2 PROC
 		cmp SecondNameData,'['
 		jl  NAME2_IS_VALID
 		TRY_AGAIN_INPUT2:            ; if first character isn't a letter, clear screen and display a message to user
-		DisplayString_AT_position_not_moving_cursor Enter_Name_message2 0a04h
+		DisplayString_AT_position_not_moving_cursor Enter_Name_message2 0C04h
 		DisplayString_AT_position_not_moving_cursor Press_any_Key_message 0b04h 
 		mov al,'$'
 		mov di,offset SecondNameData  ;DI points to the target
@@ -611,6 +624,7 @@ CHAT_ROOM ENDP
 START_My_GAME PROC
 
 	ChangeVideoMode 13h   ;; CLEARS tHE SCREEN and start video mode
+
     mov Game_turn,1 ;; player left starts the Game
 	GAME_LOOP:
 	CLR_Screen_with_Scrolling_GRAPHICS_MODE   ;; CLEARS tHE SCREEN  
@@ -633,7 +647,7 @@ START_My_GAME PROC
     ;;swap turns
     SWAP_TURNS
 
-
+   
 
     NOT_FINISHED_INPUT_YET:
     CALL checkValuesInRegisters
@@ -652,6 +666,29 @@ START_My_GAME PROC
 	JMP GAME_LOOP
 
 	QUIT_GAME_LOOP:
+
+    ChangeVideoMode 3H
+    DisplayString_AT_position_and_move_cursor EXIT_MSG 0409H
+
+    DisplayString_AT_position_and_move_cursor EXIT_MSG2 0609H
+    DISPLAY_num_in_HEX_ 0709h 4  playerPoints
+    DisplayString_AT_position_and_move_cursor EXIT_MSG3 0621H
+    DISPLAY_num_in_HEX_ 0721h 4 right_playerPoints
+    CMP playersStatus,1 ;; RIGHT WINS
+    JNE CHECK_IF_THE_OTHER_WINS
+    DisplayString_AT_position_and_move_cursor EXIT_MSG4 0F1AH
+    DisplayString SecondNameData
+    JMP WAIT_TIME_A
+    CHECK_IF_THE_OTHER_WINS:
+    CMP playersStatus,2
+    JNE WAIT_TIME_A
+    DisplayString_AT_position_and_move_cursor EXIT_MSG4 0F1AH
+    DisplayString FirstNameData
+    WAIT_TIME_A:
+    WAIT_10_seconds_TIME
+    
+
+
 	RET
 START_My_GAME ENDP
 
@@ -1378,22 +1415,31 @@ CHECK_POWERUPS ENDP
 ;execute a command at your proceccor
 powerUp_1 PROC
     cmp game_turn,1
-    jne exec_on_other1
+    JE RTRTRTRTASAS
+    JMP exec_on_other1
+    RTRTRTRTASAS:
     cmp playerPoints,5 ;;consumes 3 points
     JNB EDCESDAD
     JMP NOT_POWERUP_1
     EDCESDAD:
+    Draw_blank_line
+    DisplayString_AT_position_not_moving_cursor POWERUP1_MSG, 0B09h
+    DisplayString_AT_position_not_moving_cursor POWERUP1_MSG2, 0c05h
+    MoveCursorTo 0E09h
     ReadString COMMAND
     EXECUTE_THECOMMAND_AT_SIDE 2
     SUB playerPoints,5
     Reset_Command
     JMP NOT_POWERUP_1
-
     exec_on_other1:
     cmp right_playerPoints,5 ;;consumes 3 points
     JNB ASDASDASD
     JMP NOT_POWERUP_1
     ASDASDASD:
+    Draw_blank_line
+    DisplayString_AT_position_not_moving_cursor POWERUP1_MSG, 0B09h
+    DisplayString_AT_position_not_moving_cursor POWERUP1_MSG2, 0c05h
+    MoveCursorTo 0E09h
     ReadString COMMAND
     EXECUTE_THECOMMAND_AT_SIDE 1
     SUB right_playerPoints,5
@@ -1404,11 +1450,17 @@ powerUp_1 endP
 
 powerUp_2 PROC
     cmp game_turn,1
-    jne exec_on_other2
+    JE RTRTRTRTASASAS
+    JMP exec_on_other2
+    RTRTRTRTASASAS:
     cmp playerPoints,3 ;;consumes 3 points
     JNB SARAH112
     JMP NOT_POWERUP_2
     SARAH112:
+    Draw_blank_line
+    DisplayString_AT_position_not_moving_cursor POWERUP2_MSG, 0B09h
+    DisplayString_AT_position_not_moving_cursor POWERUP2_MSG2, 0c05h
+    MoveCursorTo 0E09h
     ReadString COMMAND
     EXECUTE_THECOMMAND_AT_SIDE 2
     EXECUTE_THECOMMAND_AT_SIDE 1
@@ -1421,6 +1473,10 @@ powerUp_2 PROC
     JNB RETSARAHTER
     JMP NOT_POWERUP_2
     RETSARAHTER:
+    Draw_blank_line
+    DisplayString_AT_position_not_moving_cursor POWERUP2_MSG, 0B09h
+    DisplayString_AT_position_not_moving_cursor POWERUP2_MSG2, 0c05h
+    MoveCursorTo 0E09h
     ReadString COMMAND
     EXECUTE_THECOMMAND_AT_SIDE 2
     EXECUTE_THECOMMAND_AT_SIDE 1
@@ -1438,8 +1494,16 @@ powerUp_3 PROC
     JNB SARAH1112
     JMP NOT_POWERUP_3
     SARAH1112:
+    Draw_blank_line
+    DisplayString_AT_position_not_moving_cursor POWERUP3_MSG, 0B09h
+    DisplayString_AT_position_not_moving_cursor POWERUP3_MSG2, 0c05h
     READ_KEY
     MOV forbidden_char ,AL
+    MoveCursorTo 0E14h  ;;MIGHT CAUSE A PROBLEM
+    mov dl,al
+	mov ah,2     ;; to display the the char into screen (echo)
+	int 21h
+    READ_KEY
     sub playerPoints,8
     mov IS_USED_POWERUP3,1
 
@@ -1449,6 +1513,14 @@ powerUp_3 PROC
     JNB RETSARAHTERR
     JMP NOT_POWERUP_3
     RETSARAHTERR:
+    Draw_blank_line
+    DisplayString_AT_position_not_moving_cursor POWERUP3_MSG, 0B09h
+    DisplayString_AT_position_not_moving_cursor POWERUP3_MSG2, 0c05h
+    READ_KEY
+    MoveCursorTo 0E14h  ;;MIGHT CAUSE A PROBLEM
+    mov dl,al
+	mov ah,2     ;; to display the the char into screen (echo)
+	int 21h
     READ_KEY
     MOV right_forbidden_char ,AL
     sub RIGHT_playerPoints,8
@@ -1519,6 +1591,10 @@ checkIfItsRightPlayerTurn_powerUp_6:
 
 
 changeTargetValue:
+    Draw_blank_line
+    DisplayString_AT_position_not_moving_cursor POWERUP5_MSG, 0B09h
+    DisplayString_AT_position_not_moving_cursor POWERUP5_MSG2, 0c05h
+    MoveCursorTo 0E09h
     ReadNumberhexa_in_ax ;;reads new target value
     cmp L_AX,ax
     je exitPowerUp_6
