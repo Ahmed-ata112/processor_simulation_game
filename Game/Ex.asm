@@ -134,8 +134,11 @@ split_command               PROC
     mov SI, offset THE_COMMAND
     mov DI, offset command_splited
     mov al,' ' ;; to check space
+    MOV AH,'$' ;; TO CHECK END
 moving11:	
 	MOVSB
+  CMP AH,[SI]
+  JE FIN
 	cmp al,[SI]
 	jnz moving11
 ;; Mena	
@@ -147,6 +150,7 @@ moving22:
     cmp al,[SI]
     jnz moving22	
 
+  FIN:
     ret
 
 split_command               ENDP 
@@ -284,6 +288,11 @@ MOV BX,HASH_Operand1
                                                              
                                                                    
     MOV BX,Operand1_Value
+
+    CMP BX,0H
+    JNE D_ERR
+    JMP CHECK21
+    D_ERR:
     
     MOV  CL,sizeIndex
     
@@ -481,6 +490,11 @@ MOV BX,HASH_Operand1
     
     CMP [SI],31AH                                                                                           ;   xxxx xxxx xxxx xxxx
      JNZ CHECK15
+     check_if_in_array Not_CL_or_Value 20 2 Operand2 Able_To_Shift_Flag 
+    cmp Able_To_Shift_Flag,0
+    JE NO_REG33
+    JMP CHECK21
+    NO_REG33:
      
      ;; CODE 
      MOV AX,Operand1_Value
@@ -551,6 +565,12 @@ MOV BX,HASH_Operand1
     
     CMP [SI],308H 
      JNZ CHECK16
+
+    check_if_in_array Not_CL_or_Value 20 2 Operand2 Able_To_Shift_Flag 
+    cmp Able_To_Shift_Flag,0
+    JE NO_REG
+    JMP CHECK21
+    NO_REG:
     
     ;; CODE 
     MOV AX,Operand1_Value
@@ -575,6 +595,12 @@ MOV BX,HASH_Operand1
     
     CMP [SI],305H 
      JNZ CHECK17
+
+     check_if_in_array Not_CL_or_Value 20 2 Operand2 Able_To_Shift_Flag 
+    cmp Able_To_Shift_Flag,0
+    JE NO_REG1
+    JMP CHECK21
+    NO_REG1:
     
     ;; CODE 
     MOV AX,Operand1_Value
@@ -598,6 +624,12 @@ MOV BX,HASH_Operand1
     
     CMP [SI],32BH 
      JNZ CHECK18
+
+     check_if_in_array Not_CL_or_Value 20 2 Operand2 Able_To_Shift_Flag 
+    cmp Able_To_Shift_Flag,0
+    JE NO_REG44
+    JMP CHECK21
+    NO_REG44:
     
     ;; CODE 
     MOV AX,Operand1_Value
@@ -621,6 +653,11 @@ MOV BX,HASH_Operand1
     
     CMP [SI],2F5H 
      JNZ CHECK19
+     check_if_in_array Not_CL_or_Value 20 2 Operand2 Able_To_Shift_Flag 
+    cmp Able_To_Shift_Flag,0
+    JE NO_REG7
+    JMP CHECK21
+    NO_REG7:
     
     ;; CODE 
     MOV AX,Operand1_Value
@@ -650,6 +687,12 @@ MOV BX,HASH_Operand1
     
     CMP [SI],307H 
      JNZ CHECK20
+
+     check_if_in_array Not_CL_or_Value 20 2 Operand2 Able_To_Shift_Flag 
+    cmp Able_To_Shift_Flag,0
+    JE NO_REG66
+    JMP CHECK21
+    NO_REG66:
     
     ;; CODE 
     MOV AX,Operand1_Value
@@ -678,6 +721,11 @@ MOV BX,HASH_Operand1
     
     CMP [SI],319H 
      JNZ CHECK21
+     check_if_in_array Not_CL_or_Value 20 2 Operand2 Able_To_Shift_Flag 
+    cmp Able_To_Shift_Flag,0
+    JE NO_REG9
+    JMP CHECK21
+    NO_REG9:
     
     ;; CODE 
     MOV AX,Operand1_Value
