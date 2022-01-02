@@ -974,6 +974,169 @@ ENDM Draw_blank_line
 
 
 
+;;MENNA
+SizeMismatchValidation MACRO op1,op2,result    
+;;;;;;;;;;;;;;;;;;;;;
+CMP op1,'['
+JNE SYAED
+JMP finish
+SYAED:
+CMP op2,'['
+JNE SYAED2
+JMP finish
+SYAED2:
+mov bx,0
+mov cx,0  ;count
+SkipZero:
+cmp op2+bx,'0'
+je ahaha
+jmp count_data
+ahaha:
+inc bx ;skip zero
+jmp SkipZero
+
+cmp op2+bx,'$' ; opernad=0
+jne ahh
+jmp finish
+ahh:
+
+count_data:
+jne q321
+jmp finish
+q321:
+inc bx
+inc cx
+cmp op2+bx,'$'
+jne count_data
+cmp cx,3
+jge _2bytes
+mov ax,1 ;1byte
+jmp start
+_2bytes:
+cmp cx,5
+jl dfdf
+jmp INvalid
+dfdf:
+mov ax,2
+start:
+check_op_size_mismatch op1,op2,result
+cmp result,0
+jne q9
+jmp finish
+q9:
+check_op_size_mismatch op2,op1,result 
+jmp finish 
+;;;;;;;;;;;;;;;;;;;;
+INvalid:
+mov Command_valid,0
+finish:       
+       
+ENDM SizeMismatchValidation
+
+;; Menna
+check_op_size_mismatch MACRO op1, op2, result
+    Local valid,NOTvalid,end,CheckL   
+    cmp op1+1,'H'                  ;op1=_H 
+    jne CheckL
+    ;; reach here if the first has (-H)
+    ;; Check if the other reg is large -X , -I , -P  -> NOT VALID
+    cmp op2+1,'X'                  ;op2=_X
+    je  NOTvalid
+    cmp op2+1,'I'                  ;_H,SI/_H,DI
+    je NOTvalid
+    cmp op2+1,'P'                  ;_H,BP/_H,SP
+    je NOTvalid
+    cmp ax,2
+    je NOTvalid
+    
+    CheckL:  
+    cmp op1+1,'L'                  ;op1=_L
+    jne valid                      ; if both don't have neither H or L as suffix -> They are Valid 
+    ;; reach here if the first has (-L)
+    ;; Check if the other reg is large -X , -I , -P  -> NOT VALID
+    cmp op2+1,'X'                  ;op2=_X
+    je  NOTvalid
+    cmp op2+1,'I'                  ;_L,SI/_L,DI
+    je NOTvalid
+    cmp op2+1,'P'                  ;_L,BP/_L,SP
+    je NOTvalid
+    cmp ax,2
+    je NOTvalid
+
+    valid:
+    mov result,1 
+    jmp end
+
+    NOTvalid:
+    mov result,0
+    end:
+
+ENDM check_op_size_mismatch
+
+    ;;  Hany
+Check_memorytomemory MACRO des1, des2, Result_2  ;; check if it iss memory to memory --  Result_2 = 0 if it is not valid and 1 for valid  
+    Local no_bracket
+    mov SI,offset des1
+    mov Di,offset des2
+    cmp [SI],BYTE ptr '['
+    jnz no_bracket
+    cmp [Di], BYTE ptr '['
+    jnz no_bracket
+    mov Si,offset Result_2
+    mov [Si], BYTE ptr 0
+    jmp return
+    no_bracket:
+    mov [Si],BYTE ptr 1
+    return:
+        
+ENDM Check_memorytomemory
+
+
+
+check_if_in_array macro arr, arr_len, element_size, op, result
+    local L1 ,finish,found,skip
+    lea si,arr
+    mov bh,arr_len  ;; number of elements in array
+    
+    L1:  
+    mov cx,0 
+    mov cl,element_size
+    lea di,op ; store the string we search for
+    repe CMPSB    
+    
+    cmp cx,0 ;; CX =0 if the 2 current words equall 
+    jne skip ;try the next pair 
+    ;;
+    dec si
+    dec di
+    mov al,[si]
+    cmp al,[di]
+    je found 
+    inc si
+    skip:
+    add si,cx ;to skip current word if it doesn't match
+    
+    dec bh
+    jnz L1 
+    
+    
+    ;; finsished loop and not found
+    mov result,0
+    jmp finish
+    ;;valid one -> element in array
+    found:    
+    mov result,1
+    finish:
+
+endm check_if_in_array
+
+
+
+
+
+
+
+
 
 
 

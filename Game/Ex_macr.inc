@@ -70,7 +70,8 @@ moving111:
 ENDM HASHING_op
 
 split_operands MACRO source, des1, des2 ; to split the two operand (des1->first oper && des2->second oper)   
-	mov SI,offset source
+    local fin,moving1,moving2
+    mov SI,offset source
 	mov DI,offset des1
 	mov al,','
     MOV AH,'$'
@@ -98,7 +99,7 @@ Convert_OP_TO_HEXA MACRO OPERAND, size_Index
     local l1, l2, numb, SKIP_NUM, end_of_op,FINISHED, TF
 
     ;;STORES THE RESULT in AX
-    mov cx,0
+    mov cx,0 
     mov dx,0
     MOV DI, offset OPERAND
     l1: 
@@ -129,7 +130,6 @@ Convert_OP_TO_HEXA MACRO OPERAND, size_Index
     CMP CX,0 ;;STRING WAS EMPTY
     JE FINISHED
     
-
     CMP CX,3
     JL TF
     MOV size_Index,1

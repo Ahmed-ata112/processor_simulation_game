@@ -343,9 +343,9 @@
 	R_commandData db 30 dup('$')
         
     command_splited db 5 dup('$') ;';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;'
-    Operand1 db 5 dup('$')
-    Operand2 db 5 dup('$')
-    Two_Operands_Together_splited db 12 dup('$')
+    Operand1 db 10 dup('$')
+    Operand2 db 10 dup('$')
+    Two_Operands_Together_splited db 22 dup('$')
 
 
     
@@ -357,7 +357,7 @@
                                             ;MOV [00],AX DONE
     HASH_Operand DW 0H
     Operand_Value DW 0H
-    Operand DB 5 dup('$')
+    Operand DB 10 dup('$')
                                          ;MOV [00],Al DONE
     HASH_comand DW 0H                    ;MOV AX,[00] DONE
     HASH_Operand2 DW 0H                  ;MOV Al,[00] DONE
@@ -392,6 +392,21 @@
     IS_USED_POWERUP6 db 0 ;;TO INDICATE IF USED BEFORE
     right_IS_USED_POWERUP6 db 0 ;;TO INDICATE IF USED BEFORE
     EXECUTE_REVESED db 0 ;;IN LEVEL 2 IT INDECATES IF YOU CHOSED TO EXECUTE ON OTHER 
+
+
+
+    ;;VALIDATION
+    Command_valid db 1                                    
+    validRegNamesArr db 'AX','BX','CX','DX'
+                    db  'AH','AL','BH','BL','CH','CL','DH','DL'
+                    db  'CS','IP','SS','SP'
+                    db  'BP','SI','DI','DS','ES'
+
+   validRegNamesArrSize db  21d
+   valid_addressing_mode_regs db '[BX]','[SI]','[DI]','[00]'
+        DB '[01]','[02]','[03]', '[04]', '[05]', '[06]', '[07]'
+        DB '[08]', '[09]', '[0A]', '[0B]', '[0C]', '[0D]', '[0E]','[0F]'
+ 
 
 
 .code
@@ -472,7 +487,7 @@
 				cmp ah,3ch ; F2
 				jne remove_key_from_buffer
 				;in case of F2
-				UPDATE_notification_bar Sent_Game_INV_msg
+				UPDATE_notification_bar Sent_Game_INV_msg   ;; 
 				mov is_player_1_ready_for_game,1 ;; make me ready and see if the other is ready to
 				cmp is_player_2_ready_for_game,1
 				je LETS_PLAY 	;;Player 2 is Ready TOO
@@ -488,6 +503,7 @@
 			LETS_PLAY:
 			empitify_buffer			;; To make Sure That no bat chars are saved in Buffer
 			CALL GAME_WELCOME_PAGES 	;; For level selection and continue To GAME
+			empitify_buffer			;; To make Sure That no bat chars are saved in Buffer
 			CALL START_My_GAME
 			jmp QUIT_THIS_GAME
 
@@ -503,7 +519,7 @@
 
 
 	include Ex.asm
-
+    include validate.asm
 	;To validate The input NAME
 NAME_VALIDATION PROC
 		DisplayString_AT_position_not_moving_cursor Enter_Name_message 0318h 
@@ -643,6 +659,21 @@ START_My_GAME PROC
     hhhheeeeeeee:
     ;; THE PLAYER FINSHED TYPING
     ;; WE WILL UPDATE chosen players Regs
+    mov Command_valid,1
+    call Check_valid
+    cmp Command_valid,0H ;;invalid
+    jne execute_command_valid
+    ;; command is not valid 
+    ;;dec points
+    
+    cmp game_turn,1
+    jne dec_other_player
+    DEC playerpoints
+    jmp FINISHED_EXECUTING
+    dec_other_player:
+    DEC right_playerpoints
+    jmp FINISHED_EXECUTING
+    execute_command_valid:
     CMP EXECUTE_REVESED,1
     JNE EXECUTE_NORMALLY
     SWAP_TURNS
@@ -1662,6 +1693,43 @@ changeTargetValue:
 exitPowerUp_6:
     RET
 powerUp_6 endp
+
+
+;description
+RESET_ALL_VARS PROC
+    
+    mov _Ax, 0
+    mov _BX, 0
+    mov _CX, 0
+    mov _DX, 0
+    mov _SI, 0
+    mov _DI, 0
+    mov _SP, 0
+    mov _BP, 0
+    mov _00, 0
+    mov _01, 0
+    mov _02, 0
+    mov _03, 0
+    mov _04, 0
+    mov _05, 0
+    mov _06, 0
+    mov _07, 0
+    mov _08, 0
+    mov _09, 0
+    mov _A, 0
+    mov _B, 0
+    mov _C, 0
+    mov _D, 0
+    mov _E, 0
+    mov _F, 0
+    mov _CARRY, 0
+
+
+
+    RET
+RESET_ALL_VARS ENDP
+
+
 
 
 
