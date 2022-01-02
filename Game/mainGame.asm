@@ -19,7 +19,7 @@
 	MAIN_Screen_message3 db 'To end Program press ESC$'   
     STATUS_BAR_MSG db '_______________________________________________________________________________$'
 	INSTRUCTIONS_msg db 'SOME INSTRUCTIONS OF THE GAME... blA bla bla ... $'
-	
+	EMPTY_STRING DB '                                $'
 
 	Sent_CHAT_INV_msg db 'You sent a chat Invitation','$'
 	Sent_Game_INV_msg db 'You sent a Game Invitation','$'
@@ -519,6 +519,15 @@ NAME_VALIDATION PROC
 	NAME_VALIDATION ENDP
 
 NAME_VALIDATION2 PROC
+        RENTER_FAFA:
+        mov ax, 0600h                ;Scroll Screen AH=07(Scroll DOWN), AL=1 one line
+        mov bh, 07h                   ;Normal attributes -> 07 ;; 0E-> yellow text
+        mov cx, 0800H                  ;from row 17h col 0
+        mov dx, 1850H                ;To end of screen
+        int 10h                      ;Clear the first line
+
+
+
 		DisplayString_AT_position_not_moving_cursor Enter_SECOND_Name_message 0818h 
 		MoveCursorTo 0921h
 		ReadString SecondName
@@ -540,7 +549,7 @@ NAME_VALIDATION2 PROC
 		mov cl,ActualSecondNameSize	 ; no need to reset The whole String
 		rep stosb                    ;copy $ into FirstNameData to reset it to all $
 		Read_KEY
-		jmp DisplayAgain             ;Display first screen again
+		jmp RENTER_FAFA             ;Display first screen again
 
 		NAME2_IS_VALID:
 		ret
@@ -1344,7 +1353,8 @@ check_if_F8:
     cmp ah,67       ;F9
     jne check_if_F10
     READ_KEY ;;READ the f9
-
+    cmp game_level,2
+    jne FinishedCheckingPowerUps
     cmp game_turn,1
     jne check_if_the_other_game_turn3
     cmp IS_USED_POWERUP6,1
