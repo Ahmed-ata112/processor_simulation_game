@@ -270,7 +270,7 @@
 
 
     right_paddle_Width dw 20 
-    right_paddle_x dw 160
+    right_paddle_x dw 170
     right_paddle_y dw 185 ;at the bottom of the 320*200 pixels screen
     right_paddle_velocity_x dw 10
     right_paddle_velocity_y dw 5
@@ -811,7 +811,7 @@ BIRDGAME PROC
     Draw_IMG_with_color right_paddle_x,right_paddle_y,right_paddleImg,right_paddleColor,right_paddleSize
 
     movePaddle paddle_x,paddle_velocity_x,paddle_y,paddle_velocity_y,paddleUp,paddleDown,paddleRight,paddleLeft,135,0
-    movePaddle right_paddle_x,right_paddle_velocity_x,right_paddle_y,right_paddle_velocity_y,right_paddleUp,right_paddleDown,right_paddleRight,right_paddleLeft,295,160
+    movePaddle right_paddle_x,right_paddle_velocity_x,right_paddle_y,right_paddle_velocity_y,right_paddleUp,right_paddleDown,right_paddleRight,right_paddleLeft,295,165
 
     ;checkTime
 
