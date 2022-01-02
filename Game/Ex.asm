@@ -13,7 +13,7 @@ ex_MAIN PROC
     CMP DL, [SI]
     JNE C501
     MOV AL,0
-    MOV L_CARRY,AL
+    MOV _CARRY,AL
     JMP  EN
     C501:
 
@@ -165,7 +165,7 @@ check_command                PROC
 
     MOV AX,0
     RCL AL,1
-    MOV L_CARRY,AL
+    MOV _CARRY,AL
 
     CALL put_Operand
     
@@ -188,7 +188,7 @@ check_command                PROC
     
     ADD AX,BX
     MOV BH,00H
-    MOV BL,L_CARRY
+    MOV BL,_CARRY
     ADD AX,BX
      
 
@@ -198,7 +198,7 @@ check_command                PROC
 
     MOV AX,0
     RCL AL,1
-    MOV L_CARRY,AL
+    MOV _CARRY,AL
 
     CALL put_Operand    
     CHECK2:
@@ -225,7 +225,7 @@ MOV BX,HASH_Operand1
 
     MOV AX,0
     RCL AL,1
-    MOV L_CARRY,AL
+    MOV _CARRY,AL
 
     CALL put_Operand    
     
@@ -246,7 +246,7 @@ MOV BX,HASH_Operand1
     
     SUB AX,BX
     MOV BH,00H
-    MOV BL,L_CARRY
+    MOV BL,_CARRY
     SUB AX,BX
     
      
@@ -257,7 +257,7 @@ MOV BX,HASH_Operand1
 
     MOV AX,0
     RCL AL,1
-    MOV L_CARRY,AL
+    MOV _CARRY,AL
 
     CALL put_Operand    
     
@@ -280,8 +280,8 @@ MOV BX,HASH_Operand1
     
     CMP CL,1
     JNE BYTE1
-    MOV AX,L_AX
-    MOV DX,L_DX                                  ;;;;;;    div error div overflow
+    MOV AX,_AX
+    MOV DX,_DX                                  ;;;;;;    div error div overflow
     DIV BX
                                                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     
@@ -304,7 +304,7 @@ MOV BX,HASH_Operand1
     JMP CONT
                                                                   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     BYTE1:
-    MOV AX,L_AX                                                     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    MOV AX,_AX                                                     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     DIV BL
     
     MOV HASH_Operand1,24DH
@@ -332,7 +332,7 @@ MOV BX,HASH_Operand1
     
     CMP CL,1
     JNE BYTE11
-    MOV AX,L_AX
+    MOV AX,_AX
     MUL BX
     
     
@@ -354,7 +354,7 @@ MOV BX,HASH_Operand1
     JMP CONT
     
     BYTE11:
-    MOV AX,L_AX 
+    MOV AX,_AX 
     MUL BL
     
      MOV HASH_Operand1,24DH
@@ -365,7 +365,7 @@ MOV BX,HASH_Operand1
 
     MOV AX,0
     RCL AL,1
-    MOV L_CARRY,AL
+    MOV _CARRY,AL
 
     CALL put_Operand    
     CONT1:
@@ -405,7 +405,7 @@ MOV BX,HASH_Operand1
 
 
     MOV AL,0
-    MOV L_CARRY,AL
+    MOV _CARRY,AL
 
     CALL put_Operand        
     CHECK8:
@@ -428,7 +428,7 @@ MOV BX,HASH_Operand1
     MOV Operand_Value,AX
 
     MOV AL,0
-    MOV L_CARRY,AL
+    MOV _CARRY,AL
 
     CALL put_Operand    
     
@@ -453,7 +453,7 @@ MOV BX,HASH_Operand1
 
 
     MOV AL,0
-    MOV L_CARRY,AL
+    MOV _CARRY,AL
 
     CALL put_Operand    
     
@@ -485,7 +485,7 @@ MOV BX,HASH_Operand1
 
     MOV AX,0
     RCL AL,1
-    MOV L_CARRY,AL
+    MOV _CARRY,AL
 
     CALL put_Operand    
     
@@ -556,7 +556,7 @@ MOV BX,HASH_Operand1
 
     MOV AX,0
     RCL AL,1
-    MOV L_CARRY,AL
+    MOV _CARRY,AL
 
     CALL put_Operand    
     
@@ -579,7 +579,7 @@ MOV BX,HASH_Operand1
 
     MOV AX,0
     RCL AL,1
-    MOV L_CARRY,AL
+    MOV _CARRY,AL
 
     CALL put_Operand    
     
@@ -602,7 +602,7 @@ MOV BX,HASH_Operand1
 
     MOV AX,0
     RCL AL,1
-    MOV L_CARRY,AL
+    MOV _CARRY,AL
 
     CALL put_Operand    
     
@@ -618,7 +618,7 @@ MOV BX,HASH_Operand1
      MOV CX,Operand2_Value
 
     MOV BH,00H
-    MOV BL,L_CARRY
+    MOV BL,_CARRY
     SHR BL,1
 
 
@@ -631,7 +631,7 @@ MOV BX,HASH_Operand1
 
     MOV AX,0
     RCL AL,1
-    MOV L_CARRY,AL
+    MOV _CARRY,AL
 
     CALL put_Operand    
     
@@ -647,7 +647,7 @@ MOV BX,HASH_Operand1
      MOV CX,Operand2_Value
 
     MOV BH,00H
-    MOV BL,L_CARRY
+    MOV BL,_CARRY
     SHR BL,1
 
      RCR AX,CL
@@ -659,7 +659,7 @@ MOV BX,HASH_Operand1
 
     MOV AX,0
     RCL AL,1
-    MOV L_CARRY,AL
+    MOV _CARRY,AL
 
     CALL put_Operand    
     
@@ -682,7 +682,7 @@ MOV BX,HASH_Operand1
 
     MOV AX,0
     RCL AL,1
-    MOV L_CARRY,AL
+    MOV _CARRY,AL
 
     CALL put_Operand    
     
@@ -700,7 +700,7 @@ check_Operand proc
     CMP [SI],24dH
     JNZ CHECKBX
     
-    mov ax,L_AX;; CODE       
+    mov ax,_AX;; CODE       
     mov Operand_Value,ax
     mov sizeIndex,1h 
     jmp END2
@@ -713,7 +713,7 @@ check_Operand proc
     CMP [SI],252H
      JNZ CHECKCX
     
-    mov ax,L_BX;; CODE                                               
+    mov ax,_BX;; CODE                                               
      mov Operand_Value,ax 
      mov sizeIndex,1h
     jmp END2
@@ -726,7 +726,7 @@ check_Operand proc
     jz continue1
      jmp CHECKDX
     continue1:
-    mov ax,L_CX;; CODE
+    mov ax,_CX;; CODE
      mov Operand_Value,ax 
      mov sizeIndex,1h                   
     jmp END2
@@ -737,7 +737,7 @@ check_Operand proc
     CMP [SI],25cH
      JNZ CHECKSI
     
-    mov ax,L_DX;; CODE
+    mov ax,_DX;; CODE
      mov Operand_Value,ax
      mov sizeIndex,1h
     jmp END2
@@ -748,7 +748,7 @@ check_Operand proc
     CMP [SI],27aH
      JNZ CHECKDI
     
-    mov ax,L_SI;; CODE
+    mov ax,_SI;; CODE
      mov Operand_Value,ax
      mov sizeIndex,1h
     jmp END2
@@ -761,7 +761,7 @@ check_Operand proc
     CMP [SI],22fH
      JNZ CHECKSP
     
-    mov ax,L_DI;; CODE
+    mov ax,_DI;; CODE
      mov Operand_Value,ax
      mov sizeIndex,1h
     jmp END2
@@ -772,7 +772,7 @@ check_Operand proc
     CMP [SI],28fH
      JNZ CHECKBP
     
-    mov ax,L_SP;; CODE
+    mov ax,_SP;; CODE
      mov Operand_Value,ax 
      mov sizeIndex,1h
     jmp END2
@@ -783,7 +783,7 @@ check_Operand proc
     CMP [SI],23aH
      JNZ CHECKAL
     
-    mov ax,L_BP;; CODE
+    mov ax,_BP;; CODE
      mov Operand_Value,ax
      mov sizeIndex,1h
     jmp END2
@@ -794,7 +794,7 @@ check_Operand proc
     CMP [SI],229H
      JNZ CHECKBL
     
-    mov ax,L_AX;; CODE
+    mov ax,_AX;; CODE
     mov Ah,00H
     mov Operand_Value,ax
     ;mov sizeIndex,0h
@@ -806,7 +806,7 @@ check_Operand proc
     CMP [SI],22eH
      JNZ CHECKCL
     
-    mov ax,L_BX;; CODE
+    mov ax,_BX;; CODE
     MOV AH,00H 
      mov Operand_Value,ax 
        ;mov sizeIndex,0h
@@ -818,7 +818,7 @@ check_Operand proc
     CMP [SI],233H
      JNZ CHECKDL
    
-    mov ax,L_CX;; CODE
+    mov ax,_CX;; CODE
     MOV AH,00H
      mov Operand_Value,ax
        ;mov sizeIndex,0h
@@ -830,7 +830,7 @@ check_Operand proc
     CMP [SI],238H      
      JNZ CHECKAH
     
-    mov ax,L_DX;; CODE
+    mov ax,_DX;; CODE
     MOV AH,00H
      mov Operand_Value,ax
        ;mov sizeIndex,0h
@@ -843,7 +843,7 @@ check_Operand proc
     CMP [SI],21dH
      JNZ CHECKBH
     
-    mov ax,L_AX;; CODE
+    mov ax,_AX;; CODE
     MOV AL,AH
     MOV AH,00H                              
      mov Operand_Value,ax
@@ -856,7 +856,7 @@ check_Operand proc
     CMP [SI],222H
      JNZ CHECKCH
     
-    mov ax,L_BX;; CODE
+    mov ax,_BX;; CODE
     MOV AL,AH
     MOV AH,00H
      mov Operand_Value,ax
@@ -869,7 +869,7 @@ check_Operand proc
     CMP [SI],227H
      JNZ CHECKDH
     
-    mov ax,L_CX;; CODE
+    mov ax,_CX;; CODE
     MOV AL,AH
     MOV AH,00H
      mov Operand_Value,ax
@@ -882,7 +882,7 @@ check_Operand proc
     CMP [SI],22cH 
      JNZ CHECK00
      
-    mov ax,L_DX;; CODE
+    mov ax,_DX;; CODE
     MOV AL,AH
     MOV AH,00H
      mov Operand_Value,ax
@@ -895,8 +895,8 @@ check_Operand proc
     CMP [SI],3feH 
     JNZ CHECK01
     movml00: 
-    mov aL,L_00
-    MOV AH,L_01                                          
+    mov aL,_00
+    MOV AH,_01                                          
     mov Operand_Value,ax
     jmp END2
     CHECK01:
@@ -906,8 +906,8 @@ check_Operand proc
     CMP [SI],401H 
     JNZ CHECK02
      movml1:
-    mov aL,L_01
-    MOV AH,L_02
+    mov aL,_01
+    MOV AH,_02
      mov Operand_Value,ax
   ;mov sizeIndex,0h 
     jmp END2
@@ -918,8 +918,8 @@ check_Operand proc
     CMP [SI],404H 
      JNZ CHECK03
       movml2:
-    mov aL,L_02
-    MOV AH,L_03 
+    mov aL,_02
+    MOV AH,_03 
      mov Operand_Value,ax
   ;mov sizeIndex,0h 
     jmp END2
@@ -930,8 +930,8 @@ check_Operand proc
     CMP [SI],407H 
      JNZ CHECK04
       movml3:
-    mov aL,L_03
-    MOV AH,L_04
+    mov aL,_03
+    MOV AH,_04
      mov Operand_Value,ax
   ;mov sizeIndex,0h 
      jmp END2
@@ -942,8 +942,8 @@ check_Operand proc
     CMP [SI],40aH 
      JNZ CHECK05
        movml4:
-    mov aL,L_04
-    MOV AH,L_05
+    mov aL,_04
+    MOV AH,_05
      mov Operand_Value,ax
   ;mov sizeIndex,0h 
  jmp END2    
@@ -954,8 +954,8 @@ check_Operand proc
     CMP [SI],40dH 
      JNZ CHECK06
       movml5:
-    mov aL,L_05
-    MOV AH,L_06 
+    mov aL,_05
+    MOV AH,_06 
      mov Operand_Value,ax
   ;mov sizeIndex,0h
  jmp END2    
@@ -966,8 +966,8 @@ check_Operand proc
     CMP [SI],410H 
      JNZ CHECK07
       movml6:
-    mov aL,L_06
-    MOV AH,L_07 
+    mov aL,_06
+    MOV AH,_07 
      mov Operand_Value,ax
   ;mov sizeIndex,0h
  jmp END2    
@@ -978,8 +978,8 @@ check_Operand proc
     CMP [SI],413H 
      JNZ CHECK08
       movml7:
-    mov aL,L_07
-    MOV AH,L_08 
+    mov aL,_07
+    MOV AH,_08 
      mov Operand_Value,ax
   ;mov sizeIndex,0h
  jmp END2   
@@ -990,8 +990,8 @@ check_Operand proc
     CMP [SI],416H 
      JNZ CHECK09
       movml8:
-    mov aL,L_08
-    MOV AH,L_09
+    mov aL,_08
+    MOV AH,_09
      mov Operand_Value,ax
   ;mov sizeIndex,0h 
  jmp END2       
@@ -1002,8 +1002,8 @@ check_Operand proc
     CMP [SI],419H 
      JNZ CHECKA
       movml9:
-    mov aL,L_09
-    MOV AH,L_A 
+    mov aL,_09
+    MOV AH,_A 
      mov Operand_Value,ax 
   ;mov sizeIndex,0h
  jmp END2    
@@ -1014,8 +1014,8 @@ check_Operand proc
     CMP [SI],3a1H 
      JNZ CHECKB
       movmlA:
-    mov aL,L_A
-    MOV AH,L_B 
+    mov aL,_A
+    MOV AH,_B 
      mov Operand_Value,aX
   ;mov sizeIndex,0h
  jmp END2     
@@ -1026,8 +1026,8 @@ check_Operand proc
     CMP [SI],3a4H 
      JNZ CHECKC
       movmlB:
-    mov aL,L_B
-    MOV AH,L_C 
+    mov aL,_B
+    MOV AH,_C 
      mov Operand_Value,ax
   ;mov sizeIndex,0h
  jmp END2     
@@ -1038,8 +1038,8 @@ check_Operand proc
     CMP [SI],3a7H 
      JNZ CHECKD
       movmlC:
-    mov aL,L_C
-    MOV AH,L_D
+    mov aL,_C
+    MOV AH,_D
      mov Operand_Value,ax
   ;mov sizeIndex,0h 
  jmp END2     
@@ -1050,8 +1050,8 @@ check_Operand proc
     CMP [SI],3aaH 
      JNZ CHECKE
       movmlD:
-    mov aL,L_D
-    MOV AH,L_E
+    mov aL,_D
+    MOV AH,_E
      mov Operand_Value,ax
   ;mov sizeIndex,0h 
  jmp END2     
@@ -1062,8 +1062,8 @@ check_Operand proc
      CMP [SI],3adH 
       JNZ CHECKF
        movmlE:
-     mov aL,L_E
-     MOV AH,L_F
+     mov aL,_E
+     MOV AH,_F
       mov Operand_Value,ax
         ;mov sizeIndex,0h 
   jmp END2         
@@ -1074,8 +1074,8 @@ check_Operand proc
      CMP [SI],3b0H 
      JNZ CHECKmlSI 
      movmlF:
-     mov aL,L_F
-     MOV AH,L_00
+     mov aL,_F
+     MOV AH,_00
      mov Operand_Value,ax
        ;mov sizeIndex,0h 
      jmp END2 
@@ -1093,95 +1093,95 @@ check_Operand proc
      as1:   
     
     ;;
-     cmp L_SI,0H
+     cmp _SI,0H
 
      jnz escape1
      jmp movml00 
      escape1:
 
-     cmp L_SI,1H
+     cmp _SI,1H
      jnz escape2
      jmp movml1 
      escape2:
       
-     cmp L_SI,2H
+     cmp _SI,2H
 
      jnz escape3
      jmp movml2 
      escape3:
 
 
-     cmp L_SI,3H
+     cmp _SI,3H
 
      jnz escape4
      jmp movml3 
      escape4:
 
       
-     cmp L_SI,4H
+     cmp _SI,4H
      jnz escape5
      jmp movml4 
      escape5:
       
-     cmp L_SI,5H
+     cmp _SI,5H
 
     jnz escape6
      jmp movml5
      escape6:
 
-     cmp L_SI,6H
+     cmp _SI,6H
 jnz escape7
      jmp movml6
      escape7:
 
-     cmp L_SI,7H
+     cmp _SI,7H
 
 jnz escape8
      jmp movml7
      escape8:
 
-     cmp L_SI,8H
+     cmp _SI,8H
 
 
 jnz escape9
      jmp movml8
      escape9:
 
-     cmp L_SI,9H
+     cmp _SI,9H
 
 
      jnz escape10
      jmp movml9
      escape10:
 
-     cmp L_SI,0AH
+     cmp _SI,0AH
 
     jnz escape11
      jmp movmlA
      escape11:
 
-     cmp L_SI,0BH
+     cmp _SI,0BH
 
     jnz escape12
      jmp movmlB
      escape12:
 
-     cmp L_SI,0CH
+     cmp _SI,0CH
 jnz escape13
      jmp movmlc
      escape13:     
      
-     cmp L_SI,0DH
+     cmp _SI,0DH
 jnz escape14
      jmp movmlE
      escape14:     
-     cmp L_SI,0EH
+     cmp _SI,0EH
 
     jnz escape15
      jmp movmlE
      escape15:
 
-     cmp L_SI,0FH
+     cmp _SI,0FH
      jnz escape16
      jmp movmlF
      escape16:
@@ -1201,83 +1201,83 @@ jnz escape14
 
     
 
-     cmp L_DI,0H
+     cmp _DI,0H
    jnz escape18
      jmp movml00
      escape18:
 
                      
-     cmp L_DI,1H
+     cmp _DI,1H
      jnz escape19
      jmp movml1
      escape19:
     
-     cmp L_DI,2H
+     cmp _DI,2H
        jnz escape20
      jmp movml2
      escape20:
 
-     cmp L_DI,3H
+     cmp _DI,3H
       jnz escape21
      jmp movml3
      escape21:
 
-     cmp L_DI,4H
+     cmp _DI,4H
        jnz escape22
      jmp movml4
      escape22:
    
-     cmp L_DI,5H
+     cmp _DI,5H
      jnz escape23
      jmp movml5
      escape23:
     
-     cmp L_DI,6H
+     cmp _DI,6H
       jnz escape24
      jmp movml6
      escape24:
  
-     cmp L_DI,7H
+     cmp _DI,7H
       jnz escape25
      jmp movml7
      escape25:
     
-     cmp L_DI,8H
+     cmp _DI,8H
      jnz escape26
      jmp movml8
      escape26:
    
-     cmp L_DI,9H
+     cmp _DI,9H
       jnz escape27
      jmp movml9
      escape27:
     
-     cmp L_DI,0AH
+     cmp _DI,0AH
         jnz escape28
      jmp movmlA
      escape28:
      
-     cmp L_DI,0BH
+     cmp _DI,0BH
         jnz escape29
      jmp movmlB
      escape29:
      
-     cmp L_DI,0CH
+     cmp _DI,0CH
         jnz escape30
      jmp movmlC
      escape30:
   
-     cmp L_DI,0DH
+     cmp _DI,0DH
         jnz escape31
      jmp movmlD
      escape31:
   
-     cmp L_DI,0EH
+     cmp _DI,0EH
       jnz escape32
      jmp movmlE
      escape32:
      
-     cmp L_DI,0FH
+     cmp _DI,0FH
       jnz escape33
      jmp movmlF
      escape33:
@@ -1295,82 +1295,82 @@ jnz escape14
      escape34:
         
          ;
-     cmp L_BX,0H
+     cmp _BX,0H
      jnz escape35
      jmp movml00
      escape35:
                     
-     cmp L_BX,1H
+     cmp _BX,1H
      jnz escape36
      jmp movml1
      escape36:
      
-     cmp L_BX,2H
+     cmp _BX,2H
      jnz escape37
      jmp movml2
      escape37:
    
-     cmp L_BX,3H
+     cmp _BX,3H
       jnz escape38
      jmp movml3
      escape38:
     
-     cmp L_BX,4H
+     cmp _BX,4H
       jnz escape39
      jmp movml4
      escape39:
 
-     cmp L_BX,5H
+     cmp _BX,5H
       jnz escape40
      jmp movml5
      escape40:
 
-     cmp L_BX,6H
+     cmp _BX,6H
      jnz escape41
      jmp movml6
      escape41:
 
-     cmp L_BX,7H
+     cmp _BX,7H
      jnz escape42
      jmp movml7
      escape42:
   
-     cmp L_BX,8H
+     cmp _BX,8H
      jnz escape43
      jmp movml8
      escape43:
    
-     cmp L_BX,9H
+     cmp _BX,9H
       jnz escape44
      jmp movml9
      escape44:
 
-     cmp L_BX,0AH
+     cmp _BX,0AH
     jnz escape45
      jmp movmlA
      escape45:
   
-     cmp L_BX,0BH
+     cmp _BX,0BH
      jnz escape46
      jmp movmlB
      escape46:
    
-     cmp L_BX,0CH
+     cmp _BX,0CH
      jnz escape47
      jmp movmlC
      escape47:
  
-     cmp L_BX,0DH
+     cmp _BX,0DH
       jnz escape48
      jmp movmlD
      escape48:
 
-     cmp L_BX,0EH
+     cmp _BX,0EH
       jnz escape49
      jmp movmlE
      escape49:
   
-    cmp L_BX,0FH
+    cmp _BX,0FH
      jnz escape50
      jmp movmlF
      escape50:
@@ -1402,7 +1402,7 @@ put_Operand PROC
     Jmp CHECKBX1
     con1:    
     mov ax,Operand_Value;; CODE
-    mov L_AX,ax 
+    mov _AX,ax 
     jmp end1
 
     CHECKBX1:
@@ -1416,7 +1416,7 @@ put_Operand PROC
      Jmp CHECKCX1
     con2:
     mov ax,Operand_Value;; CODE
-     mov L_BX,ax
+     mov _BX,ax
     jmp end1
 
     CHECKCX1:
@@ -1428,7 +1428,7 @@ put_Operand PROC
      Jmp CHECKDX1
     con3:
     mov ax,Operand_Value;; CODE
-     mov L_CX,ax                    
+     mov _CX,ax                    
     jmp end1
     CHECKDX1:
                                                                            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1439,7 +1439,7 @@ put_Operand PROC
     jmp CHECKSI1
     con4:
     mov ax,Operand_Value;; CODE
-     mov L_DX,ax
+     mov _DX,ax
     jmp end1
     CHECKSI1:
     
@@ -1450,7 +1450,7 @@ put_Operand PROC
      Jmp CHECKDI1
     con5:
     mov ax,Operand_Value;; CODE
-     mov L_SI,ax
+     mov _SI,ax
     jmp end1
     CHECKDI1:
     
@@ -1461,7 +1461,7 @@ put_Operand PROC
      Jmp CHECKSP1
     con6:
     mov ax,Operand_Value;; CODE
-     mov L_DI,ax
+     mov _DI,ax
     jmp end1
     CHECKSP1:
     
@@ -1472,7 +1472,7 @@ put_Operand PROC
      Jmp CHECKBP1
     con7:
     mov ax,Operand_Value;; CODE
-     mov L_SP,ax
+     mov _SP,ax
     jmp end1
     CHECKBP1:
     
@@ -1483,7 +1483,7 @@ put_Operand PROC
     Jmp CHECKAL1
     con8:
     mov ax,Operand_Value;; CODE
-     mov L_BP,ax
+     mov _BP,ax
     jmp end1
     CHECKAL1:;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     
@@ -1494,9 +1494,9 @@ put_Operand PROC
      Jmp CHECKBL1
     con9:
     mov ax,Operand_Value;; CODE 
-    mov bx,L_AX
+    mov bx,_AX
     mov bl,al
-     mov L_AX,bx
+     mov _AX,bx
     jmp end1
     CHECKBL1:
     
@@ -1507,9 +1507,9 @@ put_Operand PROC
      Jmp CHECKCL1
     con10:
     mov ax,Operand_Value;; CODE 
-    mov bx,L_BX
+    mov bx,_BX
     mov bl,al
-    mov L_bX,bx
+    mov _BX,bx
     jmp end1
     CHECKCL1:
     
@@ -1519,9 +1519,9 @@ put_Operand PROC
      JNZ CHECKDL1
    
     mov ax,Operand_Value;; CODE
-     mov bx,L_CX
+     mov bx,_CX
     mov bl,al
-     mov L_CX,bx
+     mov _CX,bx
     jmp end1
     CHECKDL1:
     
@@ -1531,9 +1531,9 @@ put_Operand PROC
      JNZ CHECKAH1
     
     mov ax,Operand_Value;; CODE
-        mov bx,L_DX
+        mov bx,_DX
     mov bl,al
-     mov L_DX,bx
+     mov _DX,bx
     jmp end1
     CHECKAH1:
     
@@ -1544,9 +1544,9 @@ put_Operand PROC
      JNZ CHECKBH1
     
     mov ax,Operand_Value;; CODE
-    mov bx,L_AX
+    mov bx,_AX
     mov bh,al
-     mov L_AX,bx
+     mov _AX,bx
     jmp end1
     CHECKBH1:
     
@@ -1556,9 +1556,9 @@ put_Operand PROC
      JNZ CHECKCH1
     
     mov ax,Operand_Value;; CODE
-        mov bx,L_BX
+        mov bx,_BX
     mov bh,al
-     mov L_BX,bx
+     mov _BX,bx
     jmp end1
     CHECKCH1:
     
@@ -1568,9 +1568,9 @@ put_Operand PROC
      JNZ CHECKDH1
     
     mov ax,Operand_Value;; CODE
-        mov bx,L_CX
+        mov bx,_CX
     mov bh,al
-     mov L_CX,bx
+     mov _CX,bx
     jmp end1
     CHECKDH1:
     
@@ -1580,9 +1580,9 @@ put_Operand PROC
      JNZ CHECK001
      
     mov ax,Operand_Value;; CODE
-        mov bx,L_DX
+        mov bx,_DX
     mov bh,al
-     mov L_DX,bx
+     mov _DX,bx
     jmp end1
     CHECK001:
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1593,12 +1593,12 @@ put_Operand PROC
      movml001:                                                       
                                                                      
      mov ax,Operand_Value;; CODE
-     mov L_00,al 
+     mov _00,al 
      cmp cl,ch
    je escape63
      jmp end1
      escape63:
-     mov L_01,ah
+     mov _01,ah
      jmp end1
      CHECK011:
     
@@ -1608,12 +1608,12 @@ put_Operand PROC
      JNZ CHECK021
       movml11:
      mov ax,Operand_Value;; CODE
-      mov L_01,al
+      mov _01,al
       cmp cl,ch
      je escape65
      jmp end1
      escape65:
-     mov L_02,ah 
+     mov _02,ah 
      jmp end1
      CHECK021:
     
@@ -1623,12 +1623,12 @@ put_Operand PROC
       JNZ CHECK031
        movml21:
      mov ax,Operand_Value;; CODE 
-      mov L_02,al
+      mov _02,al
             cmp cl,ch
      je escape66
      jmp end1
      escape66:
-     mov L_03,ah 
+     mov _03,ah 
      jmp end1
      CHECK031:
    
@@ -1638,13 +1638,13 @@ put_Operand PROC
       JNZ CHECK041
        movml31:
      mov ax,Operand_Value;; CODE
-      mov L_03,al 
+      mov _03,al 
             cmp cl,ch
     je escape51
      jmp end1
      escape51:
    
-     mov L_04,ah
+     mov _04,ah
       jmp end1
      CHECK041:
     
@@ -1654,12 +1654,12 @@ put_Operand PROC
      JNZ CHECK051
        movml41:
     mov ax,Operand_Value;; CODE
-     mov L_04,al 
+     mov _04,al 
       cmp cl,ch
      je escape52
      jmp end1
      escape52:
-     mov L_05,ah
+     mov _05,ah
  jmp end1    
     CHECK051:
     
@@ -1669,12 +1669,12 @@ put_Operand PROC
      JNZ CHECK061
       movml51:
     mov ax,Operand_Value;; CODE 
-     mov L_05,al
+     mov _05,al
       cmp cl,ch
      je escape53
      jmp end1
      escape53:
-     mov L_06,ah
+     mov _06,ah
  jmp end1    
     CHECK061:
     
@@ -1684,12 +1684,12 @@ put_Operand PROC
      JNZ CHECK071
       movml61:
     mov ax,Operand_Value;; CODE 
-     mov L_06,al
+     mov _06,al
       cmp cl,ch
      je escape54
      jmp end1
      escape54:
-     mov L_07,ah
+     mov _07,ah
  jmp end1    
     CHECK071:
     
@@ -1699,12 +1699,12 @@ put_Operand PROC
      JNZ CHECK081
       movml71:
     mov ax,Operand_Value;; CODE 
-     mov L_07,al
+     mov _07,al
       cmp cl,ch
     je escape55
      jmp end1
      escape55:
-     mov L_08,ah
+     mov _08,ah
  jmp end1   
     CHECK081:
     
@@ -1714,12 +1714,12 @@ put_Operand PROC
      JNZ CHECK091
       movml81:
     mov ax,Operand_Value;; CODE
-     mov L_08,al
+     mov _08,al
       cmp cl,ch
      je escape56
      jmp end1
      escape56:
-     mov L_09,ah 
+     mov _09,ah 
  jmp end1       
     CHECK091:
     
@@ -1729,12 +1729,12 @@ put_Operand PROC
      JNZ CHECKA1
       movml91:
     mov ax,Operand_Value;; CODE 
-     mov L_09,al
+     mov _09,al
       cmp cl,ch
     je escape57
      jmp end1
      escape57:
-     mov L_A,ah
+     mov _A,ah
  jmp end1    
     CHECKA1:
     
@@ -1744,12 +1744,12 @@ put_Operand PROC
      JNZ CHECKB1
       movmlA1:
     mov ax,Operand_Value;; CODE 
-     mov L_A,al
+     mov _A,al
       cmp cl,ch
     je escape58
      jmp end1
      escape58:
-     mov L_B,ah
+     mov _B,ah
  jmp end1     
     CHECKB1:
     
@@ -1761,12 +1761,12 @@ put_Operand PROC
     asdasd1:
     movmlB1:
     mov ax,Operand_Value;; CODE 
-     mov L_B,al
+     mov _B,al
       cmp cl,ch
       je dede1
      jmp end1
      dede1:
-     mov L_C,ah
+     mov _C,ah
  jmp end1     
     CHECKC1:
     
@@ -1776,12 +1776,12 @@ put_Operand PROC
      JNZ CHECKD1
       movmlC1:
     mov ax,Operand_Value;; CODE
-     mov L_C,al
+     mov _C,al
       cmp cl,ch
     je escape59
      jmp end1
      escape59:
-     mov L_D,ah 
+     mov _D,ah 
  jmp end1     
     CHECKD1:
     
@@ -1791,12 +1791,12 @@ put_Operand PROC
      JNZ CHECKE1
       movmlD1:
     mov ax,Operand_Value;; CODE
-     mov L_D,al
+     mov _D,al
       cmp cl,ch
     je escape60
      jmp end1
      escape60:
-     mov L_E,ah 
+     mov _E,ah 
  jmp end1    
     CHECKE1:
     
@@ -1806,12 +1806,12 @@ put_Operand PROC
      JNZ CHECKF1
       movmlE1:
     mov ax,Operand_Value;; CODE
-     mov L_E,al
+     mov _E,al
       cmp cl,ch
     je escape61
      jmp end1
      escape61:
-     mov L_F,ah 
+     mov _F,ah 
  jmp end1         
     CHECKF1:
     
@@ -1821,12 +1821,12 @@ put_Operand PROC
     JNZ CHECKmlSI1 
     movmlF1:
     mov ax,Operand_Value;; CODE
-    mov L_F,al
+    mov _F,al
       cmp cl,ch
     je escape62
      jmp end1
      escape62:
-     mov L_00,ah 
+     mov _00,ah 
     jmp end1 
           
     CHECKmlSI1:
@@ -1842,67 +1842,67 @@ put_Operand PROC
     jmp CHECKmlDI1   
     con1101:
     ;;
-     cmp L_SI,0H
+     cmp _SI,0H
      jnz cont11
      jmp movml001                  
     cont11:
-     cmp L_SI,1H
+     cmp _SI,1H
      jnz cont21
      jmp movml11
      cont21:
-     cmp L_SI,2H
+     cmp _SI,2H
      jnz cont31
      jmp movml21
      cont31:
-     cmp L_SI,3H
+     cmp _SI,3H
      jnz cont41
      jmp movml31
      cont41:
-     cmp L_SI,4H
+     cmp _SI,4H
      jnz cont51
      jmp movml41
      cont51:
-     cmp L_SI,5H
+     cmp _SI,5H
      jnz cont61
      jmp movml51
      cont61:
-     cmp L_SI,6H
+     cmp _SI,6H
      jnz cont71
      jmp movml61
      cont71:
-     cmp L_SI,7H
+     cmp _SI,7H
      jnz cont81
      jmp movml71
      cont81:
-     cmp L_SI,8H
+     cmp _SI,8H
      jnz cont91
      jmp movml81
      cont91:
-     cmp L_SI,9H
+     cmp _SI,9H
      jnz cont101
      jmp movml91
      cont101:
-     cmp L_SI,0AH
+     cmp _SI,0AH
      jnz cont111
      jmp movmlA1
      cont111:
-     cmp L_SI,0BH
+     cmp _SI,0BH
      jnz cont121
      jmp movmlB1
      cont121:
-     cmp L_SI,0CH
+     cmp _SI,0CH
      jnz cont131
      jmp movmlC1
      cont131:
-     cmp L_SI,0DH
+     cmp _SI,0DH
      jnz cont141
      jmp movmlD1
      cont141:
-     cmp L_SI,0EH
+     cmp _SI,0EH
      jnz cont151
      jmp movmlE1
      cont151:
-     cmp L_SI,0FH
+     cmp _SI,0FH
      jnz cont161
      jmp movmlF1
      cont161:
@@ -1918,67 +1918,67 @@ put_Operand PROC
     jz erer1
      Jmp CHECKmlBX1 
         erer1:
-     cmp L_DI,0H
+     cmp _DI,0H
      jnz cont171
      jmp movml001
      cont171:                  
-     cmp L_DI,1H
+     cmp _DI,1H
      jnz cont181
      jmp movml11
      cont181:
-     cmp L_DI,2H
+     cmp _DI,2H
      jnz cont191
      jmp movml21
      cont191:
-     cmp L_DI,3H
+     cmp _DI,3H
      jnz cont201
      jmp movml31
      cont201:
-     cmp L_DI,4H
+     cmp _DI,4H
      jnz cont211
      jmp movml41
      cont211:
-     cmp L_DI,5H
+     cmp _DI,5H
      jnz cont221
      jmp movml51
      cont221:
-     cmp L_DI,6H
+     cmp _DI,6H
      jnz cont231
      jmp movml61
      cont231:
-     cmp L_DI,7H
+     cmp _DI,7H
      jnz cont241
      jmp movml71
      cont241:
-     cmp L_DI,8H
+     cmp _DI,8H
      jnz cont251
      jmp movml81
      cont251:
-     cmp L_DI,9H
+     cmp _DI,9H
      jnz cont261
      jmp movml91
      cont261:
-     cmp L_DI,0AH
+     cmp _DI,0AH
      jnz cont271
      jmp movmlA1
      cont271:
-     cmp L_DI,0BH
+     cmp _DI,0BH
      jnz cont281
      jmp movmlB1
      cont281:
-     cmp L_DI,0CH
+     cmp _DI,0CH
      jnz cont291
      jmp movmlC1
      cont291:
-     cmp L_DI,0DH
+     cmp _DI,0DH
      jnz cont301
      jmp movmlD1
      cont301:
-     cmp L_DI,0EH
+     cmp _DI,0EH
      jnz cont311
      jmp movmlE1
      cont311:
-     cmp L_DI,0FH
+     cmp _DI,0FH
      jnz cont321
      jmp movmlF1
      cont321:       ; ;
@@ -1992,67 +1992,67 @@ put_Operand PROC
      CMP [SI],4acH 
      jz conte11
     conte11:           ;
-     cmp L_BX,0H
+     cmp _BX,0H
      jnz conte21
      jmp movml001
      conte21:                   
-     cmp L_BX,1H
+     cmp _BX,1H
      jnz conte31
      jmp movml11
      conte31:
-     cmp L_BX,2H
+     cmp _BX,2H
      jnz conte41
      jmp movml21
      conte41:
-     cmp L_BX,3H
+     cmp _BX,3H
      jnz conte51
      jmp movml31
      conte51:
-     cmp L_BX,4H
+     cmp _BX,4H
      jnz conte61
      jmp movml41
      conte61:
-     cmp L_BX,5H
+     cmp _BX,5H
      jnz conte71
      jmp movml51
      conte71:
-     cmp L_BX,6H
+     cmp _BX,6H
      jnz conte81
      jmp movml61
      conte81:
-     cmp L_BX,7H
+     cmp _BX,7H
      jnz conte91
      jmp movml71
      conte91:
-     cmp L_BX,8H
+     cmp _BX,8H
      jnz conte101
      jmp movml81
      conte101:
-     cmp L_BX,9H
+     cmp _BX,9H
      jnz conte111
      jmp movml91
      conte111:
-     cmp L_BX,0AH
+     cmp _BX,0AH
      jnz conte121
      jmp movmlA1
      conte121:
-     cmp L_BX,0BH
+     cmp _BX,0BH
      jnz conte131
      jmp movmlB1
      conte131:
-     cmp L_BX,0CH
+     cmp _BX,0CH
      jnz conte141
      jmp movmlC1
     conte141:
-     cmp L_BX,0DH
+     cmp _BX,0DH
      jnz conte151
      jmp movmlD1
      conte151:
-     cmp L_BX,0EH
+     cmp _BX,0EH
      jnz conte161
      jmp movmlE1
      conte161:
-    cmp L_BX,0FH
+    cmp _BX,0FH
     jnz conte171
       jmp movmlF1
       conte171:

@@ -25,7 +25,7 @@ check_if_in_array macro arr, arr_len, element_size , op ,result
   mov result,1
   finish:   
 
-check_if_in_array endm
+endm check_if_in_array 
 
 
 
@@ -74,7 +74,7 @@ is_brackets_with_number_in_it macro op, result
     finish:
 
 
-is_brackets_with_number_in_it endm
+endm is_brackets_with_number_in_it 
 
  
  
@@ -88,7 +88,8 @@ is_brackets_with_number_in_it endm
 op1 db '[BL]'
 op2 db 'ax'
 
-valid_addressing_mode_regs db '[BX]','[SI]','[DI]'    
+valid_addressing_mode_regs db '[BX]','[SI]','[DI]','[00]',  '[01]','[02]','[03]', '[04]', '[05]', '[06]', '[07]', '[08]', '[09]', '[0A]', '[0B]', '[0C]', '[0D]', '[0E]','[0F]'  
+
 result4 db 0ffh
 
 
@@ -100,10 +101,8 @@ MAIN PROC far
     
    check_if_in_array valid_addressing_mode_regs, 3, 4, op1, result4
                                                  
-      
+ 
   ; is_brackets_with_number_in_it op1,result4         
-        
-	     
 MAIN ENDP
 END MAIN
 

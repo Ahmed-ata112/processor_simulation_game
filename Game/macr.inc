@@ -5,15 +5,45 @@ DisplayString MACRO STR
             int 21h
 ENDM DisplayString   
 
+
+FIX_POINTS_MIN MACRO 
+    MOV AX,playerPoints
+    CMP AX,right_playerPoints
+    JB FIRST_IS_LESS
+    MOV AX,right_playerPoints
+    MOV playerPoints,AX
+    JMP FININ
+    FIRST_IS_LESS:
+    MOV right_playerPoints,AX
+
+
+
+    FININ:
+
+ENDM FIX_POINTS_MIN
+
+
+
+
+EXECUTE_THECOMMAND_AT_SIDE MACRO turn
+    local skip_excuting_the_command
+    call CHECK_FORBIDDEN_CHARS    ;; returns value in contains_forbidden
+    cmp contains_forbidden,1    ;; the command had a forbidden char
+    je skip_excuting_the_command
+    mov al, turn       ;;send Game_turn to determine which player to execute commands on
+    CALL exchangeValuesInRegisters
+    CALL EX_MAIN
+    mov al, turn       ;;send Game_turn to determine which player to execute commands on
+    CALL exchangeValuesInRegisters
+    skip_excuting_the_command:
+ENDM EXECUTE_THECOMMAND_AT_SIDE
+
+
 MoveCursorTo MACRO pos
-    push ax
-    push dx
     XOR bx,bx
     mov ah,2h
     mov dx,pos
     int 10h
-    pop dx
-    pop ax
 ENDM MoveCursorTo
 
 ReadString MACRO PromptMessage
@@ -77,12 +107,64 @@ Reset_Command macro
     mov di , offset THE_COMMAND
     mov al, '$'
     rep stosb 
-    MOV command_Size,0
+    MOV actualcommand_Size,0
+
+
+    xor CX,CX
+    mov CX, 30
+    mov di , offset L_commandData
+    mov al, '$'
+    rep stosb 
+    MOV Actual_L_commandSize,0
+
+
+    xor CX,CX
+    mov CX, 30
+    mov di , offset r_commandData
+    mov al, '$'
+    rep stosb 
+    MOV Actual_r_commandSize,0
+    
+
+
 
 endm Reset_Command
 
 
+Update_the_Commands MACRO 
+    local check_p2,check_p3
+    ;; if turn=1 mov to L_command else R_command
+    cmp Game_turn,1 ;;first player
+    jne check_p2
+    xor ch,ch
+    mov cl,commandSize
+    mov Actual_L_commandSize,cl
+    mov si,offset THE_COMMAND
+    mov di ,offset L_commandData
+    rep movsb
+    check_p2:
+    cmp Game_turn,2 ;;second player
+    jne check_p3
+    xor ch,ch
+    mov cl,commandSize
+    mov Actual_R_commandSize,cl
+    mov si , offset THE_COMMAND
+    mov di , offset R_commandData
+    rep movsb
+    check_p3:
+ENDM Update_the_Commands
 
+SWAP_TURNS MACRO 
+    local l1, l2
+
+    cmp Game_turn,1
+    jne l1
+    mov Game_turn,2
+    jmp l2
+    l1:
+    mov Game_turn,1
+    l2:
+ENDM SWAP_TURNS
 DisplayString_AT_position_not_moving_cursor MACRO STR, pos
     ;assumes Text mode
     ;returns The cursor to its initial position before it ends
@@ -412,7 +494,15 @@ LEVEL_PROCESSING macro
     ChangeVideoMode 3h ;;CLR Screen
     DisplayString_AT_position_and_move_cursor choose_hidden_char 0304h
     Read_KEY
-    mov hidden_char,al
+    mov forbidden_char,al
+    mov dl,al
+	mov ah,2     ;; to display the the char into screen (echo)
+	int 21h
+
+
+    DisplayString_AT_position_and_move_cursor choose_hidden_char2 032Ah
+    Read_KEY
+    mov right_forbidden_char,al
     mov dl,al
 	mov ah,2     ;; to display the the char into screen (echo)
 	int 21h
@@ -628,107 +718,33 @@ ENDM Convert_OP_TO_HEXA
 
 
 moveBird macro limit,start,x_velocity,x_coordinate
-local finish
+local finish,resetXCoordinate
+    mov ax,x_coordinate
+    cmp ax,start
+    jl resetXCoordinate
     mov ax,x_velocity
     add x_coordinate,ax
     cmp x_coordinate,limit
     jb finish
-    mov x_coordinate,start
+ resetXCoordinate:   mov x_coordinate,start
     
    finish:
 endm moveBird
 
 
-
 moveFireBall macro velocity,yCoordinate,ifPressed
 local finish
     mov ax,velocity
+    sub ax,Ballsize
     sub yCoordinate,ax
-    cmp yCoordinate,15
-    ja finish
+    cmp yCoordinate,5
+    jg finish
     mov ifPressed,0
     finish:
 endm moveFireBall
 
 
 
-checkTime macro
- local check_time
- check_time:
-    mov ah,2ch ;get the system time
-    int 21h    ;ch=hour  cl=minute  dh=seconds  dl=1/100seconds
-    
-    cmp dl,time_aux  ;is the current time equal to the prev one?
-    je check_time    ;if it's the same, check again
-                     ;if different --> draw, move...               
-    mov time_aux,dl  ;update time
-endm checkTime 
-
-getTime macro 
-   mov ah,2ch ;get the system time
-    int 21h    ;ch=hour  cl=minute  dh=seconds  dl=1/100seconds
-    mov prevTime,dh  ;update time
-
-endm getTime
-
-
-
-checkXBoundaries macro
-        MOV AX,WINDOW_WIDTH
-        sub ax,8 ;subtract ball width
-		cmp ball_x,ax ;check if the x coordinate of the ball is stil within the range
-        jae finish ;jump to finish lable in main if it's done passing the whole width
-endm checkXBoundaries      
-
-
-
-drawPaddle macro
-local drawP
-    mov cx,paddle_x ;set initial column (x)
-    mov dx,paddle_y ;set initial row (y)
-drawP:
-            MOV AH,0Ch                   ;set the configuration to writing a pixel
-			MOV AL,5h 					 ;choose purple as color
-			MOV BH,00h 					 ;set the page number 
-			INT 10h   
-            INC CX     					 ;CX = CX + 1
-			MOV AX,CX          	  		 ;CX - paddle_left > paddle_width  (Y -> We go to the next line,N -> We continue to the next column
-			SUB AX,paddle_x
-			CMP AX,paddle_width
-			JNG drawP
-
-            MOV CX,paddle_x 			 ;the CX register goes back to the initial column
-			INC DX       				 ;we advance one line
-			
-			MOV AX,DX             		 ;DX - paddle_y > paddle_height (Y -> we exit this procedure,N -> we continue to the next line
-			SUB AX,paddle_y
-			CMP AX,paddle_height
-			JNG drawP
-
-
-
-    mov cx,right_paddle_x ;set initial column (x)
-    mov dx,right_paddle_y ;set initial row (y)
-drawP2:
-            MOV AH,0Ch                   ;set the configuration to writing a pixel
-			MOV AL,9h 					 ;choose purple as color
-			MOV BH,00h 					 ;set the page number 
-			INT 10h   
-            INC CX     					 ;CX = CX + 1
-			MOV AX,CX          	  		 ;CX - paddle_left > paddle_width  (Y -> We go to the next line,N -> We continue to the next column
-			SUB AX,right_paddle_x
-			CMP AX,right_paddle_width
-			JNG drawP2
-
-            MOV CX,right_paddle_x 			 ;the CX register goes back to the initial column
-			INC DX       				 ;we advance one line
-			
-			MOV AX,DX             		 ;DX - paddle_y > paddle_height (Y -> we exit this procedure,N -> we continue to the next line
-			SUB AX,right_paddle_y
-			CMP AX,right_paddle_height
-			JNG drawP2
-
-endm drawPaddle
 
 
 movePaddle macro paddle_x,paddle_velocity_x,paddle_y,paddle_velocity_y,upControl,downControl,rightControl,leftControl,rightlimit,leftlimit 
@@ -908,7 +924,7 @@ checkTimeInterval macro gameStatus,prevTime,timeInterval
 local exit
     mov ah,2ch ;get the system time
     int 21h    ;ch=hour  cl=minute  dh=seconds  dl=1/100seconds 
-  
+
     mov al,dh
     mov ah,0
     mov bx,0
@@ -918,21 +934,33 @@ local exit
     jne exit ; --> if not, does nothing
     cmp dh,prevTime  ; --> if it is, then checks if it's the same second as before
                      ; the proccessor is fast and it checks the same second many times and causes undesirable toggling
-                     
+
     je exit
     mov prevTime,dh ; reaching here meaning it's not the same previous second, so we TOGGLE the state of the game
-    
+
     cmp gameStatus,1
     jne changeToOne ;--> if the game status isn't 1 (is 0), change it to one
-    
+
     mov gameStatus,0
-    jmp exit    
-    
-    changeToOne:   
+    mov ax,birdX
+    xchg right_birdX,ax
+    xchg ax,birdx
+    jmp exit
+
+    changeToOne:
     mov gameStatus,1
 
 
     exit:
 
 endm checkTimeInterval
+
+
+
+
+
+
+
+
+
 
