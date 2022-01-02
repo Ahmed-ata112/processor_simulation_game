@@ -391,6 +391,8 @@
     right_IS_USED_POWERUP4 db 0 ;;TO INDICATE IF USED BEFORE
     IS_USED_POWERUP6 db 0 ;;TO INDICATE IF USED BEFORE
     right_IS_USED_POWERUP6 db 0 ;;TO INDICATE IF USED BEFORE
+    EXECUTE_REVESED db 0 ;;IN LEVEL 2 IT INDECATES IF YOU CHOSED TO EXECUTE ON OTHER 
+
 
 .code
 	main proc far
@@ -641,7 +643,17 @@ START_My_GAME PROC
     hhhheeeeeeee:
     ;; THE PLAYER FINSHED TYPING
     ;; WE WILL UPDATE chosen players Regs
+    CMP EXECUTE_REVESED,1
+    JNE EXECUTE_NORMALLY
+    SWAP_TURNS
+    EXECUTE_THECOMMAND_AT_SIDE game_turn ;;EXECCUTE IN OPPONENT REGS
+    SWAP_TURNS
+    MOV EXECUTE_REVESED,0
+    JMP FINISHED_EXECUTING
+    EXECUTE_NORMALLY:
     EXECUTE_THECOMMAND_AT_SIDE game_turn
+    
+    FINISHED_EXECUTING:
     Reset_Command   
     MOV finished_taking_input,0    ;;to reset it
     ;;swap turns
@@ -963,9 +975,18 @@ GetCommand PROC
     
     
     CHECK_IF_ENTER11:
-    cmp ah,1Ch ;; check if enter is pressed
+    cmp ah,59 ;; check if F1 is pressed
+    jne CHECK_IF_F2IS_PRESSED
+    mov finished_taking_input,1
+    jmp ADD_TO_COMMAND  ;; TO ADD THE ENTER
+
+    CHECK_IF_F2IS_PRESSED:
+    cmp ah,60 ;; check if F2 is pressed
     jne CHECK_IF_BACKSLASH11
     mov finished_taking_input,1
+    CMP GAME_LEVEL, 2
+    JNE ADD_TO_COMMAND
+    MOV EXECUTE_REVESED, 1
     jmp ADD_TO_COMMAND  ;; TO ADD THE ENTER
 
     CHECK_IF_BACKSLASH11:
