@@ -9,25 +9,25 @@
 	nl db 10,13,'$'
 	Enter_Name_message0 db 'Press Enter key to continue ', '$'
 	Enter_Name_message db 'Please enter Your Name: ', '$' 
+	Enter_SECOND_Name_message db 'Please enter second Name: ', '$' 
 	Enter_Name_message2 db 'Name MUST start with a letter (No digits or special characters)$'
 	Enter_Points_message db 'Please enter Initial Points: ', '$'  
+	Enter_other_Points_message db 'Second player, Please enter Initial Points: ', '$'  
 	Press_any_Key_message db 'press any key to continue...$'
 	MAIN_Screen_message1 db 'To Start Chatting press F1','$'
 	MAIN_Screen_message2 db 'To Start Game press F2$'  
 	MAIN_Screen_message3 db 'To end Program press ESC$'   
     STATUS_BAR_MSG db '___________________________$'
 	INSTRUCTIONS_msg db 'SOME INSTRUCTIONS OF THE GAME... blA bla bla ... $'
-	
-
 	Sent_CHAT_INV_msg db 'You sent a chat Invitation','$'
 	Sent_Game_INV_msg db 'You sent a Game Invitation','$'
-	
 	level1_msg db 'LEVEL 1 -- PRESS F1$' 
 	level2_msg db 'LEVEL 2 -- PRESS F2$' 
-	choose_hidden_char db 'Choose a hidden char: $'
-	you_cannot_write_msg db 'You Cannot write char: $'
-	hidden_char db 0		;; The hiddden char chosen by current player
-	other_hidden_char db 'V' 
+	choose_hidden_char db 'Choose A Forbidden char: $'
+	choose_hidden_char2 db 'Choose SECOND Forbidden char: $'
+	forbidden_char db '?'       ;; The hiddden char chosen by current player
+	right_forbidden_char db 'R'
+    contains_forbidden db 0
 	MY_REGs_msg db 'MY REGS$'
 	HIS_REGs_msg db 'HIS REGS$'
 	AX_msg db 'AX: $'
@@ -56,11 +56,11 @@
 	ActualFirstNameSize db ?
 	FirstNameData db 20 dup('$')
 
-
     SecondName LABEL BYTE ; named the next it the same name 
 	SecondNameSize db 20
-	ActualSecondNameSize db 4
-	SecondNameData db 'LINA',20 dup('$')
+	ActualSecondNameSize db ?
+	SecondNameData db 20 dup('$')
+
 	;;;;;;;;;-----------------positions----------;;;;
      ;;for the left
 		ax_rec_l dw 0104h
@@ -164,7 +164,7 @@
 		_D db 0
 		_E db 0
 		_F db 0
-
+        _CARRY DB 0
 
 		L_AX dw 0 
 		L_BX dw 0
@@ -235,101 +235,100 @@
 
 	;;For The Graphics
 
-;;;;;;---------------SARAHHHHHHHHHHHHHHH;;;;;;;;;;;;;;;;;;;;;;;
-time_aux db 0
+    ;;;;;;---------------SARAHHHHHHHHHHHHHHH;;;;;;;;;;;;;;;;;;;;;;;
+    time_aux db 0
 
 
 
-birdX dw 0
-birdY dw 0Ah
-BirdWidth dw 13
-birdVelocity dw 4
+    birdX dw 0
+    birdY dw 0Ah
+    BirdWidth dw 13
+    birdVelocity dw 4
 
 
 
 
-right_birdX dw 147
-right_birdY dw 0Ah
-right_BirdWidth dw 13
-right_birdVelocity dw 4
+    right_birdX dw 147
+    right_birdY dw 0Ah
+    right_BirdWidth dw 13
+    right_birdVelocity dw 4
 
 
 
-paddle_Width dw 20 
-paddle_x dw 5
-paddle_y dw 185 ;at the bottom of the 320*200 pixels screen
-paddle_velocity_x dw 10
-paddle_velocity_y dw 5
-paddleColor db 1011b
-paddleUp db 72 ; scan code of up arrow
-paddleDown db 80 ; scan code of down arrow
-paddleRight db 77 ; scan code of right arrow
-paddleLeft db 75 ; scan code of left arrow
+    paddle_Width dw 20 
+    paddle_x dw 5
+    paddle_y dw 185 ;at the bottom of the 320*200 pixels screen
+    paddle_velocity_x dw 10
+    paddle_velocity_y dw 5
+    paddleColor db 1011b
+    paddleUp db 72 ; scan code of up arrow
+    paddleDown db 80 ; scan code of down arrow
+    paddleRight db 77 ; scan code of right arrow
+    paddleLeft db 75 ; scan code of left arrow
 
 
 
-right_paddle_Width dw 20 
-right_paddle_x dw 160
-right_paddle_y dw 185 ;at the bottom of the 320*200 pixels screen
-right_paddle_velocity_x dw 10
-right_paddle_velocity_y dw 5
-right_paddleColor db 1101b
-right_paddleUp db 71 ; scan code of 7 when num lock is turned off
-right_paddleDown db 73 ; scan code of 9 when num lock is turned off
-right_paddleRight db 81 ; scan code of 1 when num lock is turned off
-right_paddleLeft db 79 ;  scan code of 3 when num lock is turned off
+    right_paddle_Width dw 20 
+    right_paddle_x dw 170
+    right_paddle_y dw 185 ;at the bottom of the 320*200 pixels screen
+    right_paddle_velocity_x dw 10
+    right_paddle_velocity_y dw 5
+    right_paddleColor db 1101b
+    right_paddleUp db 71 ; scan code of 7 when num lock is turned off
+    right_paddleDown db 73 ; scan code of 9 when num lock is turned off
+    right_paddleRight db 81 ; scan code of 1 when num lock is turned off
+    right_paddleLeft db 79 ;  scan code of 3 when num lock is turned off
 
 
 
-ballWidth dw 9
-fireballColor db 0fh
+    ballWidth dw 9
+    fireballColor db 0fh
 
-;left fireball
-fireBall_x dw ?
-fireBall_y dw 190
-fireBall_velocity_y dw 20
-ifFireIsPressed db 0
-fireScanCode db 53
-;right fireball
-right_fireBall_x dw ?
-right_fireBall_y dw 190
-right_fireBall_velocity_y dw 20
-right_ifFireIsPressed db 0
-right_fireScanCode db  04eh
+    ;left fireball
+    fireBall_x dw ?
+    fireBall_y dw 190
+    fireBall_velocity_y dw 20
+    ifFireIsPressed db 0
+    fireScanCode db 53
+    ;right fireball
+    right_fireBall_x dw ?
+    right_fireBall_y dw 190
+    right_fireBall_velocity_y dw 20
+    right_ifFireIsPressed db 0
+    right_fireScanCode db  04eh
 
-        ;green, light magenta, red, blue, yellow
-colors db  47,           36, 41,  54,    43
-        
-                  ;green, light magenta, red, blue, yellow
-pointsOfColors db       1,            2,   3,    4,      5  
+            ;green, light magenta, red, blue, yellow
+    colors db  47,           36, 41,  54,    43
+            
+                    ;green, light magenta, red, blue, yellow
+    pointsOfColors db       1,            2,   3,    4,      5  
 
-numOfShotBalls db 0,0,0,0,0
+    numOfShotBalls db 0,0,0,0,0
 
-colorIndex db 0
-birdColor db 47
-birdStatus db 1
-birdPoints db 1
+    colorIndex db 0
+    birdColor db 47
+    birdStatus db 1
+    birdPoints db 1
 
-right_colorIndex db 0
-right_birdColor db 47
-right_birdStatus db 1
-right_birdPoints db 1
-
-
-playerPoints dw 0
-right_playerPoints dw 0
+    right_colorIndex db 0
+    right_birdColor db 47
+    right_birdStatus db 1
+    right_birdPoints db 1
 
 
-gameStatus db 0
-prevTime db 0 ;variable used when checking if the time has changed
-timeInterval db 3 ;the shooting game apears/disappears every time interval
+    playerPoints dw 0
+    right_playerPoints dw 0
+
+
+    gameStatus db 1
+    prevTime db 0 ;variable used when checking if the time has changed
+    timeInterval db 8 ;the shooting game apears/disappears every time interval
 
 ;;;;-------------Comand Line Input------------;;;;;;
     command LABEL BYTE ; named the next it the same name 
 	commandSize db 30
     actualcommand_Size db 0 ;the actual size of input at the current time
     THE_COMMAND db 30 dup('$')
-    forbidden_char db 'A'
     finished_taking_input db 0 ; just a flag to indicate we finished entering the string
     
     
@@ -344,9 +343,9 @@ timeInterval db 3 ;the shooting game apears/disappears every time interval
 	R_commandData db 30 dup('$')
         
     command_splited db 5 dup('$') ;';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;'
-    Operand1 db 5 dup('$')
-    Operand2 db 5 dup('$')
-    Two_Operands_Together_splited db 12 dup('$')
+    Operand1 db 10 dup('$')
+    Operand2 db 10 dup('$')
+    Two_Operands_Together_splited db 22 dup('$')
 
 
     
@@ -358,13 +357,57 @@ timeInterval db 3 ;the shooting game apears/disappears every time interval
                                             ;MOV [00],AX DONE
     HASH_Operand DW 0H
     Operand_Value DW 0H
-    Operand DB 5 dup('$')
+    Operand DB 10 dup('$')
                                          ;MOV [00],Al DONE
     HASH_comand DW 0H                    ;MOV AX,[00] DONE
     HASH_Operand2 DW 0H                  ;MOV Al,[00] DONE
     HASH_Operand1 DW 0H                 ; ADD AX,[00] DONE
 
-	Command_valid DB ? ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    target_value dw 105eh
+    
+    playersStatus db 0 ;; 0 -> nothing , 1 -> left palyer lost/right player won , 2 -> right player lost/left player won
+
+    POWERUP1_MSG DB 'YOU CHOSED POWER-UP 1$'  
+    POWERUP1_MSG2 DB 'PLEASE ENTER COMMAND TO EXECUTE$'
+ 
+    POWERUP2_MSG DB 'YOU CHOSED POWER-UP 2$'  
+    POWERUP2_MSG2 DB 'PLEASE ENTER COMMAND TO EXECUTE$'
+    POWERUP3_MSG DB 'YOU CHOSED POWER-UP 3$'  
+    POWERUP3_MSG2 DB 'ENTER FORBIDDEN CHAR (ONLY ONCE)$'
+    
+    POWERUP5_MSG DB 'YOU CHOSED POWER-UP 5$'  
+    POWERUP5_MSG2 DB 'ENTER NEW TARGET VALUE (ONLY ONCE)$'
+
+    EXIT_MSG DB 'YOU EXIT THE GAME$'
+    EXIT_MSG2 DB 'PLAYER 1 POINTS: $'
+    EXIT_MSG3 DB 'PLAYER 2 POINTS: $'
+    EXIT_MSG4 DB 'THE WINNER OF THE GAME IS: $'
+
+
+    IS_USED_POWERUP3 db 0 ;;TO INDICATE IF USED BEFORE
+    right_IS_USED_POWERUP3 db 0 ;;TO INDICATE IF USED BEFORE
+   
+    IS_USED_POWERUP4 db 0 ;;TO INDICATE IF USED BEFORE
+    right_IS_USED_POWERUP4 db 0 ;;TO INDICATE IF USED BEFORE
+    IS_USED_POWERUP6 db 0 ;;TO INDICATE IF USED BEFORE
+    right_IS_USED_POWERUP6 db 0 ;;TO INDICATE IF USED BEFORE
+    EXECUTE_REVESED db 0 ;;IN LEVEL 2 IT INDECATES IF YOU CHOSED TO EXECUTE ON OTHER 
+
+
+
+    ;;VALIDATION
+    Command_valid db 1                                    
+    validRegNamesArr db 'AX','BX','CX','DX'
+                    db  'AH','AL','BH','BL','CH','CL','DH','DL'
+                    db  'CS','IP','SS','SP'
+                    db  'BP','SI','DI','DS','ES'
+
+   validRegNamesArrSize db  21d
+   valid_addressing_mode_regs db '[BX]','[SI]','[DI]','[00]'
+        DB '[01]','[02]','[03]', '[04]', '[05]', '[06]', '[07]'
+        DB '[08]', '[09]', '[0A]', '[0B]', '[0C]', '[0D]', '[0E]','[0F]'
+ 
+
 
 .code
 	main proc far
@@ -392,15 +435,22 @@ timeInterval db 3 ;the shooting game apears/disappears every time interval
 	CLR_Screen_with_Scrolling_TEXT_MODE 
 	
     call NAME_VALIDATION
-    FirstIsLetter:               ;jmp here if first character is a letter
-
-    DisplayString_AT_position_not_moving_cursor Enter_Points_message 0818h ; show mes
-    MoveCursorTo 0921h
+    DisplayString_AT_position_not_moving_cursor Enter_Points_message 0518h ; show mes
+    MoveCursorTo 0621h
     ReadNumberhexa_in_ax ;; Read points and put it in ax ;; TODO: See if you want this in hexa
     mov My_Initial_points,ax ;; initialize initial points
     ;; Todo: get min and initialize the points
     mov playerPoints,ax
+
+    ;;PLAYER 2
+    call NAME_VALIDATION2
+    DisplayString_AT_position_not_moving_cursor Enter_other_Points_message 0A18h ; show mes
+    MoveCursorTo 0B21h
+    ReadNumberhexa_in_ax ;; Read points and put it in ax ;; TODO: See if you want this in hexa
     mov right_playerPoints,ax
+
+    FIX_POINTS_MIN
+
 
 	; now enter the main Screen
 	DisplayString nl
@@ -452,7 +502,7 @@ timeInterval db 3 ;the shooting game apears/disappears every time interval
 				cmp ah,3ch ; F2
 				jne remove_key_from_buffer
 				;in case of F2
-				UPDATE_notification_bar Sent_Game_INV_msg
+				UPDATE_notification_bar Sent_Game_INV_msg   ;; 
 				mov is_player_1_ready_for_game,1 ;; make me ready and see if the other is ready to
 				cmp is_player_2_ready_for_game,1
 				je LETS_PLAY 	;;Player 2 is Ready TOO
@@ -468,6 +518,7 @@ timeInterval db 3 ;the shooting game apears/disappears every time interval
 			LETS_PLAY:
 			empitify_buffer			;; To make Sure That no bat chars are saved in Buffer
 			CALL GAME_WELCOME_PAGES 	;; For level selection and continue To GAME
+			empitify_buffer			;; To make Sure That no bat chars are saved in Buffer
 			CALL START_My_GAME
 			jmp QUIT_THIS_GAME
 
@@ -483,9 +534,9 @@ timeInterval db 3 ;the shooting game apears/disappears every time interval
 
 
 	include Ex.asm
-
+    include validate.asm
 	;To validate The input NAME
-	NAME_VALIDATION PROC
+NAME_VALIDATION PROC
 		DisplayString_AT_position_not_moving_cursor Enter_Name_message 0318h 
 		MoveCursorTo 0421h
 		ReadString FirstName
@@ -513,8 +564,45 @@ timeInterval db 3 ;the shooting game apears/disappears every time interval
 		ret
 	NAME_VALIDATION ENDP
 
+NAME_VALIDATION2 PROC
+        RENTER_FAFA:
+        mov ax, 0600h                ;Scroll Screen AH=07(Scroll DOWN), AL=1 one line
+        mov bh, 07h                   ;Normal attributes -> 07 ;; 0E-> yellow text
+        mov cx, 0800H                  ;from row 17h col 0
+        mov dx, 1850H                ;To end of screen
+        int 10h                      ;Clear the first line
 
-    dis2dig proc
+
+
+		DisplayString_AT_position_not_moving_cursor Enter_SECOND_Name_message 0818h 
+		MoveCursorTo 0921h
+		ReadString SecondName
+		
+		cmp SecondNameData,'A'   ;check if first character is letter ;;we only allow range (A-Z and a-z)
+		jl  TRY_AGAIN_INPUT2       
+		cmp SecondNameData,'z'
+		jg  TRY_AGAIN_INPUT2
+		cmp SecondNameData,'`'
+		jg  NAME2_IS_VALID
+		cmp SecondNameData,'['
+		jl  NAME2_IS_VALID
+		TRY_AGAIN_INPUT2:            ; if first character isn't a letter, clear screen and display a message to user
+		DisplayString_AT_position_not_moving_cursor Enter_Name_message2 0C04h
+		DisplayString_AT_position_not_moving_cursor Press_any_Key_message 0b04h 
+		mov al,'$'
+		mov di,offset SecondNameData  ;DI points to the target
+		mov cx,0                     ;count
+		mov cl,ActualSecondNameSize	 ; no need to reset The whole String
+		rep stosb                    ;copy $ into FirstNameData to reset it to all $
+		Read_KEY
+		jmp RENTER_FAFA             ;Display first screen again
+
+		NAME2_IS_VALID:
+		ret
+	NAME_VALIDATION2 ENDP
+
+
+dis2dig proc
 	; displays 2 digit number in AX
 	mov bl, 10
     XOR BH,BH
@@ -539,7 +627,7 @@ timeInterval db 3 ;the shooting game apears/disappears every time interval
     mov bl, 0ch           ;Color is red
     int 10h ; print char -> auto advances cursor
 	ret
-	dis2dig endp
+    dis2dig endp
 ;THE GAME AND LEVEL SELECTION
 GAME_WELCOME_PAGES PROC
 
@@ -568,7 +656,8 @@ CHAT_ROOM ENDP
 ;would add another Your_Game ig i the one who recieved the invitation
 START_My_GAME PROC
 
-	ChangeVideoMode 13h   ;; CLEARS tHE SCREEN  
+	ChangeVideoMode 13h   ;; CLEARS tHE SCREEN and start video mode
+
     mov Game_turn,1 ;; player left starts the Game
 	GAME_LOOP:
 	CLR_Screen_with_Scrolling_GRAPHICS_MODE   ;; CLEARS tHE SCREEN  
@@ -576,31 +665,88 @@ START_My_GAME PROC
 	call DRAW_BACKGROUND     ;;Draws The BackGround Image
     call UPDATE_VALUES_Displayed  ;; Update values displayed with ones in variables
 	call BIRDGAME
+    call CHECK_POWERUPS
     call GetCommand
     Update_the_Commands         ;; to be displayed in its place (L or R)
     CMP finished_taking_input,1           
+    je hhhheeeeeeee
+    Jmp NOT_FINISHED_INPUT_YET
+    hhhheeeeeeee:
     ;; THE PLAYER FINSHED TYPING
     ;; WE WILL UPDATE chosen players Regs
-    JNE NOT_FINISHED_INPUT_YET
-
-	;CALL Check_valid;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	
-	PUSH AX
-	MOV AL,Command_valid
-	CMP AL,1
-	JNE NOT_VALID
-	CALL EX_MAIN
-	NOT_VALID:
-
-    Reset_Command   ;;TODO: CHANGE IT TO RESET ALL OF THEM
-    MOV finished_taking_input,0
+    mov Command_valid,1
+    call Check_valid
+    cmp Command_valid,0H ;;invalid
+    jne execute_command_valid
+    ;; command is not valid 
+    ;;dec points
+    
+    cmp game_turn,1
+    jne dec_other_player
+    DEC playerpoints
+    jmp FINISHED_EXECUTING
+    dec_other_player:
+    DEC right_playerpoints
+    jmp FINISHED_EXECUTING
+    execute_command_valid:
+    CMP EXECUTE_REVESED,1
+    JNE EXECUTE_NORMALLY
+    SWAP_TURNS
+    EXECUTE_THECOMMAND_AT_SIDE game_turn ;;EXECCUTE IN OPPONENT REGS
+    SWAP_TURNS
+    MOV EXECUTE_REVESED,0
+    JMP FINISHED_EXECUTING
+    EXECUTE_NORMALLY:
+    EXECUTE_THECOMMAND_AT_SIDE game_turn
+    
+    FINISHED_EXECUTING:
+    Reset_Command   
+    MOV finished_taking_input,0    ;;to reset it
     ;;swap turns
     SWAP_TURNS
+
+   
+
     NOT_FINISHED_INPUT_YET:
+    CALL checkValuesInRegisters
+    CALL checkIfAnyPlayerLost
+    
+    CMP playersStatus,1 ;; LEFT LOST
+    JNE CHECK_IF_RIGHT_LOST
+    JMP QUIT_GAME_LOOP
+    CHECK_IF_RIGHT_LOST:
+    CMP playersStatus,2 ;; Right LOST
+    JNE no_ONE_LOST_YET
+    JMP QUIT_GAME_LOOP
+    no_ONE_LOST_YET:
+
     Wait_centi_seconds 1
 	JMP GAME_LOOP
 
 	QUIT_GAME_LOOP:
+
+    ChangeVideoMode 3H
+    DisplayString_AT_position_and_move_cursor EXIT_MSG 0409H
+
+    DisplayString_AT_position_and_move_cursor EXIT_MSG2 0609H
+    DISPLAY_num_in_HEX_ 0709h 4  playerPoints
+    DisplayString_AT_position_and_move_cursor EXIT_MSG3 0621H
+    DISPLAY_num_in_HEX_ 0721h 4 right_playerPoints
+    CMP playersStatus,1 ;; RIGHT WINS
+    JNE CHECK_IF_THE_OTHER_WINS
+    DisplayString_AT_position_and_move_cursor EXIT_MSG4 0F1AH
+    DisplayString SecondNameData
+    JMP WAIT_TIME_A
+    CHECK_IF_THE_OTHER_WINS:
+    CMP playersStatus,2
+    JNE WAIT_TIME_A
+    DisplayString_AT_position_and_move_cursor EXIT_MSG4 0F1AH
+    DisplayString FirstNameData
+    WAIT_TIME_A:
+    WAIT_10_seconds_TIME
+    
+
+
 	RET
 START_My_GAME ENDP
 
@@ -801,62 +947,64 @@ DRAW_BACKGROUND ENDP
 
 ;; Draws the Bird 
 BIRDGAME PROC
-    
-    
-    
-
-    checkTimeInterval gamestatus, prevTime, timeInterval
 
     Draw_IMG_with_color paddle_x,paddle_y,paddleImg,paddleColor,paddleSize
     Draw_IMG_with_color right_paddle_x,right_paddle_y,right_paddleImg,right_paddleColor,right_paddleSize
 
     movePaddle paddle_x,paddle_velocity_x,paddle_y,paddle_velocity_y,paddleUp,paddleDown,paddleRight,paddleLeft,135,0
-    movePaddle right_paddle_x,right_paddle_velocity_x,right_paddle_y,right_paddle_velocity_y,right_paddleUp,right_paddleDown,right_paddleRight,right_paddleLeft,295,150
+    movePaddle right_paddle_x,right_paddle_velocity_x,right_paddle_y,right_paddle_velocity_y,right_paddleUp,right_paddleDown,right_paddleRight,right_paddleLeft,295,165
 
     ;checkTime
 
-    randomBirdColor birdStatus,birdColor,colorIndex
+    randomBirdColor birdColor,colorIndex
     setBirdPointsWithTheCorrespondingColor colorIndex,birdPoints,pointsOfColors
 
-    randomBirdColor right_birdStatus,right_birdColor,right_colorIndex
-    setBirdPointsWithTheCorrespondingColor right_colorIndex,right_birdPoints,pointsOfColors
+    ;randomBirdColor right_birdStatus,right_birdColor,colorIndex
+    setBirdPointsWithTheCorrespondingColor colorIndex,right_birdPoints,pointsOfColors
 
     ;clearScreen 
 
     cmp gamestatus,0
-    je skipDrawingBirds
+    jne skipSkipDrawingBirds
+    jmp skipDrawingBirds
+    skipSkipDrawingBirds:
+
 
     ;left bird
     Draw_IMG_with_color birdX,birdY,BirdImg,birdcolor,BirdSize
-    moveBird 148,0,birdVelocity,birdX
 
 
     ;right bird
-    Draw_IMG_with_color right_birdX,right_birdY,right_BirdImg,right_birdcolor,right_BirdSize
-    moveBird 304,160,right_birdVelocity,right_birdX
+    ;moveBird 304,180,right_birdVelocity,right_birdX
+    Draw_IMG_with_color right_birdX,right_birdY,right_BirdImg,birdcolor,right_BirdSize
+    moveBird 135,0,birdVelocity,birdX
    
     skipDrawingBirds:
 
     checkForFire fireScanCode,paddle_x,paddle_width,BallSize,fireBall_x,fireBall_y,ifFireIsPressed,paddle_y
  
     cmp ifFireIsPressed,0
-    je checkRight
-
+    jne skipCheckRight
+    jmp checkRight
+    skipCheckRight:
     moveFireBall fireBall_velocity_y,fireBall_y,ifFireIsPressed
     Draw_IMG_with_color fireBall_x,fireBall_y,BallImg,fireballColor,BallSize
     compareBirdWithBall birdX,fireBall_x,fireBall_y,BirdSize,0,birdStatus,playerPoints,birdPoints,colorIndex
-
     checkRight: 
+
     checkForFire right_fireScancode,right_paddle_x,right_paddle_width,BallSize,right_fireBall_x,right_fireBall_y,right_ifFireIsPressed,right_paddle_y
 
     cmp right_ifFireIsPressed,0
-    je midDraw
+    jne skipJmp
+    jmp midDraw
+    skipJmp:
 
     moveFireBall right_fireBall_velocity_y,right_fireBall_y,right_ifFireIsPressed
     Draw_IMG_with_color right_fireBall_x,right_fireBall_y,BallImg,fireballColor,BallSize
-    compareBirdWithBall right_birdX,right_fireBall_x,right_fireBall_y,right_BirdSize,160,right_birdStatus,right_playerPoints,right_birdPoints,right_colorIndex
+    compareBirdWithBall right_birdX,right_fireBall_x,right_fireBall_y,right_BirdSize,160,birdStatus,right_playerPoints,right_birdPoints,colorIndex
 
 midDraw:
+    checkTimeInterval gamestatus, prevTime, timeInterval
     RET
 BIRDGAME ENDP
 
@@ -873,13 +1021,22 @@ GetCommand PROC
     
     
     CHECK_IF_ENTER11:
-    cmp ah,1Ch ;; check if enter is pressed
-    jne CHECK_IF_BACKSLASH11
+    cmp ah,59 ;; check if F1 is pressed
+    jne CHECK_IF_F2IS_PRESSED
     mov finished_taking_input,1
     jmp ADD_TO_COMMAND  ;; TO ADD THE ENTER
 
+    CHECK_IF_F2IS_PRESSED:
+    cmp ah,60 ;; check if F2 is pressed
+    jne CHECK_IF_BACKSLASH11
+    mov finished_taking_input,1
+    CMP GAME_LEVEL, 2
+    JNE ADD_TO_COMMAND
+    MOV EXECUTE_REVESED, 1
+    jmp ADD_TO_COMMAND  ;; TO ADD THE ENTER
+
     CHECK_IF_BACKSLASH11:
-    cmp ah,0eh
+    cmp ah,0eh      ;;backk
     jne FinishedTakingChar  ;;NOT ANY OFTHE THREE CASES
     ;if size>0 then delete the last char and dec string
     READ_KEY
@@ -907,6 +1064,686 @@ GetCommand PROC
     FinishedTakingChar:
     ret
 GetCommand ENDP
+
+
+CHECK_FORBIDDEN_CHARS proc 
+    ;; if turn=1 mov to L_command else R_command
+    cmp Game_turn,1 ;;first player
+    jne check_p22
+    mov al,right_forbidden_char
+    jmp check_p33
+    check_p22: ;;the other is playing
+    mov al,forbidden_char
+    check_p33:
+    ;; checks if command have that char
+    mov di,offset THE_COMMAND  
+    xor ch,ch
+    mov cl,actualcommand_Size
+    repne scasb ;;searches for al
+    cmp cx,0
+    jne bad_char
+    dec di
+    cmp byte ptr [di],al
+    je  bad_char
+    mov contains_forbidden,0
+    ret
+    
+
+    bad_char:
+    mov contains_forbidden,1
+    ret
+    
+CHECK_FORBIDDEN_CHARS ENDp 
+
+
+exchangeValuesInRegisters proc 
+   ; cmp game_turn,2  ;;send it in al
+    CMP al,2
+    JE RTRTRTRT
+    jMP exchangeRightPlayerRegisters
+        RTRTRTRT:
+        mov ax,L_AX
+        xchg  _AX,ax
+        mov L_AX,ax
+
+        mov ax,L_BX
+        xchg  _BX,ax
+        mov L_BX,ax
+
+        mov ax,L_CX
+        xchg  _CX,ax
+        mov L_CX,ax
+
+        mov ax,L_DX
+        xchg  _DX,ax
+        mov L_DX,ax
+
+        mov ax,L_SI
+        xchg  _SI,ax
+        mov L_SI,ax
+
+        mov ax,L_DI
+        xchg  _DI,ax
+        mov L_DI,ax
+        
+        mov ax,L_SP
+        xchg  _SP,ax
+        mov L_SP,ax
+        
+        mov ax,L_BP
+        xchg  _BP,ax
+        mov L_BP,ax
+        
+        
+
+        mov ah,L_00
+        xchg  _00,ah
+        mov L_00,ah
+
+        mov ah,L_01
+        xchg  _01,ah
+        mov L_01,ah
+        
+        mov ah,L_02
+        xchg  _02,ah
+        mov L_02,ah
+        
+        mov ah,L_03
+        xchg  _03,ah  
+        mov L_03,ah
+          
+        mov ah,L_04
+        xchg  _04,ah
+        mov L_04,ah
+        
+        mov ah,L_05
+        xchg  _05,ah
+        mov L_05,ah
+        
+        mov ah,L_06
+        xchg  _06,ah
+        mov L_06,ah
+        
+        mov ah,L_07
+        xchg  _07,ah
+        mov L_07,ah
+        
+        mov ah,L_08
+        xchg  _08,ah
+        mov L_08,ah
+        
+        mov ah,L_09             
+        xchg  _09,ah
+        mov L_09,ah
+        
+        mov ah,L_A 
+        xchg  _A,ah
+        mov L_A,ah
+        
+        mov ah,L_B 
+        xchg  _B,ah
+        mov L_B,ah
+        
+        mov ah,L_C 
+        xchg  _C,ah
+        mov L_C,ah
+        
+        mov ah,L_D 
+        xchg  _D,ah
+        mov L_D,ah
+        
+        mov ah,L_E 
+        xchg  _E,ah
+        mov L_E,ah
+        
+        mov ah,L_F 
+        xchg  _F,ah
+        mov L_F,ah
+        
+        mov ah,L_CARRY 
+        xchg  _CARRY,ah
+        mov L_CARRY,ah
+
+        
+        
+       jmp ouououlou
+exchangeRightPlayerRegisters:
+
+        mov ax,R_AX
+        xchg  _AX,ax
+        mov R_AX,ax
+
+        mov ax,R_BX
+        xchg  _BX,ax
+        mov R_BX,ax
+
+        mov ax,R_CX
+        xchg  _CX,ax
+        mov R_CX,ax
+
+        mov ax,R_DX
+        xchg  _DX,ax
+        mov R_DX,ax
+
+        mov ax,R_SI
+        xchg  _SI,ax
+        mov R_SI,ax
+
+        mov ax,R_DI
+        xchg  _DI,ax
+        mov R_DI,ax
+        
+        mov ax,R_SP
+        xchg  _SP,ax
+        mov R_SP,ax
+        
+        mov ax,R_BP
+        xchg  _BP,ax
+        mov R_BP,ax
+        
+        
+
+        mov ah,R_00
+        xchg  _00,ah
+        mov R_00,ah
+
+        mov ah,R_01
+        xchg  _01,ah
+        mov R_01,ah
+        
+        mov ah,R_02
+        xchg  _02,ah
+        mov R_02,ah
+        
+        mov ah,R_03
+        xchg  _03,ah  
+        mov R_03,ah
+          
+        mov ah,R_04
+        xchg  _04,ah
+        mov R_04,ah
+        
+        mov ah,R_05
+        xchg  _05,ah
+        mov R_05,ah
+        
+        mov ah,R_06
+        xchg  _06,ah
+        mov R_06,ah
+        
+        mov ah,R_07
+        xchg  _07,ah
+        mov R_07,ah
+        
+        mov ah,R_08
+        xchg  _08,ah
+        mov R_08,ah
+        
+        mov ah,R_09             
+        xchg  _09,ah
+        mov R_09,ah
+        
+        mov ah,R_A 
+        xchg  _A,ah
+        mov R_A,ah
+        
+        mov ah,R_B 
+        xchg  _B,ah
+        mov R_B,ah
+        
+        mov ah,R_C 
+        xchg  _C,ah
+        mov R_C,ah
+        
+        mov ah,R_D 
+        xchg  _D,ah
+        mov R_D,ah
+        
+        mov ah,R_E 
+        xchg  _E,ah
+        mov R_E,ah
+        
+        mov ah,R_F 
+        xchg  _F,ah
+        mov R_F,ah
+
+        mov ah,R_CARRY 
+        xchg  _CARRY,ah
+        mov R_CARRY,ah
+
+ouououlou:
+ret
+endp exchangeValuesInRegisters
+
+
+
+checkValuesInRegisters proc
+
+    mov ax,target_value
+
+    cmp R_AX,ax
+    je leftPlayerWins
+
+    cmp R_BX,ax
+    je leftPlayerWins
+    
+    cmp R_CX,ax
+    je leftPlayerWins
+    
+    cmp R_DX,ax
+    je leftPlayerWins
+    
+    cmp R_SI,ax
+    je leftPlayerWins
+    
+    cmp R_DI,ax
+    je leftPlayerWins
+    
+    cmp R_SP,ax
+    je leftPlayerWins
+    
+    cmp R_BP,ax
+    jne checkLeftPlayer
+
+
+    leftPlayerWins:
+    mov playersStatus,2 ;; RIGHT LOST LEFT WINS
+    jmp exitCheckValuesInRegisters
+
+checkLeftPlayer:
+	cmp L_AX,ax
+    je rightPlayerWins  
+	
+    cmp L_BX,ax
+    je rightPlayerWins 
+	
+    cmp L_CX,ax
+    je rightPlayerWins  
+	
+    cmp L_DX,ax
+    je rightPlayerWins 
+	
+    cmp L_SI,ax
+    je rightPlayerWins 
+	
+    cmp L_DI,ax
+    je rightPlayerWins 
+	
+    cmp L_SP,ax
+    je rightPlayerWins 
+	
+    cmp L_BP,ax
+    jne exitCheckValuesInRegisters
+rightPlayerWins:
+    mov playersStatus,1 
+    exitCheckValuesInRegisters:
+    ret
+checkValuesInRegisters endp 
+
+checkIfAnyPlayerLost proc 
+
+    cmp playerPoints,0
+    jg checkIfRightPlayerLost
+    mov playersStatus,1
+
+checkIfRightPlayerLost:
+    cmp right_playerPoints,0
+    jg exitCheckIfAnyPlayerLost
+    mov playersStatus,2
+
+    exitCheckIfAnyPlayerLost:
+ret
+checkIfAnyPlayerLost endp 
+
+
+;description
+CHECK_POWERUPS PROC
+     mov ah,1
+    int 16h ;-> looks at the buffer
+    jnz xserdc
+    jmp FinishedCheckingPowerUps ;nothing is clicked
+    xserdc:
+    ;; f5 to f9 are the POWERUps
+    ;; f5 ->sc63
+    cmp ah,63       ;F5
+    jne check_if_F6
+    ;execute on your Procecceor
+    READ_KEY
+    CALL powerUp_1
+    JMP FinishedCheckingPowerUps
+    check_if_F6:
+    cmp ah,64       ;F6
+    jne check_if_F7
+
+    READ_KEY
+    CALL powerUp_2
+    JMP FinishedCheckingPowerUps
+    
+    check_if_F7:
+    cmp ah,65       ;F7
+    jne check_if_F8
+    READ_KEY ;;READ the f7
+
+    cmp game_turn,1
+    jne check_if_the_other_game_turn
+    cmp IS_USED_POWERUP3,1
+    je FinishedCheckingPowerUps ;;no more tries
+    CALL powerUp_3
+    JMP FinishedCheckingPowerUps
+    check_if_the_other_game_turn:
+    cmp right_IS_USED_POWERUP3,1
+    je FinishedCheckingPowerUps ;;no more tries
+    CALL powerUp_3
+    JMP FinishedCheckingPowerUps
+
+
+check_if_F8:
+    cmp ah,66       ;F8
+    jne check_if_F9
+    READ_KEY ;;READ the f8
+
+    cmp game_turn,1
+    jne check_if_the_other_game_turn2
+    cmp IS_USED_POWERUP4,1
+    je FinishedCheckingPowerUps ;;no more tries
+    CALL powerUp_4
+    JMP FinishedCheckingPowerUps
+    check_if_the_other_game_turn2:
+    cmp right_IS_USED_POWERUP4,1
+    je FinishedCheckingPowerUps ;;no more tries
+    CALL powerUp_4
+    JMP FinishedCheckingPowerUps
+    check_if_F9:
+    cmp ah,67       ;F9
+    jne check_if_F10
+    READ_KEY ;;READ the f9
+    cmp game_level,2
+    jne FinishedCheckingPowerUps
+    cmp game_turn,1
+    jne check_if_the_other_game_turn3
+    cmp IS_USED_POWERUP6,1
+    je FinishedCheckingPowerUps ;;no more tries
+    CALL powerUp_6
+    JMP FinishedCheckingPowerUps
+    check_if_the_other_game_turn3:
+    cmp right_IS_USED_POWERUP6,1
+    je FinishedCheckingPowerUps ;;no more tries
+    CALL powerUp_6
+    JMP FinishedCheckingPowerUps
+
+    check_if_F10:
+
+    FinishedCheckingPowerUps:
+    ret
+CHECK_POWERUPS ENDP
+
+
+
+;execute a command at your proceccor
+powerUp_1 PROC
+    cmp game_turn,1
+    JE RTRTRTRTASAS
+    JMP exec_on_other1
+    RTRTRTRTASAS:
+    cmp playerPoints,5 ;;consumes 3 points
+    JNB EDCESDAD
+    JMP NOT_POWERUP_1
+    EDCESDAD:
+    Draw_blank_line
+    DisplayString_AT_position_not_moving_cursor POWERUP1_MSG, 0B09h
+    DisplayString_AT_position_not_moving_cursor POWERUP1_MSG2, 0c05h
+    MoveCursorTo 0E09h
+    ReadString COMMAND
+    EXECUTE_THECOMMAND_AT_SIDE 2
+    SUB playerPoints,5
+    Reset_Command
+    JMP NOT_POWERUP_1
+    exec_on_other1:
+    cmp right_playerPoints,5 ;;consumes 3 points
+    JNB ASDASDASD
+    JMP NOT_POWERUP_1
+    ASDASDASD:
+    Draw_blank_line
+    DisplayString_AT_position_not_moving_cursor POWERUP1_MSG, 0B09h
+    DisplayString_AT_position_not_moving_cursor POWERUP1_MSG2, 0c05h
+    MoveCursorTo 0E09h
+    ReadString COMMAND
+    EXECUTE_THECOMMAND_AT_SIDE 1
+    SUB right_playerPoints,5
+    Reset_Command
+ NOT_POWERUP_1:
+    RET
+powerUp_1 endP  
+
+powerUp_2 PROC
+    cmp game_turn,1
+    JE RTRTRTRTASASAS
+    JMP exec_on_other2
+    RTRTRTRTASASAS:
+    cmp playerPoints,3 ;;consumes 3 points
+    JNB SARAH112
+    JMP NOT_POWERUP_2
+    SARAH112:
+    Draw_blank_line
+    DisplayString_AT_position_not_moving_cursor POWERUP2_MSG, 0B09h
+    DisplayString_AT_position_not_moving_cursor POWERUP2_MSG2, 0c05h
+    MoveCursorTo 0E09h
+    ReadString COMMAND
+    EXECUTE_THECOMMAND_AT_SIDE 2
+    EXECUTE_THECOMMAND_AT_SIDE 1
+    SUB playerPoints,3
+    Reset_Command
+    JMP NOT_POWERUP_2
+
+    exec_on_other2:
+    cmp right_playerPoints,3 ;;consumes 3 points
+    JNB RETSARAHTER
+    JMP NOT_POWERUP_2
+    RETSARAHTER:
+    Draw_blank_line
+    DisplayString_AT_position_not_moving_cursor POWERUP2_MSG, 0B09h
+    DisplayString_AT_position_not_moving_cursor POWERUP2_MSG2, 0c05h
+    MoveCursorTo 0E09h
+    ReadString COMMAND
+    EXECUTE_THECOMMAND_AT_SIDE 2
+    EXECUTE_THECOMMAND_AT_SIDE 1
+    SUB right_playerPoints,3
+    Reset_Command
+ NOT_POWERUP_2:
+    RET
+powerUp_2 endP  
+
+
+powerUp_3 PROC
+    cmp game_turn,1
+    jne exec_on_other3
+    cmp playerPoints,8 ;;consumes 3 points
+    JNB SARAH1112
+    JMP NOT_POWERUP_3
+    SARAH1112:
+    Draw_blank_line
+    DisplayString_AT_position_not_moving_cursor POWERUP3_MSG, 0B09h
+    DisplayString_AT_position_not_moving_cursor POWERUP3_MSG2, 0c05h
+    READ_KEY
+    MOV forbidden_char ,AL
+    MoveCursorTo 0E14h  ;;MIGHT CAUSE A PROBLEM
+    mov dl,al
+	mov ah,2     ;; to display the the char into screen (echo)
+	int 21h
+    READ_KEY
+    sub playerPoints,8
+    mov IS_USED_POWERUP3,1
+
+    JMP NOT_POWERUP_3
+    exec_on_other3:
+    cmp right_playerPoints,8 ;;consumes 3 points
+    JNB RETSARAHTERR
+    JMP NOT_POWERUP_3
+    RETSARAHTERR:
+    Draw_blank_line
+    DisplayString_AT_position_not_moving_cursor POWERUP3_MSG, 0B09h
+    DisplayString_AT_position_not_moving_cursor POWERUP3_MSG2, 0c05h
+    READ_KEY
+    MoveCursorTo 0E14h  ;;MIGHT CAUSE A PROBLEM
+    mov dl,al
+	mov ah,2     ;; to display the the char into screen (echo)
+	int 21h
+    READ_KEY
+    MOV right_forbidden_char ,AL
+    sub RIGHT_playerPoints,8
+    mov right_IS_USED_POWERUP3,1
+    NOT_POWERUP_3:
+    RET
+powerUp_3 endP  
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+powerUp_4 PROC
+    cmp game_turn,1 ;checks if it's left player's turn 
+    jne checkIfItsRightPlayerTurn_powerUp_4
+    cmp playerPoints,30
+    jnb  skipme1
+    jmp exitPowerUp_4
+    skipme1:
+    sub playerPoints,30
+    MOV IS_USED_POWERUP4,1
+    jmp clearAllRegisters
+
+
+checkIfItsRightPlayerTurn_powerUp_4:
+
+    cmp right_playerPoints,30
+    jnb  SKIPME2
+    jmp exitPowerUp_4
+    SKIPME2:
+    MOV right_IS_USED_POWERUP4,1
+    sub RIGHT_playerPoints,30
+clearAllRegisters:
+
+    mov L_AX,0
+    mov L_BX,0
+    mov L_CX,0
+    mov L_DX,0
+    mov L_SI,0
+    mov L_DI,0
+    mov L_SP,0
+    mov L_BP,0
+    mov R_AX,0
+    mov R_BX,0
+    mov R_CX,0
+    mov R_DX,0
+    mov R_SI,0
+    mov R_DI,0
+    mov R_SP,0
+    mov R_BP,0
+exitPowerUp_4:
+ret
+powerUp_4 endp
+
+
+
+powerUp_6 proc 
+    cmp game_turn,1
+    jne checkIfItsRightPlayerTurn_powerUp_6
+    cmp playerPoints,7
+    JNB SKIPSARAH1
+    jmp exitPowerUp_6
+    SKIPSARAH1:
+    jmp changeTargetValue
+
+checkIfItsRightPlayerTurn_powerUp_6:
+    cmp right_playerPoints,7
+    JNB SKIPSARAH2
+    jmp exitPowerUp_6
+    SKIPSARAH2:
+
+
+changeTargetValue:
+    Draw_blank_line
+    DisplayString_AT_position_not_moving_cursor POWERUP5_MSG, 0B09h
+    DisplayString_AT_position_not_moving_cursor POWERUP5_MSG2, 0c05h
+    MoveCursorTo 0E09h
+    ReadNumberhexa_in_ax ;;reads new target value
+    cmp L_AX,ax
+    je exitPowerUp_6
+    cmp L_BX,ax
+    je exitPowerUp_6
+    cmp L_CX,ax
+    je exitPowerUp_6
+    cmp L_DX,ax
+    je exitPowerUp_6
+    cmp L_SI,ax
+    je exitPowerUp_6
+    cmp L_DI,ax
+    je exitPowerUp_6
+    cmp L_SP,ax
+    je exitPowerUp_6
+    cmp L_BP,ax
+    je exitPowerUp_6
+    cmp R_AX,ax
+    je exitPowerUp_6
+    cmp R_BX,ax
+    je exitPowerUp_6
+    cmp R_CX,ax
+    je exitPowerUp_6
+    cmp R_DX,ax
+    je exitPowerUp_6
+    cmp R_SI,ax
+    je exitPowerUp_6
+    cmp R_DI,ax
+    je exitPowerUp_6
+    cmp R_SP,ax
+    je exitPowerUp_6
+    cmp R_BP,ax
+    je exitPowerUp_6
+    mov target_value,ax
+
+    CMP GAME_TURN,1
+    JNE other_player_is_playing
+    sub playerPoints,7
+    mov IS_USED_POWERUP6,1
+    jmp exitPowerUp_6
+    other_player_is_playing:
+    mov right_IS_USED_POWERUP6,1
+    sub right_playerPoints,7
+exitPowerUp_6:
+    RET
+powerUp_6 endp
+
+
+;description
+RESET_ALL_VARS PROC
+    
+    mov _Ax, 0
+    mov _BX, 0
+    mov _CX, 0
+    mov _DX, 0
+    mov _SI, 0
+    mov _DI, 0
+    mov _SP, 0
+    mov _BP, 0
+    mov _00, 0
+    mov _01, 0
+    mov _02, 0
+    mov _03, 0
+    mov _04, 0
+    mov _05, 0
+    mov _06, 0
+    mov _07, 0
+    mov _08, 0
+    mov _09, 0
+    mov _A, 0
+    mov _B, 0
+    mov _C, 0
+    mov _D, 0
+    mov _E, 0
+    mov _F, 0
+    mov _CARRY, 0
+
+
+
+    RET
+RESET_ALL_VARS ENDP
+
 
 
 

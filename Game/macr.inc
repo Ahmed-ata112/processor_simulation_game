@@ -5,6 +5,40 @@ DisplayString MACRO STR
             int 21h
 ENDM DisplayString   
 
+
+FIX_POINTS_MIN MACRO 
+    MOV AX,playerPoints
+    CMP AX,right_playerPoints
+    JB FIRST_IS_LESS
+    MOV AX,right_playerPoints
+    MOV playerPoints,AX
+    JMP FININ
+    FIRST_IS_LESS:
+    MOV right_playerPoints,AX
+
+
+
+    FININ:
+
+ENDM FIX_POINTS_MIN
+
+
+
+
+EXECUTE_THECOMMAND_AT_SIDE MACRO turn
+    local skip_excuting_the_command
+    call CHECK_FORBIDDEN_CHARS    ;; returns value in contains_forbidden
+    cmp contains_forbidden,1    ;; the command had a forbidden char
+    je skip_excuting_the_command
+    mov al, turn       ;;send Game_turn to determine which player to execute commands on
+    CALL exchangeValuesInRegisters
+    CALL EX_MAIN
+    mov al, turn       ;;send Game_turn to determine which player to execute commands on
+    CALL exchangeValuesInRegisters
+    skip_excuting_the_command:
+ENDM EXECUTE_THECOMMAND_AT_SIDE
+
+
 MoveCursorTo MACRO pos
     XOR bx,bx
     mov ah,2h
@@ -460,7 +494,15 @@ LEVEL_PROCESSING macro
     ChangeVideoMode 3h ;;CLR Screen
     DisplayString_AT_position_and_move_cursor choose_hidden_char 0304h
     Read_KEY
-    mov hidden_char,al
+    mov forbidden_char,al
+    mov dl,al
+	mov ah,2     ;; to display the the char into screen (echo)
+	int 21h
+
+
+    DisplayString_AT_position_and_move_cursor choose_hidden_char2 032Ah
+    Read_KEY
+    mov right_forbidden_char,al
     mov dl,al
 	mov ah,2     ;; to display the the char into screen (echo)
 	int 21h
@@ -532,27 +574,20 @@ LEVEL_PROCESSING macro
 
 endm LEVEL_PROCESSING
 
-WAIT_seconds_TIME MACRO n_SECONDS
+WAIT_10_seconds_TIME MACRO 
     local L1
-    mov AH,2Ch
-    int 21h ;; Get System Time
-    mov bl,dh ;;current seconds
-    add bl,n_seconds
-
-    L1:
-    mov AH,2Ch
-    int 21h ;; Get System Time
-    cmp dh,bl ;;didn't reach our time yet
-    jne L1
-ENDM WAIT_seconds_TIME
+    ;; waits for 10 seconds
+    mov dx,9680
+    mov cx,98
+    mov ah,86h
+    int 15h
+ENDM WAIT_10_seconds_TIME
 
 WAIT_One_centi_second_TIME MACRO 
     local L1
     mov AH,2Ch
     int 21h ;; Get System Time
     mov bl, dl ;;current seconds ; 0-99
-    
-
     L1:
     mov AH,2Ch
     int 21h ;; Get System Time
@@ -574,7 +609,7 @@ INSTRUCTIONS_PAGE macro
     ChangeVideoMode 3H
     DisplayString_AT_position_and_move_cursor INSTRUCTIONS_msg 0A14h
     ;;should display different messages 
-    WAIT_seconds_TIME 3 ;; WAITS FOR 10 SECONDS
+    WAIT_10_seconds_TIME  ;; WAITS FOR 10 SECONDS
     ;;
 endm INSTRUCTIONS_PAGE
 
@@ -676,107 +711,40 @@ ENDM Convert_OP_TO_HEXA
 
 
 moveBird macro limit,start,x_velocity,x_coordinate
-local finish
-    mov ax,x_velocity
-    add x_coordinate,ax
-    cmp x_coordinate,limit
-    jb finish
-    mov x_coordinate,start
-    
-   finish:
-endm moveBird
+local finish,clearGame
+    mov ax,x_coordinate
+    mov bx,x_velocity
+    add bx,ax ;;adds the velocity to the coordinate
+    cmp bx,limit
+    ja clearGame
+    mov x_coordinate,bx
+    mov right_birdX,bx
+   
+    jmp finish
 
+clearGame:
+    mov gamestatus,0
+    mov x_coordinate,start
+    mov right_birdX,start
+   
+    finish:
+    add right_birdX,160
+endm moveBird
 
 
 moveFireBall macro velocity,yCoordinate,ifPressed
 local finish
     mov ax,velocity
+    sub ax,Ballsize
     sub yCoordinate,ax
-    cmp yCoordinate,15
-    ja finish
+    cmp yCoordinate,5
+    jg finish
     mov ifPressed,0
     finish:
 endm moveFireBall
 
 
 
-checkTime macro
- local check_time
- check_time:
-    mov ah,2ch ;get the system time
-    int 21h    ;ch=hour  cl=minute  dh=seconds  dl=1/100seconds
-    
-    cmp dl,time_aux  ;is the current time equal to the prev one?
-    je check_time    ;if it's the same, check again
-                     ;if different --> draw, move...               
-    mov time_aux,dl  ;update time
-endm checkTime 
-
-getTime macro 
-   mov ah,2ch ;get the system time
-    int 21h    ;ch=hour  cl=minute  dh=seconds  dl=1/100seconds
-    mov prevTime,dh  ;update time
-
-endm getTime
-
-
-
-checkXBoundaries macro
-        MOV AX,WINDOW_WIDTH
-        sub ax,8 ;subtract ball width
-		cmp ball_x,ax ;check if the x coordinate of the ball is stil within the range
-        jae finish ;jump to finish lable in main if it's done passing the whole width
-endm checkXBoundaries      
-
-
-
-drawPaddle macro
-local drawP
-    mov cx,paddle_x ;set initial column (x)
-    mov dx,paddle_y ;set initial row (y)
-drawP:
-            MOV AH,0Ch                   ;set the configuration to writing a pixel
-			MOV AL,5h 					 ;choose purple as color
-			MOV BH,00h 					 ;set the page number 
-			INT 10h   
-            INC CX     					 ;CX = CX + 1
-			MOV AX,CX          	  		 ;CX - paddle_left > paddle_width  (Y -> We go to the next line,N -> We continue to the next column
-			SUB AX,paddle_x
-			CMP AX,paddle_width
-			JNG drawP
-
-            MOV CX,paddle_x 			 ;the CX register goes back to the initial column
-			INC DX       				 ;we advance one line
-			
-			MOV AX,DX             		 ;DX - paddle_y > paddle_height (Y -> we exit this procedure,N -> we continue to the next line
-			SUB AX,paddle_y
-			CMP AX,paddle_height
-			JNG drawP
-
-
-
-    mov cx,right_paddle_x ;set initial column (x)
-    mov dx,right_paddle_y ;set initial row (y)
-drawP2:
-            MOV AH,0Ch                   ;set the configuration to writing a pixel
-			MOV AL,9h 					 ;choose purple as color
-			MOV BH,00h 					 ;set the page number 
-			INT 10h   
-            INC CX     					 ;CX = CX + 1
-			MOV AX,CX          	  		 ;CX - paddle_left > paddle_width  (Y -> We go to the next line,N -> We continue to the next column
-			SUB AX,right_paddle_x
-			CMP AX,right_paddle_width
-			JNG drawP2
-
-            MOV CX,right_paddle_x 			 ;the CX register goes back to the initial column
-			INC DX       				 ;we advance one line
-			
-			MOV AX,DX             		 ;DX - paddle_y > paddle_height (Y -> we exit this procedure,N -> we continue to the next line
-			SUB AX,right_paddle_y
-			CMP AX,right_paddle_height
-			JNG drawP2
-
-endm drawPaddle
 
 
 movePaddle macro paddle_x,paddle_velocity_x,paddle_y,paddle_velocity_y,upControl,downControl,rightControl,leftControl,rightlimit,leftlimit 
@@ -912,16 +880,21 @@ local notInTheRangeOfTheBird
     mov bh,0
     add si,bx
     inc byte ptr [si]
+    mov gamestatus,0
+    mov birdX,0
+    mov right_birdX,160
     notInTheRangeOfTheBird:
 
 endm compareBirdWithBall
 
 
 
-randomBirdColor macro birdStatus,birdColor,colorIndex
+randomBirdColor macro birdColor,colorIndex
 local exitMacro
     cmp birdStatus,0
     jne exitMacro
+    ; cmp right_birdStatus,0
+    ; jne exitmacro
     
     mov ah,2ch ;get the system time
     int 21h    ;ch=hour  cl=minute  dh=seconds  dl=1/100seconds 
@@ -956,7 +929,7 @@ checkTimeInterval macro gameStatus,prevTime,timeInterval
 local exit
     mov ah,2ch ;get the system time
     int 21h    ;ch=hour  cl=minute  dh=seconds  dl=1/100seconds 
-  
+
     mov al,dh
     mov ah,0
     mov bx,0
@@ -966,21 +939,206 @@ local exit
     jne exit ; --> if not, does nothing
     cmp dh,prevTime  ; --> if it is, then checks if it's the same second as before
                      ; the proccessor is fast and it checks the same second many times and causes undesirable toggling
-                     
+
     je exit
     mov prevTime,dh ; reaching here meaning it's not the same previous second, so we TOGGLE the state of the game
-    
-    cmp gameStatus,1
-    jne changeToOne ;--> if the game status isn't 1 (is 0), change it to one
-    
-    mov gameStatus,0
-    jmp exit    
-    
-    changeToOne:   
+
+    cmp gameStatus,0
+    ;jne changeToOne ;--> if the game status isn't 1 (is 0), change it to one
+    jne exit
     mov gameStatus,1
+    ; mov ax,birdX
+    ; xchg right_birdX,ax
+    ; xchg ax,birdx
+    ;jmp exit
+
+    ; changeToOne:
+    ; mov gameStatus,1
 
 
     exit:
 
 endm checkTimeInterval
+
+
+Draw_blank_line MACRO 
+
+    mov ax, 0700h                ;Scroll Screen AH=07(Scroll DOWN), AL=1 one line
+	mov bh, 00                   ;Normal attributes -> 07 ;; 0E-> yellow text
+	mov cx, 0700h                  ;from row 17h col 0
+	mov dx, 1250H                ;To end of screen
+	int 10h                      ;Clear the first line
+
+ENDM Draw_blank_line
+
+
+
+
+;;MENNA
+SizeMismatchValidation MACRO op1,op2,result    
+;;;;;;;;;;;;;;;;;;;;;
+CMP op1,'['
+JNE SYAED
+JMP finish
+SYAED:
+CMP op2,'['
+JNE SYAED2
+JMP finish
+SYAED2:
+mov bx,0
+mov cx,0  ;count
+SkipZero:
+cmp op2+bx,'0'
+je ahaha
+jmp count_data
+ahaha:
+inc bx ;skip zero
+jmp SkipZero
+
+cmp op2+bx,'$' ; opernad=0
+jne ahh
+jmp finish
+ahh:
+
+count_data:
+jne q321
+jmp finish
+q321:
+inc bx
+inc cx
+cmp op2+bx,'$'
+jne count_data
+cmp cx,3
+jge _2bytes
+mov ax,1 ;1byte
+jmp start
+_2bytes:
+cmp cx,5
+jl dfdf
+jmp INvalid
+dfdf:
+mov ax,2
+start:
+check_op_size_mismatch op1,op2,result
+cmp result,0
+jne q9
+jmp finish
+q9:
+check_op_size_mismatch op2,op1,result 
+jmp finish 
+;;;;;;;;;;;;;;;;;;;;
+INvalid:
+mov Command_valid,0
+finish:       
+       
+ENDM SizeMismatchValidation
+
+;; Menna
+check_op_size_mismatch MACRO op1, op2, result
+    Local valid,NOTvalid,end,CheckL   
+    cmp op1+1,'H'                  ;op1=_H 
+    jne CheckL
+    ;; reach here if the first has (-H)
+    ;; Check if the other reg is large -X , -I , -P  -> NOT VALID
+    cmp op2+1,'X'                  ;op2=_X
+    je  NOTvalid
+    cmp op2+1,'I'                  ;_H,SI/_H,DI
+    je NOTvalid
+    cmp op2+1,'P'                  ;_H,BP/_H,SP
+    je NOTvalid
+    cmp ax,2
+    je NOTvalid
+    
+    CheckL:  
+    cmp op1+1,'L'                  ;op1=_L
+    jne valid                      ; if both don't have neither H or L as suffix -> They are Valid 
+    ;; reach here if the first has (-L)
+    ;; Check if the other reg is large -X , -I , -P  -> NOT VALID
+    cmp op2+1,'X'                  ;op2=_X
+    je  NOTvalid
+    cmp op2+1,'I'                  ;_L,SI/_L,DI
+    je NOTvalid
+    cmp op2+1,'P'                  ;_L,BP/_L,SP
+    je NOTvalid
+    cmp ax,2
+    je NOTvalid
+
+    valid:
+    mov result,1 
+    jmp end
+
+    NOTvalid:
+    mov result,0
+    end:
+
+ENDM check_op_size_mismatch
+
+    ;;  Hany
+Check_memorytomemory MACRO des1, des2, Result_2  ;; check if it iss memory to memory --  Result_2 = 0 if it is not valid and 1 for valid  
+    Local no_bracket
+    mov SI,offset des1
+    mov Di,offset des2
+    cmp [SI],BYTE ptr '['
+    jnz no_bracket
+    cmp [Di], BYTE ptr '['
+    jnz no_bracket
+    mov Si,offset Result_2
+    mov [Si], BYTE ptr 0
+    jmp return
+    no_bracket:
+    mov [Si],BYTE ptr 1
+    return:
+        
+ENDM Check_memorytomemory
+
+
+
+check_if_in_array macro arr, arr_len, element_size, op, result
+    local L1 ,finish,found,skip
+    lea si,arr
+    mov bh,arr_len  ;; number of elements in array
+    
+    L1:  
+    mov cx,0 
+    mov cl,element_size
+    lea di,op ; store the string we search for
+    repe CMPSB    
+    
+    cmp cx,0 ;; CX =0 if the 2 current words equall 
+    jne skip ;try the next pair 
+    ;;
+    dec si
+    dec di
+    mov al,[si]
+    cmp al,[di]
+    je found 
+    inc si
+    skip:
+    add si,cx ;to skip current word if it doesn't match
+    
+    dec bh
+    jnz L1 
+    
+    
+    ;; finsished loop and not found
+    mov result,0
+    jmp finish
+    ;;valid one -> element in array
+    found:    
+    mov result,1
+    finish:
+
+endm check_if_in_array
+
+
+
+
+
+
+
+
+
+
+
+
 
