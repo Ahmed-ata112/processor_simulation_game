@@ -236,9 +236,7 @@
 	;;For The Graphics
 
     ;;;;;;---------------SARAHHHHHHHHHHHHHHH;;;;;;;;;;;;;;;;;;;;;;;
-    time_aux db 0
-
-
+   
 
     birdX dw 0
     birdY dw 0Ah
@@ -442,75 +440,75 @@
 	DisplayString_AT_position_not_moving_cursor Press_any_Key_message 1018h 
 	Read_KEY
 
-	MAIN_LOOP:
-
-		Main_Screen:
-			;; it shouldn't wait untill the user enters the KeY
-			;; 2 loops in the main
-			;; The first is to check if the user clicked any key
-			;; the second to check  
-			;; enter -> scancode 1C  
-			;; esc -> SC 01
-			;; F2 -> 3C   
-			;; F1 -> 3B
-			CLR_Screen_with_Scrolling_TEXT_MODE
-            DEAW_STATUS_BAR
-			DisplayString_AT_position_not_moving_cursor MAIN_Screen_message1 ,0C16h
-			DisplayString_AT_position_not_moving_cursor MAIN_Screen_message2 ,0D16h
-			DisplayString_AT_position_not_moving_cursor MAIN_Screen_message3 ,0E16h
-			check_key_pressed1:
-				mov ah, 1
-				int 16h           ;Get key pressed (do not wait for a key - AH:scancode, AL:ASCII)
-
-				jnz _continue ;; something is clicked
-				jmp no_thing_clicked
-				_continue:
-				
-				;; check the type of the key
-				cmp ah,1h ; esc
-				jne check_f1 
-				jmp QUIT_THIS_GAME
-				check_f1:
-				cmp ah,3bh ;f1
-				jne check_f2
-				;in case of F1
-				UPDATE_notification_bar Sent_CHAT_INV_msg
-				mov is_player_1_ready_for_chat,1 ;; make me ready and see if the other is ready to
-				cmp is_player_1_ready_for_chat,1
-				;;je LETS_Chat 	;;Player 2 is Ready TOO
-				mov is_player_2_ready_for_chat,1 ;; TODO: temproraly in PHASE 1 -> Pressing Twice Starts THE Chat Room
 
 
-				jmp remove_key_from_buffer
-				
-				check_f2:
-				cmp ah,3ch ; F2
-				jne remove_key_from_buffer
-				;in case of F2
-				UPDATE_notification_bar Sent_Game_INV_msg   ;; 
-				mov is_player_1_ready_for_game,1 ;; make me ready and see if the other is ready to
-				cmp is_player_2_ready_for_game,1
-				je LETS_PLAY 	;;Player 2 is Ready TOO
-				mov is_player_2_ready_for_game,1 ;; TODO: temproraly in PHASE 1 -> Pressing Twice Starts THE GAME
+    Main_Screen:
+        ;; it shouldn't wait untill the user enters the KeY
+        ;; 2 loops in the main
+        ;; The first is to check if the user clicked any key
+        ;; the second to check  
+        ;; enter -> scancode 1C  
+        ;; esc -> SC 01
+        ;; F2 -> 3C   
+        ;; F1 -> 3B
+        CLR_Screen_with_Scrolling_TEXT_MODE
+        DEAW_STATUS_BAR
+        DisplayString_AT_position_not_moving_cursor MAIN_Screen_message1 ,0C16h
+        DisplayString_AT_position_not_moving_cursor MAIN_Screen_message2 ,0D16h
+        DisplayString_AT_position_not_moving_cursor MAIN_Screen_message3 ,0E16h
+        check_key_pressed1:
+            mov ah, 1
+            int 16h           ;Get key pressed (do not wait for a key - AH:scancode, AL:ASCII)
 
-				remove_key_from_buffer:
-				;; delete The key from buffer
-				empitify_buffer
-				no_thing_clicked:
-				;; the second loop is here but nothing to display now
-			jmp check_key_pressed1
-			
-			LETS_PLAY:
-			empitify_buffer			;; To make Sure That no bat chars are saved in Buffer
-			CALL GAME_WELCOME_PAGES 	;; For level selection and continue To GAME
-			empitify_buffer			;; To make Sure That no bat chars are saved in Buffer
-			CALL START_My_GAME
-			jmp QUIT_THIS_GAME
+            jnz _continue ;; something is clicked
+            jmp no_thing_clicked
+            _continue:
+            
+            ;; check the type of the key
+            cmp ah,1h ; esc
+            jne check_f1 
+            jmp QUIT_THIS_GAME
+            check_f1:
+            cmp ah,3bh ;f1
+            jne check_f2
+            ;in case of F1
+            UPDATE_notification_bar Sent_CHAT_INV_msg
+            mov is_player_1_ready_for_chat,1 ;; make me ready and see if the other is ready to
+            cmp is_player_1_ready_for_chat,1
+            ;;je LETS_Chat 	;;Player 2 is Ready TOO
+            mov is_player_2_ready_for_chat,1 ;; TODO: temproraly in PHASE 1 -> Pressing Twice Starts THE Chat Room
 
-			LETS_Chat:
-				empitify_buffer   ;; To make Sure That no bat chars are saved in Buffer
-				CAll CHAT_ROOM 		;;should BE THE CHAT.ASM but just For now 
-			jmp QUIT_THIS_GAME
+
+            jmp remove_key_from_buffer
+            
+            check_f2:
+            cmp ah,3ch ; F2
+            jne remove_key_from_buffer
+            ;in case of F2
+            UPDATE_notification_bar Sent_Game_INV_msg   ;; 
+            mov is_player_1_ready_for_game,1 ;; make me ready and see if the other is ready to
+            cmp is_player_2_ready_for_game,1
+            je LETS_PLAY 	;;Player 2 is Ready TOO
+            mov is_player_2_ready_for_game,1 ;; TODO: temproraly in PHASE 1 -> Pressing Twice Starts THE GAME
+
+            remove_key_from_buffer:
+            ;; delete The key from buffer
+            empitify_buffer
+            no_thing_clicked:
+            ;; the second loop is here but nothing to display now
+        jmp check_key_pressed1
+        
+        LETS_PLAY:
+        empitify_buffer			;; To make Sure That no bat chars are saved in Buffer
+        CALL GAME_WELCOME_PAGES 	;; For level selection and continue To GAME
+        empitify_buffer			;; To make Sure That no bat chars are saved in Buffer
+        CALL START_My_GAME
+        jmp QUIT_THIS_GAME
+
+        LETS_Chat:
+            empitify_buffer   ;; To make Sure That no bat chars are saved in Buffer
+            CAll CHAT_ROOM 		;;should BE THE CHAT.ASM but just For now 
+        jmp QUIT_THIS_GAME
 
 		QUIT_THIS_GAME:
 		MOV AH,4CH
@@ -689,9 +687,6 @@ START_My_GAME PROC
     MOV finished_taking_input,0    ;;to reset it
     ;;swap turns
     SWAP_TURNS
-
-   
-
     NOT_FINISHED_INPUT_YET:
     CALL checkValuesInRegisters
     CALL checkIfAnyPlayerLost
@@ -729,7 +724,8 @@ START_My_GAME PROC
     DisplayString FirstNameData
     WAIT_TIME_A:
     WAIT_10_seconds_TIME
-    
+    CALL RESET_ALL_VARS
+    JMP Main_Screen
 
 
 	RET
@@ -1776,6 +1772,45 @@ RESET_ALL_VARS PROC
     mov R_F, 0
     mov R_CARRY, 0
 
+    MOV Game_Level , 0
+    MOV Game_Turn , 1 ;; TO BE  
+    
+    
+    MOV ball_0 ,0 ;;green
+    MOV ball_1 ,0 ;;magenta
+    MOV ball_2 ,0 ;;red
+    MOV ball_3 ,0 ;;blue
+    MOV ball_4 ,0 ;;yellow
+
+    MOV paddle_x , 5
+    MOV paddle_y , 185
+
+
+    MOV right_paddle_x ,170
+    MOV right_paddle_y ,185
+    MOV DI,OFFSET numOfShotBalls
+    MOV [DI],BYTE PTR 0
+    MOV [DI+1],BYTE PTR 0
+    MOV [DI+2],BYTE PTR 0
+    MOV [DI+3],BYTE PTR 0
+    MOV [DI+4],BYTE PTR 0
+
+    MOV gameStatus , 1
+    MOV prevTime , 0 ;variable used when checking if the time has changed
+   
+    MOV sizeIndex , 0
+
+    MOV playersStatus, 0
+    MOV target_value , 105eh
+
+
+    MOV IS_USED_POWERUP3, 0 ;;TO INDICATE IF USED BEFORE
+    MOV right_IS_USED_POWERUP3, 0 ;;TO INDICATE IF USED BEFORE 
+    MOV IS_USED_POWERUP4, 0 ;;TO INDICATE IF USED BEFORE
+    MOV right_IS_USED_POWERUP4, 0 ;;TO INDICATE IF USED BEFORE
+    MOV IS_USED_POWERUP6, 0 ;;TO INDICATE IF USED BEFORE
+    MOV right_IS_USED_POWERUP6, 0 ;;TO INDICATE IF USED BEFORE
+    MOV EXECUTE_REVESED, 0 ;;IN LEVEL 2 IT INDECATES IF YOU CHOSED TO EXECUTE ON OTHER 
 
 
     RET
