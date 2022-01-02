@@ -1,6 +1,14 @@
 ;;MENNA
 SizeMismatchValidation MACRO op1,op2,result    
 ;;;;;;;;;;;;;;;;;;;;;
+CMP op1,'['
+JNE SYAED
+JMP finish
+SYAED:
+CMP op2,'['
+JNE SYAED2
+JMP finish
+SYAED2:
 mov bx,0
 mov cx,0  ;count
 SkipZero:
