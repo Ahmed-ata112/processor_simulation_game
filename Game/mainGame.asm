@@ -379,15 +379,15 @@
     
     playersStatus db 0 ;; 0 -> nothing , 1 -> left palyer lost/right player won , 2 -> right player lost/left player won
 
-    POWERUP1_MSG DB 'YOU CHOSED POWER-UP 1$'  
+    POWERUP1_MSG DB 'YOU CHOSE POWER-UP 1$'  
     POWERUP1_MSG2 DB 'PLEASE ENTER COMMAND TO EXECUTE$'
  
-    POWERUP2_MSG DB 'YOU CHOSED POWER-UP 2$'  
+    POWERUP2_MSG DB 'YOU CHOSE POWER-UP 2$'  
     POWERUP2_MSG2 DB 'PLEASE ENTER COMMAND TO EXECUTE$'
-    POWERUP3_MSG DB 'YOU CHOSED POWER-UP 3$'  
+    POWERUP3_MSG DB 'YOU CHOSE POWER-UP 3$'  
     POWERUP3_MSG2 DB 'ENTER FORBIDDEN CHAR (ONLY ONCE)$'
     
-    POWERUP5_MSG DB 'YOU CHOSED POWER-UP 5$'  
+    POWERUP5_MSG DB 'YOU CHOSE POWER-UP 5$'  
     POWERUP5_MSG2 DB 'ENTER NEW TARGET VALUE (ONLY ONCE)$'
 
     EXIT_MSG DB 'YOU EXIT THE GAME$'
@@ -658,6 +658,13 @@ START_My_GAME PROC
     mov Game_turn,1 ;; player left starts the Game
 	GAME_LOOP:
 	CLR_Screen_with_Scrolling_GRAPHICS_MODE   ;; CLEARS tHE SCREEN  
+    call READ_BUFFER_IF_NOT_USED
+    MOV AH,1
+    INT 16H
+    cmp ah,3eh ; F4
+    jne not_finshed_for_noww
+    jmp QUIT_GAME_LOOP
+    not_finshed_for_noww:
 	;; WE DRAW THE BACKGROUND - THE Values - 
 	call DRAW_BACKGROUND     ;;Draws The BackGround Image
     call UPDATE_VALUES_Displayed  ;; Update values displayed with ones in variables
@@ -1266,6 +1273,9 @@ exchangeRightPlayerRegisters:
         xchg  _BP,ax
         mov R_BP,ax
         
+
+
+
         
 
         mov ah,R_00
@@ -1554,8 +1564,11 @@ powerUp_2 PROC
     DisplayString_AT_position_not_moving_cursor POWERUP2_MSG2, 0c05h
     MoveCursorTo 0E09h
     ReadString COMMAND
-    EXECUTE_THECOMMAND_AT_SIDE 2
     EXECUTE_THECOMMAND_AT_SIDE 1
+    cmp contains_forbidden,1
+    je dont_on_other
+    EXECUTE_THECOMMAND_AT_SIDE 2
+    dont_on_other:
     SUB playerPoints,3
     Reset_Command
     JMP NOT_POWERUP_2
@@ -1571,7 +1584,10 @@ powerUp_2 PROC
     MoveCursorTo 0E09h
     ReadString COMMAND
     EXECUTE_THECOMMAND_AT_SIDE 2
+    cmp contains_forbidden,1
+    je dont_on_other2
     EXECUTE_THECOMMAND_AT_SIDE 1
+    dont_on_other2:
     SUB right_playerPoints,3
     Reset_Command
  NOT_POWERUP_2:
@@ -1861,6 +1877,121 @@ RESET_ALL_VARS PROC
     RET
 RESET_ALL_VARS ENDP
 
+
+
+READ_BUFFER_IF_NOT_USED PROC
+    MOV AH,1
+    INT 16H
+    jnz _continue1 ;; something is clicked
+            RET
+    _continue1:
+
+    ;; AH-> SC   A;-ASCII
+    JOMP1:
+    cmp ah,3bh ;f1
+    jne JOMP2 
+    RET
+    JOMP2:
+    
+    cmp ah,3ch ; F2
+    jne JOMP3 
+    RET
+    JOMP3:
+    cmp ah,3dh ; F3
+    jne JOMP4 
+    RET
+    JOMP4:
+    cmp ah,3eh ; F4
+    jne JOMP5
+    RET
+    JOMP5:
+    cmp ah,paddleUp
+    jne checkNextttt
+    ret
+    checkNextttt:
+
+    cmp ah,paddleDown
+    jne checkNexttttt
+    ret
+    checkNexttttt:
+
+    cmp ah,paddleRight
+    jne checkNextttttt
+    ret
+    checkNextttttt:
+
+    cmp ah,paddleLeft
+    jne checkNexttttttt
+    ret
+    checkNexttttttt:
+
+    cmp ah,right_paddleUp
+    jne checkNexttttt1
+    ret
+    checkNexttttt1:
+
+    cmp ah,right_paddleDown
+    jne checkNextttttttttttttt
+    ret
+    checkNextttttttttttttt:
+
+    cmp ah,right_paddleRight
+    jne checkNexttttttttt
+    ret
+    checkNexttttttttt:
+
+    cmp ah,right_paddleLeft
+    jne checkNexttttttttttt
+    ret
+    checkNexttttttttttt:
+
+    cmp ah,fireScanCode
+    jne checkNextttttttttttt
+    ret
+    checkNextttttttttttt:
+
+
+    cmp ah,right_fireScanCode
+    jne checkNexttttttttttttt
+    ret
+    checkNexttttttttttttt:
+    cmp ah,63       ;F5
+    jne JOMP33
+    RET
+    JOMP33:
+    cmp ah,64       ;F6
+    jne JOMP44
+    RET
+    JOMP44:
+    cmp ah,65       ;F7
+    jne JOMP45
+    RET
+    JOMP45:
+    cmp ah,66       ;F8
+    jne JOMP46
+    RET
+    JOMP46:
+    cmp ah,67       ;F9
+    jne JOMP47
+    RET
+    JOMP47:
+
+    cmp al,20H  ;;a space 
+    jb checkitnn 
+    cmp al, ']'
+    ja checkitnn
+    ret
+    checkitnn:
+    cmp ah,0eh      ;;backk
+    jne checkitnn2
+    ret
+    checkitnn2:
+
+
+
+    READ_KEY
+    RET
+READ_BUFFER_IF_NOT_USED ENDP
 
 
 
