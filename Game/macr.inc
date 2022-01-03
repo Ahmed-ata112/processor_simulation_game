@@ -832,6 +832,7 @@ endm movePaddle
 checkForFire macro fireScanCode,paddle_x,paddle_width,Ballsize,fireBall_x,fireBall_y,ifFireIsPressed,paddle_y
     local exitMacro,ro7Henak,rightPaddleFire
     ;check if any key is being pressed (if not, exit this macro) [int ah 01/16]
+
     mov ah,1
     int 16h
     jz exitMacro
@@ -843,6 +844,8 @@ checkForFire macro fireScanCode,paddle_x,paddle_width,Ballsize,fireBall_x,fireBa
     mov ah,0 
     int 16h
     ; ah -> scan code  al -> ascii
+    cmp ifFireIsPressed,1
+    je exitMacro        ;;already one is present
 
     ;we reached here, meaning the key pressed is down arrow
    

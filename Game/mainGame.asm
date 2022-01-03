@@ -710,9 +710,15 @@ START_My_GAME PROC
     execute_command_valid:
     CMP EXECUTE_REVESED,1
     JNE EXECUTE_NORMALLY
-    SWAP_TURNS
-    EXECUTE_THECOMMAND_AT_SIDE game_turn ;;EXECCUTE IN OPPONENT REGS
-    SWAP_TURNS
+    cmp game_turn, 1
+    jne executrtheOther
+    EXECUTE_THECOMMAND_AT_SIDE 2 ;;EXECCUTE IN OPPONENT REGS
+    MOV EXECUTE_REVESED,0
+    JMP FINISHED_EXECUTING
+    executrtheOther:
+    ;;player 2 is playing
+    EXECUTE_THECOMMAND_AT_SIDE 1 ;;EXECCUTE IN OPPONENT REGS
+    ;; 
     MOV EXECUTE_REVESED,0
     JMP FINISHED_EXECUTING
     EXECUTE_NORMALLY:
@@ -1027,7 +1033,7 @@ BIRDGAME PROC
     moveBird 135,0,birdVelocity,birdX
    
     skipDrawingBirds:
-
+    
     checkForFire fireScanCode,paddle_x,paddle_width,BallSize,fireBall_x,fireBall_y,ifFireIsPressed,paddle_y
  
     cmp ifFireIsPressed,0
