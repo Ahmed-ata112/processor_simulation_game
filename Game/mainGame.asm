@@ -18,7 +18,16 @@
 	MAIN_Screen_message2 db 'To Start Game press F2$'  
 	MAIN_Screen_message3 db 'To end Program press ESC$'   
     STATUS_BAR_MSG db '_______________________________________________________________________________$'
-	INSTRUCTIONS_msg db 'SOME INSTRUCTIONS OF THE GAME... blA bla bla ... $'
+	INSTRUCTIONS_msg db 'SOME INSTRUCTIONS OF THE GAME $'
+    INSTRUCTIONS_msg1 db 'F3 FOR INLINE GAME CHAT $'
+    INSTRUCTIONS_msg2 db 'F4 TO LEAVE THE GAME $'
+    INSTRUCTIONS_msg3 db 'F1 TO EXECUTE A COMMAND ON YOUR OPPONENTS PROCESSOR $'
+    INSTRUCTIONS_msg4 db 'F2 TO EXECUTE A COMMAND ON YOUR OWN PROCESSOR $'
+    INSTRUCTIONS_msg5 db 'F5 TO EXECUTE A COMMAND ON YOUR OWN PROCESSOR -5 POINTS-$'
+    INSTRUCTIONS_msg6 db 'F6 TO EXECUTE A COMMAND ON BOTH PROCESSORS -3 POINTS-$'
+    INSTRUCTIONS_msg7 db 'F7 TO CHANGE THE FORBIDDEN CHARACTER ONLY ONCE -8 POINTS-$'
+    INSTRUCTIONS_msg8 db 'F8 TO CLEAR ALL REGISTERS -30 POINTS (USED ONCE)$'
+    INSTRUCTIONS_msg9 db 'F9 TO CHANGE THE TARGET VALUE -7 POINTS (USED ONCE)$'
 	Sent_CHAT_INV_msg db 'You sent a chat Invitation','$'
 	Sent_Game_INV_msg db 'You sent a Game Invitation','$'
 	level1_msg db 'LEVEL 1 -- PRESS F1$' 
@@ -89,6 +98,9 @@
 		DS_D_left dw 080eh
 		DS_E_left dw 090eh
 		DS_F_left dw 0A0eh
+        l_CARRY_LEFT DW 0F09h
+        forbidden_char_left DW 0110h
+        TARGET_VALUE_BOX DW 0012H
 
      ;; command line left side and points BOX
          CL_row_left dw 1201h
@@ -131,6 +143,8 @@
 		DS_D_right dw 0824h
 		DS_E_right dw 0924h
 		DS_F_right dw 0A24h
+        R_CARRY_RIGHT DW 0F1Fh
+        forbidden_char_right DW 0126h
      ;; command line left side
      CL_row_Right dw 1217h
      Points_BOX_right dw 0E22h
@@ -236,9 +250,7 @@
 	;;For The Graphics
 
     ;;;;;;---------------SARAHHHHHHHHHHHHHHH;;;;;;;;;;;;;;;;;;;;;;;
-    time_aux db 0
-
-
+   
 
     birdX dw 0
     birdY dw 0Ah
@@ -343,9 +355,9 @@
 	R_commandData db 30 dup('$')
         
     command_splited db 5 dup('$') ;';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;'
-    Operand1 db 5 dup('$')
-    Operand2 db 5 dup('$')
-    Two_Operands_Together_splited db 12 dup('$')
+    Operand1 db 10 dup('$')
+    Operand2 db 10 dup('$')
+    Two_Operands_Together_splited db 22 dup('$')
 
 
     
@@ -357,7 +369,7 @@
                                             ;MOV [00],AX DONE
     HASH_Operand DW 0H
     Operand_Value DW 0H
-    Operand DB 5 dup('$')
+    Operand DB 10 dup('$')
                                          ;MOV [00],Al DONE
     HASH_comand DW 0H                    ;MOV AX,[00] DONE
     HASH_Operand2 DW 0H                  ;MOV Al,[00] DONE
@@ -367,15 +379,15 @@
     
     playersStatus db 0 ;; 0 -> nothing , 1 -> left palyer lost/right player won , 2 -> right player lost/left player won
 
-    POWERUP1_MSG DB 'YOU CHOSED POWER-UP 1$'  
+    POWERUP1_MSG DB 'YOU CHOSE POWER-UP 1$'  
     POWERUP1_MSG2 DB 'PLEASE ENTER COMMAND TO EXECUTE$'
  
-    POWERUP2_MSG DB 'YOU CHOSED POWER-UP 2$'  
+    POWERUP2_MSG DB 'YOU CHOSE POWER-UP 2$'  
     POWERUP2_MSG2 DB 'PLEASE ENTER COMMAND TO EXECUTE$'
-    POWERUP3_MSG DB 'YOU CHOSED POWER-UP 3$'  
+    POWERUP3_MSG DB 'YOU CHOSE POWER-UP 3$'  
     POWERUP3_MSG2 DB 'ENTER FORBIDDEN CHAR (ONLY ONCE)$'
     
-    POWERUP5_MSG DB 'YOU CHOSED POWER-UP 5$'  
+    POWERUP5_MSG DB 'YOU CHOSE POWER-UP 5$'  
     POWERUP5_MSG2 DB 'ENTER NEW TARGET VALUE (ONLY ONCE)$'
 
     EXIT_MSG DB 'YOU EXIT THE GAME$'
@@ -392,6 +404,21 @@
     IS_USED_POWERUP6 db 0 ;;TO INDICATE IF USED BEFORE
     right_IS_USED_POWERUP6 db 0 ;;TO INDICATE IF USED BEFORE
     EXECUTE_REVESED db 0 ;;IN LEVEL 2 IT INDECATES IF YOU CHOSED TO EXECUTE ON OTHER 
+
+
+
+    ;;VALIDATION
+    Command_valid db 1                                    
+    validRegNamesArr db 'AX','BX','CX','DX'
+                    db  'AH','AL','BH','BL','CH','CL','DH','DL'
+                    db  'CS','IP','SS','SP'
+                    db  'BP','SI','DI','DS','ES'
+
+   validRegNamesArrSize db  21d
+   valid_addressing_mode_regs db '[BX]','[SI]','[DI]','[00]'
+        DB '[01]','[02]','[03]', '[04]', '[05]', '[06]', '[07]'
+        DB '[08]', '[09]', '[0A]', '[0B]', '[0C]', '[0D]', '[0E]','[0F]'
+ 
 
 
 .code
@@ -427,74 +454,75 @@
 	DisplayString_AT_position_not_moving_cursor Press_any_Key_message 1018h 
 	Read_KEY
 
-	MAIN_LOOP:
-
-		Main_Screen:
-			;; it shouldn't wait untill the user enters the KeY
-			;; 2 loops in the main
-			;; The first is to check if the user clicked any key
-			;; the second to check  
-			;; enter -> scancode 1C  
-			;; esc -> SC 01
-			;; F2 -> 3C   
-			;; F1 -> 3B
-			CLR_Screen_with_Scrolling_TEXT_MODE
-            DEAW_STATUS_BAR
-			DisplayString_AT_position_not_moving_cursor MAIN_Screen_message1 ,0C16h
-			DisplayString_AT_position_not_moving_cursor MAIN_Screen_message2 ,0D16h
-			DisplayString_AT_position_not_moving_cursor MAIN_Screen_message3 ,0E16h
-			check_key_pressed1:
-				mov ah, 1
-				int 16h           ;Get key pressed (do not wait for a key - AH:scancode, AL:ASCII)
-
-				jnz _continue ;; something is clicked
-				jmp no_thing_clicked
-				_continue:
-				
-				;; check the type of the key
-				cmp ah,1h ; esc
-				jne check_f1 
-				jmp QUIT_THIS_GAME
-				check_f1:
-				cmp ah,3bh ;f1
-				jne check_f2
-				;in case of F1
-				UPDATE_notification_bar Sent_CHAT_INV_msg
-				mov is_player_1_ready_for_chat,1 ;; make me ready and see if the other is ready to
-				cmp is_player_1_ready_for_chat,1
-				;;je LETS_Chat 	;;Player 2 is Ready TOO
-				mov is_player_2_ready_for_chat,1 ;; TODO: temproraly in PHASE 1 -> Pressing Twice Starts THE Chat Room
 
 
-				jmp remove_key_from_buffer
-				
-				check_f2:
-				cmp ah,3ch ; F2
-				jne remove_key_from_buffer
-				;in case of F2
-				UPDATE_notification_bar Sent_Game_INV_msg
-				mov is_player_1_ready_for_game,1 ;; make me ready and see if the other is ready to
-				cmp is_player_2_ready_for_game,1
-				je LETS_PLAY 	;;Player 2 is Ready TOO
-				mov is_player_2_ready_for_game,1 ;; TODO: temproraly in PHASE 1 -> Pressing Twice Starts THE GAME
+    Main_Screen:
+        ;; it shouldn't wait untill the user enters the KeY
+        ;; 2 loops in the main
+        ;; The first is to check if the user clicked any key
+        ;; the second to check  
+        ;; enter -> scancode 1C  
+        ;; esc -> SC 01
+        ;; F2 -> 3C   
+        ;; F1 -> 3B
+        CLR_Screen_with_Scrolling_TEXT_MODE
+        DEAW_STATUS_BAR
+        DisplayString_AT_position_not_moving_cursor MAIN_Screen_message1 ,0C16h
+        DisplayString_AT_position_not_moving_cursor MAIN_Screen_message2 ,0D16h
+        DisplayString_AT_position_not_moving_cursor MAIN_Screen_message3 ,0E16h
+        check_key_pressed1:
+            mov ah, 1
+            int 16h           ;Get key pressed (do not wait for a key - AH:scancode, AL:ASCII)
 
-				remove_key_from_buffer:
-				;; delete The key from buffer
-				empitify_buffer
-				no_thing_clicked:
-				;; the second loop is here but nothing to display now
-			jmp check_key_pressed1
-			
-			LETS_PLAY:
-			empitify_buffer			;; To make Sure That no bat chars are saved in Buffer
-			CALL GAME_WELCOME_PAGES 	;; For level selection and continue To GAME
-			CALL START_My_GAME
-			jmp QUIT_THIS_GAME
+            jnz _continue ;; something is clicked
+            jmp no_thing_clicked
+            _continue:
+            
+            ;; check the type of the key
+            cmp ah,1h ; esc
+            jne check_f1 
+            jmp QUIT_THIS_GAME
+            check_f1:
+            cmp ah,3bh ;f1
+            jne check_f2
+            ;in case of F1
+            UPDATE_notification_bar Sent_CHAT_INV_msg
+            mov is_player_1_ready_for_chat,1 ;; make me ready and see if the other is ready to
+            cmp is_player_1_ready_for_chat,1
+            ;;je LETS_Chat 	;;Player 2 is Ready TOO
+            mov is_player_2_ready_for_chat,1 ;; TODO: temproraly in PHASE 1 -> Pressing Twice Starts THE Chat Room
 
-			LETS_Chat:
-				empitify_buffer   ;; To make Sure That no bat chars are saved in Buffer
-				CAll CHAT_ROOM 		;;should BE THE CHAT.ASM but just For now 
-			jmp QUIT_THIS_GAME
+
+            jmp remove_key_from_buffer
+            
+            check_f2:
+            cmp ah,3ch ; F2
+            jne remove_key_from_buffer
+            ;in case of F2
+            UPDATE_notification_bar Sent_Game_INV_msg   ;; 
+            mov is_player_1_ready_for_game,1 ;; make me ready and see if the other is ready to
+            cmp is_player_2_ready_for_game,1
+            je LETS_PLAY 	;;Player 2 is Ready TOO
+            mov is_player_2_ready_for_game,1 ;; TODO: temproraly in PHASE 1 -> Pressing Twice Starts THE GAME
+
+            remove_key_from_buffer:
+            ;; delete The key from buffer
+            empitify_buffer
+            no_thing_clicked:
+            ;; the second loop is here but nothing to display now
+        jmp check_key_pressed1
+        
+        LETS_PLAY:
+        empitify_buffer			;; To make Sure That no bat chars are saved in Buffer
+        CALL GAME_WELCOME_PAGES 	;; For level selection and continue To GAME
+        empitify_buffer			;; To make Sure That no bat chars are saved in Buffer
+        CALL START_My_GAME
+        jmp QUIT_THIS_GAME
+
+        LETS_Chat:
+            empitify_buffer   ;; To make Sure That no bat chars are saved in Buffer
+            CAll CHAT_ROOM 		;;should BE THE CHAT.ASM but just For now 
+        jmp QUIT_THIS_GAME
 
 		QUIT_THIS_GAME:
 		MOV AH,4CH
@@ -503,7 +531,7 @@
 
 
 	include Ex.asm
-
+    include validate.asm
 	;To validate The input NAME
 NAME_VALIDATION PROC
 		DisplayString_AT_position_not_moving_cursor Enter_Name_message 0318h 
@@ -630,6 +658,13 @@ START_My_GAME PROC
     mov Game_turn,1 ;; player left starts the Game
 	GAME_LOOP:
 	CLR_Screen_with_Scrolling_GRAPHICS_MODE   ;; CLEARS tHE SCREEN  
+    call READ_BUFFER_IF_NOT_USED
+    MOV AH,1
+    INT 16H
+    cmp ah,3eh ; F4
+    jne not_finshed_for_noww
+    jmp QUIT_GAME_LOOP
+    not_finshed_for_noww:
 	;; WE DRAW THE BACKGROUND - THE Values - 
 	call DRAW_BACKGROUND     ;;Draws The BackGround Image
     call UPDATE_VALUES_Displayed  ;; Update values displayed with ones in variables
@@ -643,6 +678,21 @@ START_My_GAME PROC
     hhhheeeeeeee:
     ;; THE PLAYER FINSHED TYPING
     ;; WE WILL UPDATE chosen players Regs
+    mov Command_valid,1
+   ; call Check_valid
+    cmp Command_valid,0H ;;invalid
+    jne execute_command_valid
+    ;; command is not valid 
+    ;;dec points
+    
+    cmp game_turn,1
+    jne dec_other_player
+    DEC playerpoints
+    jmp FINISHED_EXECUTING
+    dec_other_player:
+    DEC right_playerpoints
+    jmp FINISHED_EXECUTING
+    execute_command_valid:
     CMP EXECUTE_REVESED,1
     JNE EXECUTE_NORMALLY
     SWAP_TURNS
@@ -658,9 +708,6 @@ START_My_GAME PROC
     MOV finished_taking_input,0    ;;to reset it
     ;;swap turns
     SWAP_TURNS
-
-   
-
     NOT_FINISHED_INPUT_YET:
     CALL checkValuesInRegisters
     CALL checkIfAnyPlayerLost
@@ -698,7 +745,8 @@ START_My_GAME PROC
     DisplayString FirstNameData
     WAIT_TIME_A:
     WAIT_10_seconds_TIME
-    
+    CALL RESET_ALL_VARS
+    JMP Main_Screen
 
 
 	RET
@@ -766,6 +814,9 @@ UPDATE_VALUES_Displayed PROC
         xor ah,ah
         mov al, L_F ;; its a byte
         DISPLAY_num_in_HEX_ DS_F_left, 2 ,ax  
+        xor ah,ah
+        mov al, L_cARRY ;; its a byte
+        DISPLAY_num_in_HEX_ l_CARRY_LEFT, 1 ,ax  
 
         ;; The Balls
         xor ah,ah
@@ -796,6 +847,7 @@ UPDATE_VALUES_Displayed PROC
         DISPLAY_num_in_HEX_ di_rec_r, 4 ,R_DI    
         DISPLAY_num_in_HEX_ bp_rec_r, 4 ,R_BP    
         DISPLAY_num_in_HEX_ sp_rec_r, 4 ,R_SP   
+        DISPLAY_num_in_HEX_ TARGET_VALUE_BOX, 4 ,TARGET_VALUE   
 
 
 
@@ -849,6 +901,32 @@ UPDATE_VALUES_Displayed PROC
         mov al, R_F ;; its a byte
         DISPLAY_num_in_HEX_ DS_F_right, 2 ,ax  
 
+        xor ah,ah
+        mov al, R_CARRY ;; its a byte
+        DISPLAY_num_in_HEX_ R_CARRY_RIGHT, 1 ,ax 
+
+
+        cmp game_level,2
+        je dont_print_forbidden
+        MoveCursorTo forbidden_char_LEFT
+        xor ah,ah
+        mov al, forbidden_char ;; its a byte 
+         mov ah, 0eh           ;0eh = 14 
+         mov bl, 0ch           ;Color is red
+         int 10h ; print char -> auto advances cursor
+        xor ah,ah
+        mov al, right_forbidden_char ;; its a byte
+        MoveCursorTo forbidden_char_RIGHT
+        xor ah,ah
+        mov al, right_forbidden_char ;; its a byte 
+         mov ah, 0eh           ;0eh = 14 
+         mov bl, 0ch           ;Color is red
+         int 10h ; print char -> auto advances cursor
+
+        Draw_IMG 125 5  forb_char forb_char_size
+        Draw_IMG 301 5  forb_char forb_char_size
+
+        dont_print_forbidden:
 
         ;;points
         DISPLAY_num_in_HEX_ Points_BOX_left, 4 ,playerPoints  
@@ -1195,6 +1273,9 @@ exchangeRightPlayerRegisters:
         xchg  _BP,ax
         mov R_BP,ax
         
+
+
+
         
 
         mov ah,R_00
@@ -1483,8 +1564,11 @@ powerUp_2 PROC
     DisplayString_AT_position_not_moving_cursor POWERUP2_MSG2, 0c05h
     MoveCursorTo 0E09h
     ReadString COMMAND
-    EXECUTE_THECOMMAND_AT_SIDE 2
     EXECUTE_THECOMMAND_AT_SIDE 1
+    cmp contains_forbidden,1
+    je dont_on_other
+    EXECUTE_THECOMMAND_AT_SIDE 2
+    dont_on_other:
     SUB playerPoints,3
     Reset_Command
     JMP NOT_POWERUP_2
@@ -1500,7 +1584,10 @@ powerUp_2 PROC
     MoveCursorTo 0E09h
     ReadString COMMAND
     EXECUTE_THECOMMAND_AT_SIDE 2
+    cmp contains_forbidden,1
+    je dont_on_other2
     EXECUTE_THECOMMAND_AT_SIDE 1
+    dont_on_other2:
     SUB right_playerPoints,3
     Reset_Command
  NOT_POWERUP_2:
@@ -1662,6 +1749,250 @@ changeTargetValue:
 exitPowerUp_6:
     RET
 powerUp_6 endp
+
+
+;description
+RESET_ALL_VARS PROC
+    
+    mov _Ax, 0
+    mov _BX, 0
+    mov _CX, 0
+    mov _DX, 0
+    mov _SI, 0
+    mov _DI, 0
+    mov _SP, 0
+    mov _BP, 0
+    mov _00, 0
+    mov _01, 0
+    mov _02, 0
+    mov _03, 0
+    mov _04, 0
+    mov _05, 0
+    mov _06, 0
+    mov _07, 0
+    mov _08, 0
+    mov _09, 0
+    mov _A, 0
+    mov _B, 0
+    mov _C, 0
+    mov _D, 0
+    mov _E, 0
+    mov _F, 0
+    mov _CARRY, 0
+
+
+    mov L_Ax, 0
+    mov L_BX, 0
+    mov L_CX, 0
+    mov L_DX, 0
+    mov L_SI, 0
+    mov L_DI, 0
+    mov L_SP, 0
+    mov L_BP, 0
+    mov L_00, 0
+    mov L_01, 0
+    mov L_02, 0
+    mov L_03, 0
+    mov L_04, 0
+    mov L_05, 0
+    mov L_06, 0
+    mov L_07, 0
+    mov L_08, 0
+    mov L_09, 0
+    mov L_A, 0
+    mov L_B, 0
+    mov L_C, 0
+    mov L_D, 0
+    mov L_E, 0
+    mov L_F, 0
+    mov L_CARRY, 0
+
+    mov R_Ax, 0
+    mov R_BX, 0
+    mov R_CX, 0
+    mov R_DX, 0
+    mov R_SI, 0
+    mov R_DI, 0
+    mov R_SP, 0
+    mov R_BP, 0
+    mov R_00, 0
+    mov R_01, 0
+    mov R_02, 0
+    mov R_03, 0
+    mov R_04, 0
+    mov R_05, 0
+    mov R_06, 0
+    mov R_07, 0
+    mov R_08, 0
+    mov R_09, 0
+    mov R_A, 0
+    mov R_B, 0
+    mov R_C, 0
+    mov R_D, 0
+    mov R_E, 0
+    mov R_F, 0
+    mov R_CARRY, 0
+
+    MOV Game_Level , 0
+    MOV Game_Turn , 1 ;; TO BE  
+    
+    
+    MOV ball_0 ,0 ;;green
+    MOV ball_1 ,0 ;;magenta
+    MOV ball_2 ,0 ;;red
+    MOV ball_3 ,0 ;;blue
+    MOV ball_4 ,0 ;;yellow
+
+    MOV paddle_x , 5
+    MOV paddle_y , 185
+
+
+    MOV right_paddle_x ,170
+    MOV right_paddle_y ,185
+    MOV DI,OFFSET numOfShotBalls
+    MOV [DI],BYTE PTR 0
+    MOV [DI+1],BYTE PTR 0
+    MOV [DI+2],BYTE PTR 0
+    MOV [DI+3],BYTE PTR 0
+    MOV [DI+4],BYTE PTR 0
+
+    MOV gameStatus , 1
+    MOV prevTime , 0 ;variable used when checking if the time has changed
+   
+    MOV sizeIndex , 0
+
+    MOV playersStatus, 0
+    MOV target_value , 105eh
+
+
+    MOV IS_USED_POWERUP3, 0 ;;TO INDICATE IF USED BEFORE
+    MOV right_IS_USED_POWERUP3, 0 ;;TO INDICATE IF USED BEFORE 
+    MOV IS_USED_POWERUP4, 0 ;;TO INDICATE IF USED BEFORE
+    MOV right_IS_USED_POWERUP4, 0 ;;TO INDICATE IF USED BEFORE
+    MOV IS_USED_POWERUP6, 0 ;;TO INDICATE IF USED BEFORE
+    MOV right_IS_USED_POWERUP6, 0 ;;TO INDICATE IF USED BEFORE
+    MOV EXECUTE_REVESED, 0 ;;IN LEVEL 2 IT INDECATES IF YOU CHOSED TO EXECUTE ON OTHER 
+
+
+    RET
+RESET_ALL_VARS ENDP
+
+
+
+READ_BUFFER_IF_NOT_USED PROC
+    MOV AH,1
+    INT 16H
+    jnz _continue1 ;; something is clicked
+            RET
+    _continue1:
+
+    ;; AH-> SC   A;-ASCII
+    JOMP1:
+    cmp ah,3bh ;f1
+    jne JOMP2 
+    RET
+    JOMP2:
+    
+    cmp ah,3ch ; F2
+    jne JOMP3 
+    RET
+    JOMP3:
+    cmp ah,3dh ; F3
+    jne JOMP4 
+    RET
+    JOMP4:
+    cmp ah,3eh ; F4
+    jne JOMP5
+    RET
+    JOMP5:
+    cmp ah,paddleUp
+    jne checkNextttt
+    ret
+    checkNextttt:
+
+    cmp ah,paddleDown
+    jne checkNexttttt
+    ret
+    checkNexttttt:
+
+    cmp ah,paddleRight
+    jne checkNextttttt
+    ret
+    checkNextttttt:
+
+    cmp ah,paddleLeft
+    jne checkNexttttttt
+    ret
+    checkNexttttttt:
+
+    cmp ah,right_paddleUp
+    jne checkNexttttt1
+    ret
+    checkNexttttt1:
+
+    cmp ah,right_paddleDown
+    jne checkNextttttttttttttt
+    ret
+    checkNextttttttttttttt:
+
+    cmp ah,right_paddleRight
+    jne checkNexttttttttt
+    ret
+    checkNexttttttttt:
+
+    cmp ah,right_paddleLeft
+    jne checkNexttttttttttt
+    ret
+    checkNexttttttttttt:
+
+    cmp ah,fireScanCode
+    jne checkNextttttttttttt
+    ret
+    checkNextttttttttttt:
+
+
+    cmp ah,right_fireScanCode
+    jne checkNexttttttttttttt
+    ret
+    checkNexttttttttttttt:
+    cmp ah,63       ;F5
+    jne JOMP33
+    RET
+    JOMP33:
+    cmp ah,64       ;F6
+    jne JOMP44
+    RET
+    JOMP44:
+    cmp ah,65       ;F7
+    jne JOMP45
+    RET
+    JOMP45:
+    cmp ah,66       ;F8
+    jne JOMP46
+    RET
+    JOMP46:
+    cmp ah,67       ;F9
+    jne JOMP47
+    RET
+    JOMP47:
+
+    cmp al,20H  ;;a space 
+    jb checkitnn 
+    cmp al, ']'
+    ja checkitnn
+    ret
+    checkitnn:
+    cmp ah,0eh      ;;backk
+    jne checkitnn2
+    ret
+    checkitnn2:
+
+
+
+    READ_KEY
+    RET
+READ_BUFFER_IF_NOT_USED ENDP
+
 
 
 
