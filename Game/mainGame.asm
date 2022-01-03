@@ -18,7 +18,16 @@
 	MAIN_Screen_message2 db 'To Start Game press F2$'  
 	MAIN_Screen_message3 db 'To end Program press ESC$'   
     STATUS_BAR_MSG db '_______________________________________________________________________________$'
-	INSTRUCTIONS_msg db 'SOME INSTRUCTIONS OF THE GAME... blA bla bla ... $'
+	INSTRUCTIONS_msg db 'SOME INSTRUCTIONS OF THE GAME $'
+    INSTRUCTIONS_msg1 db 'F3 FOR INLINE GAME CHAT $'
+    INSTRUCTIONS_msg2 db 'F4 TO LEAVE THE GAME $'
+    INSTRUCTIONS_msg3 db 'F1 TO EXECUTE A COMMAND ON YOUR OPPONENTS PROCESSOR $'
+    INSTRUCTIONS_msg4 db 'F2 TO EXECUTE A COMMAND ON YOUR OWN PROCESSOR $'
+    INSTRUCTIONS_msg5 db 'F5 TO EXECUTE A COMMAND ON YOUR OWN PROCESSOR -5 POINTS-$'
+    INSTRUCTIONS_msg6 db 'F6 TO EXECUTE A COMMAND ON BOTH PROCESSORS -3 POINTS-$'
+    INSTRUCTIONS_msg7 db 'F7 TO CHANGE THE FORBIDDEN CHARACTER ONLY ONCE -8 POINTS-$'
+    INSTRUCTIONS_msg8 db 'F8 TO CLEAR ALL REGISTERS -30 POINTS (USED ONCE)$'
+    INSTRUCTIONS_msg9 db 'F9 TO CHANGE THE TARGET VALUE -7 POINTS (USED ONCE)$'
 	Sent_CHAT_INV_msg db 'You sent a chat Invitation','$'
 	Sent_Game_INV_msg db 'You sent a Game Invitation','$'
 	level1_msg db 'LEVEL 1 -- PRESS F1$' 
@@ -89,6 +98,9 @@
 		DS_D_left dw 080eh
 		DS_E_left dw 090eh
 		DS_F_left dw 0A0eh
+        l_CARRY_LEFT DW 0F09h
+        forbidden_char_left DW 0110h
+        TARGET_VALUE_BOX DW 0012H
 
      ;; command line left side and points BOX
          CL_row_left dw 1201h
@@ -131,6 +143,8 @@
 		DS_D_right dw 0824h
 		DS_E_right dw 0924h
 		DS_F_right dw 0A24h
+        R_CARRY_RIGHT DW 0F1Fh
+        forbidden_char_right DW 0126h
      ;; command line left side
      CL_row_Right dw 1217h
      Points_BOX_right dw 0E22h
@@ -376,15 +390,15 @@
     
     playersStatus db 0 ;; 0 -> nothing , 1 -> left palyer lost/right player won , 2 -> right player lost/left player won
 
-    POWERUP1_MSG DB 'YOU CHOSED POWER-UP 1$'  
+    POWERUP1_MSG DB 'YOU CHOSE POWER-UP 1$'  
     POWERUP1_MSG2 DB 'PLEASE ENTER COMMAND TO EXECUTE$'
  
-    POWERUP2_MSG DB 'YOU CHOSED POWER-UP 2$'  
+    POWERUP2_MSG DB 'YOU CHOSE POWER-UP 2$'  
     POWERUP2_MSG2 DB 'PLEASE ENTER COMMAND TO EXECUTE$'
-    POWERUP3_MSG DB 'YOU CHOSED POWER-UP 3$'  
+    POWERUP3_MSG DB 'YOU CHOSE POWER-UP 3$'  
     POWERUP3_MSG2 DB 'ENTER FORBIDDEN CHAR (ONLY ONCE)$'
     
-    POWERUP5_MSG DB 'YOU CHOSED POWER-UP 5$'  
+    POWERUP5_MSG DB 'YOU CHOSE POWER-UP 5$'  
     POWERUP5_MSG2 DB 'ENTER NEW TARGET VALUE (ONLY ONCE)$'
 
     EXIT_MSG DB 'YOU EXIT THE GAME$'
@@ -659,6 +673,13 @@ START_My_GAME PROC
     mov Game_turn,1 ;; player left starts the Game
 	GAME_LOOP:
 	CLR_Screen_with_Scrolling_GRAPHICS_MODE   ;; CLEARS tHE SCREEN  
+    call READ_BUFFER_IF_NOT_USED
+    MOV AH,1
+    INT 16H
+    cmp ah,3eh ; F4
+    jne not_finshed_for_noww
+    jmp QUIT_GAME_LOOP
+    not_finshed_for_noww:
 	;; WE DRAW THE BACKGROUND - THE Values - 
 	call DRAW_BACKGROUND     ;;Draws The BackGround Image
     call UPDATE_VALUES_Displayed  ;; Update values displayed with ones in variables
@@ -673,7 +694,7 @@ START_My_GAME PROC
     ;; THE PLAYER FINSHED TYPING
     ;; WE WILL UPDATE chosen players Regs
     mov Command_valid,1
-    call Check_valid
+   ; call Check_valid
     cmp Command_valid,0H ;;invalid
     jne execute_command_valid
     ;; command is not valid 
@@ -808,6 +829,9 @@ UPDATE_VALUES_Displayed PROC
         xor ah,ah
         mov al, L_F ;; its a byte
         DISPLAY_num_in_HEX_ DS_F_left, 2 ,ax  
+        xor ah,ah
+        mov al, L_cARRY ;; its a byte
+        DISPLAY_num_in_HEX_ l_CARRY_LEFT, 1 ,ax  
 
         ;; The Balls
         xor ah,ah
@@ -838,6 +862,7 @@ UPDATE_VALUES_Displayed PROC
         DISPLAY_num_in_HEX_ di_rec_r, 4 ,R_DI    
         DISPLAY_num_in_HEX_ bp_rec_r, 4 ,R_BP    
         DISPLAY_num_in_HEX_ sp_rec_r, 4 ,R_SP   
+        DISPLAY_num_in_HEX_ TARGET_VALUE_BOX, 4 ,TARGET_VALUE   
 
 
 
@@ -891,6 +916,32 @@ UPDATE_VALUES_Displayed PROC
         mov al, R_F ;; its a byte
         DISPLAY_num_in_HEX_ DS_F_right, 2 ,ax  
 
+        xor ah,ah
+        mov al, R_CARRY ;; its a byte
+        DISPLAY_num_in_HEX_ R_CARRY_RIGHT, 1 ,ax 
+
+
+        cmp game_level,2
+        je dont_print_forbidden
+        MoveCursorTo forbidden_char_LEFT
+        xor ah,ah
+        mov al, forbidden_char ;; its a byte 
+         mov ah, 0eh           ;0eh = 14 
+         mov bl, 0ch           ;Color is red
+         int 10h ; print char -> auto advances cursor
+        xor ah,ah
+        mov al, right_forbidden_char ;; its a byte
+        MoveCursorTo forbidden_char_RIGHT
+        xor ah,ah
+        mov al, right_forbidden_char ;; its a byte 
+         mov ah, 0eh           ;0eh = 14 
+         mov bl, 0ch           ;Color is red
+         int 10h ; print char -> auto advances cursor
+
+        Draw_IMG 125 5  forb_char forb_char_size
+        Draw_IMG 301 5  forb_char forb_char_size
+
+        dont_print_forbidden:
 
         ;;points
         DISPLAY_num_in_HEX_ Points_BOX_left, 4 ,playerPoints  
@@ -1237,6 +1288,9 @@ exchangeRightPlayerRegisters:
         xchg  _BP,ax
         mov R_BP,ax
         
+
+
+
         
 
         mov ah,R_00
@@ -1525,8 +1579,11 @@ powerUp_2 PROC
     DisplayString_AT_position_not_moving_cursor POWERUP2_MSG2, 0c05h
     MoveCursorTo 0E09h
     ReadString COMMAND
-    EXECUTE_THECOMMAND_AT_SIDE 2
     EXECUTE_THECOMMAND_AT_SIDE 1
+    cmp contains_forbidden,1
+    je dont_on_other
+    EXECUTE_THECOMMAND_AT_SIDE 2
+    dont_on_other:
     SUB playerPoints,3
     Reset_Command
     JMP NOT_POWERUP_2
@@ -1542,7 +1599,10 @@ powerUp_2 PROC
     MoveCursorTo 0E09h
     ReadString COMMAND
     EXECUTE_THECOMMAND_AT_SIDE 2
+    cmp contains_forbidden,1
+    je dont_on_other2
     EXECUTE_THECOMMAND_AT_SIDE 1
+    dont_on_other2:
     SUB right_playerPoints,3
     Reset_Command
  NOT_POWERUP_2:
@@ -1832,6 +1892,121 @@ RESET_ALL_VARS PROC
     RET
 RESET_ALL_VARS ENDP
 
+
+
+READ_BUFFER_IF_NOT_USED PROC
+    MOV AH,1
+    INT 16H
+    jnz _continue1 ;; something is clicked
+            RET
+    _continue1:
+
+    ;; AH-> SC   A;-ASCII
+    JOMP1:
+    cmp ah,3bh ;f1
+    jne JOMP2 
+    RET
+    JOMP2:
+    
+    cmp ah,3ch ; F2
+    jne JOMP3 
+    RET
+    JOMP3:
+    cmp ah,3dh ; F3
+    jne JOMP4 
+    RET
+    JOMP4:
+    cmp ah,3eh ; F4
+    jne JOMP5
+    RET
+    JOMP5:
+    cmp ah,paddleUp
+    jne checkNextttt
+    ret
+    checkNextttt:
+
+    cmp ah,paddleDown
+    jne checkNexttttt
+    ret
+    checkNexttttt:
+
+    cmp ah,paddleRight
+    jne checkNextttttt
+    ret
+    checkNextttttt:
+
+    cmp ah,paddleLeft
+    jne checkNexttttttt
+    ret
+    checkNexttttttt:
+
+    cmp ah,right_paddleUp
+    jne checkNexttttt1
+    ret
+    checkNexttttt1:
+
+    cmp ah,right_paddleDown
+    jne checkNextttttttttttttt
+    ret
+    checkNextttttttttttttt:
+
+    cmp ah,right_paddleRight
+    jne checkNexttttttttt
+    ret
+    checkNexttttttttt:
+
+    cmp ah,right_paddleLeft
+    jne checkNexttttttttttt
+    ret
+    checkNexttttttttttt:
+
+    cmp ah,fireScanCode
+    jne checkNextttttttttttt
+    ret
+    checkNextttttttttttt:
+
+
+    cmp ah,right_fireScanCode
+    jne checkNexttttttttttttt
+    ret
+    checkNexttttttttttttt:
+    cmp ah,63       ;F5
+    jne JOMP33
+    RET
+    JOMP33:
+    cmp ah,64       ;F6
+    jne JOMP44
+    RET
+    JOMP44:
+    cmp ah,65       ;F7
+    jne JOMP45
+    RET
+    JOMP45:
+    cmp ah,66       ;F8
+    jne JOMP46
+    RET
+    JOMP46:
+    cmp ah,67       ;F9
+    jne JOMP47
+    RET
+    JOMP47:
+
+    cmp al,20H  ;;a space 
+    jb checkitnn 
+    cmp al, ']'
+    ja checkitnn
+    ret
+    checkitnn:
+    cmp ah,0eh      ;;backk
+    jne checkitnn2
+    ret
+    checkitnn2:
+
+
+
+    READ_KEY
+    RET
+READ_BUFFER_IF_NOT_USED ENDP
 
 
 
