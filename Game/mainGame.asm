@@ -366,7 +366,10 @@
                     db  'CS','IP','SS','SP'
                     db  'BP','SI','DI','DS','ES'
 
+    IS_CL DB 'CL'
+
     Able_To_Shift_Flag  db ?  ; 1 is unable   0 is able
+    Able_To_Shift_Flag1  db ?  ; 1 is unable   0 is able
                                         
 
     target_value dw 105eh
@@ -412,6 +415,10 @@
    valid_addressing_mode_regs db '[BX]','[SI]','[DI]','[00]'
         DB '[01]','[02]','[03]', '[04]', '[05]', '[06]', '[07]'
         DB '[08]', '[09]', '[0A]', '[0B]', '[0C]', '[0D]', '[0E]','[0F]'
+
+
+        VALID_SHIFT DB 'SHL','SHR','SAR','ROR','RCL','RCR','ROL'
+        ISSHIFTING DB 0
  
 
 
