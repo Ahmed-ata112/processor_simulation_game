@@ -607,7 +607,20 @@ ENDM Wait_centi_seconds
 
 INSTRUCTIONS_PAGE macro
     ChangeVideoMode 3H
-    DisplayString_AT_position_and_move_cursor INSTRUCTIONS_msg 0A14h
+    DisplayString_AT_position_and_move_cursor INSTRUCTIONS_msg 0100h
+    ;DisplayString_AT_position_and_move_cursor INSTRUCTIONS_msg1 0200h
+    DisplayString_AT_position_and_move_cursor INSTRUCTIONS_msg2 0300h
+    DisplayString_AT_position_and_move_cursor INSTRUCTIONS_msg3 0400h
+    DisplayString_AT_position_and_move_cursor INSTRUCTIONS_msg5 0600h
+    DisplayString_AT_position_and_move_cursor INSTRUCTIONS_msg6 0700h
+    DisplayString_AT_position_and_move_cursor INSTRUCTIONS_msg7 0800h
+    DisplayString_AT_position_and_move_cursor INSTRUCTIONS_msg8 0900h
+
+    CMP GAME_LEVEL,2
+    JNE NOT_TODAY_BITC
+    DisplayString_AT_position_and_move_cursor INSTRUCTIONS_msg4 0500h
+    DisplayString_AT_position_and_move_cursor INSTRUCTIONS_msg9 0A00h
+    NOT_TODAY_BITC:
     ;;should display different messages 
     WAIT_10_seconds_TIME  ;; WAITS FOR 10 SECONDS
     ;;

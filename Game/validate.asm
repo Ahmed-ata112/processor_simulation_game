@@ -2,18 +2,84 @@
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     Check_valid PROC
     CALL split_command
+    
 
-    cmp command_splited,'N' ;if empty, assume Command_valid is 0 initally
-    jne validationnn
-    RET
-    validationnn:
+    ; cmp command_splited,'N' ;if empty, assume Command_valid is 0 initally
+    ; jne validationnn
+    ; RET
+    ; validationnn:
 
-    cmp command_splited,'C' ;if empty, assume Command_valid is 0 initally
-    jne validationnn2
-    RET
-    validationnn2:
+    ; cmp command_splited,'C' ;if empty, assume Command_valid is 0 initally
+    ; jne validationnn2
+    ; RET
+    ; validationnn2:
+
     split_operands Two_Operands_Together_splited Operand1 Operand2
 
+; SHIFTING
+    check_if_in_array VALID_SHIFT 7 3 command_splited ISSHIFTING ; 1 IF SHIFT
+    CMP ISSHIFTING,1
+    JE KOKO1
+    JMP CONT99999K
+    KOKO1:
+    CMP Operand1,'['
+    JE KOKO777
+    JMP CONT777777K
+    KOKO777:
+    check_if_in_array valid_addressing_mode_regs 19 4 Operand1 Command_valid
+    CMP Command_valid,0
+    JNE CONTKOKO224
+    JMP End_End
+    CONTKOKO224:
+    JMP CONTKOKO
+
+
+    CONT777777K:
+    check_if_in_array validRegNamesArr 21 2 Operand1 Command_valid
+    CMP Command_valid,0
+    JNE CONTKOKO22499
+    JMP End_End
+    CONTKOKO22499:
+    CONTKOKO:
+;OP2
+    
+    ; INVALID OPERAND1
+    
+    ; INCORECT ADDRESING OPERAND1
+    
+    cmp Operand2, 'A'
+    jnl h09KOKO
+    jmp End_End
+    h09KOKO:
+    cmp Operand2,'Z'
+    jng q5KOKO
+    MOV Command_valid,0
+    jmp End_End
+    q5KOKO:
+
+    check_if_in_array IS_CL 1 2 Operand2 Command_valid
+    JMP End_End
+
+
+    
+    ; ;NUMKOKO:
+    ; check_if_in_array Not_CL_or_Value 20 2 Operand2 Able_To_Shift_Flag 
+    ; cmp Able_To_Shift_Flag,0 ;IS ABLE                                       ; 1 is unable   0 is able
+    ; JE COKO1 
+    ; MOV Command_valid,0
+    ; JMP End_End
+    ; COKO1:
+    ; CMP Operand2,'['
+    ; JNE COKO12
+    ; MOV Command_valid,0
+    ; JMP End_End
+    ; COKO12:
+    ; JMP End_End
+
+
+
+
+    CONT99999K:
 
     cmp Operand1,'[' ; memory locaion operand (type 1)
     je  Valid_Memory_Location1
@@ -23,6 +89,7 @@
     h09:
     cmp Operand1,'Z'
     jng q5
+    MOV Command_valid,0
     jmp End_End       ; it is not a valid reg name, else it is a register
     q5:
     jmp Reg_Operand1
@@ -60,7 +127,10 @@
     ; q78:
     Reg_Operand2:
     check_if_in_array validRegNamesArr 21 2 Operand2 Command_valid ;check if operand1 is not one of the array element, it's INVALID
+    CMP Command_valid,0
+    JNE End_End6789
     jmp End_End
+    End_End6789:
 
     Rest:
     SizeMismatchValidation Operand1 Operand2 Command_valid
