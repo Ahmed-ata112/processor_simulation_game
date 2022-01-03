@@ -694,7 +694,7 @@ START_My_GAME PROC
     ;; THE PLAYER FINSHED TYPING
     ;; WE WILL UPDATE chosen players Regs
     mov Command_valid,1
-   ; call Check_valid
+    call Check_valid
     cmp Command_valid,0H ;;invalid
     jne execute_command_valid
     ;; command is not valid 
