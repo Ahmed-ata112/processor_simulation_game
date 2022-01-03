@@ -366,14 +366,22 @@
     sizeIndex db 0                                                                             
                                         
                                         
-                                            ;MOV [00],AX DONE
+                                            
     HASH_Operand DW 0H
     Operand_Value DW 0H
     Operand DB 10 dup('$')
-                                         ;MOV [00],Al DONE
-    HASH_comand DW 0H                    ;MOV AX,[00] DONE
-    HASH_Operand2 DW 0H                  ;MOV Al,[00] DONE
-    HASH_Operand1 DW 0H                 ; ADD AX,[00] DONE
+                                         
+    HASH_comand DW 0H                    
+    HASH_Operand2 DW 0H                  
+    HASH_Operand1 DW 0H   
+
+    Not_CL_or_Value db  'AX','BX','CX','DX'
+                    db  'AH','AL','BH','BL','CH','DH','DL'
+                    db  'CS','IP','SS','SP'
+                    db  'BP','SI','DI','DS','ES'
+
+    Able_To_Shift_Flag  db ?  ; 1 is unable   0 is able
+                                        
 
     target_value dw 105eh
     

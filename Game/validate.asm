@@ -3,15 +3,17 @@
     Check_valid PROC
     CALL split_command
 
-    cmp command_splited,'N' ;if empty, assume Command_valid is 0 initally
-    jne validationnn
-    RET
-    validationnn:
+    ; cmp command_splited,'N' ;if empty, assume Command_valid is 0 initally
+    ; jne validationnn
+    ; RET
+    ; validationnn:
 
-    cmp command_splited,'C' ;if empty, assume Command_valid is 0 initally
-    jne validationnn2
-    RET
-    validationnn2:
+    ; cmp command_splited,'C' ;if empty, assume Command_valid is 0 initally
+    ; jne validationnn2
+    ; RET
+    ; validationnn2:
+
+    
     split_operands Two_Operands_Together_splited Operand1 Operand2
 
 
@@ -60,7 +62,10 @@
     ; q78:
     Reg_Operand2:
     check_if_in_array validRegNamesArr 21 2 Operand2 Command_valid ;check if operand1 is not one of the array element, it's INVALID
+    CMP Command_valid,0
+    JNE End_End6789
     jmp End_End
+    End_End6789:
 
     Rest:
     SizeMismatchValidation Operand1 Operand2 Command_valid
