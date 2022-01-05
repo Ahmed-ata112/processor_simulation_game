@@ -450,10 +450,14 @@
 	mov ES,AX ;; for string operations
 	;ChangeVideoMode 13h ;;clears screen and starts Video mode	
 	;call START_GAME
+    CALL init_comm
 	DisplayAgain:
 	CLR_Screen_with_Scrolling_TEXT_MODE 
 	
    ; call sendandreceivepoints
+
+
+    call NAME_VALIDATION
 
     DisplayString_AT_position_not_moving_cursor Enter_Points_message 0518h ; show mes
     MoveCursorTo 0621h
@@ -461,11 +465,10 @@
     mov My_Initial_points,ax ;; initialize initial points
     ;; Todo: get min and initialize the points
     mov playerPoints,ax
-
-    call NAME_VALIDATION
-    call sendandreceivename
+    call SendRecNames
     ;;PLAYER 2
     ;; send and rec the name
+    call SendRecPoints      ;;EXCHANGE POINTS
     FIX_POINTS_MIN
 
 
@@ -583,49 +586,37 @@ NAME_VALIDATION PROC
 	NAME_VALIDATION ENDP
 
 
-sendandreceivename PROC near
+SendRecNames PROC near
       mov si,offset FirstName+1 ;;send from accual size
       mov di,offset SecondName+1
-      mov cl, FirstName+1 ;;accual size
-      inc cl ;; we will send actual size with us
-      mov ch,0
-     
-     TrySendingAndRecAgain: 
-       ;; try sending
-       checkIftoSend
-        JZ Recivestring ;Go try recieving 
-        cmp cx,0 ;If empty, you sent all data already
-        jz flagstring
-        mov dx , 3F8H ; Transmit data register
-        mov al,[si]
-        out dx , al
-        inc si
-        dec cx
-        jmp Recivestring
-    ;Receiving a value
-    ;Check that Data is Ready
-     flagstring:
-       mov dx,3f8h
-       mov al,0ffh   ;;;as an end flag
-      out dx , al
-      mov myflag,0h
-    Recivestring:
-        checkIfToRec
-        JZ  TrySendingAndRecAgain
-        mov dx , 03F8H
-        in al , dx
-        cmp al,0ffh ;; end of text came
-        je checkmyflag
-        mov [di],al
-        inc di
-        JMP  TrySendingAndRecAgain 
+      ;inc cl ;; we will send actual size with us
+      mov cx,21 ;; actual size and name
+    KeepComm:
+    sendByte [si]
+    receiveByteG [di]
+    inc si
+    inc di
+    loop KeepComm
+SendRecNames ENDP
 
-    checkmyflag:
-     cmp myflag,0H
-      jnz TrySendingAndRecAgain  
-        ret
-    
-sendandreceivename ENDP
+;description
+SendRecPoints PROC
+      mov si,offset playerpoints ;;send from accual size
+      mov di,offset right_playerpoints
+      ;inc cl ;; we will send actual size with us
+      mov cx,2 ;;points are 2 Bytes
+    KeepComm2:
+    sendByte [si]
+    receiveByteG [di]
+    inc si
+    inc di
+    loop KeepComm2
+
+    ret
+SendRecPoints ENDP
+
+
+
 
 dis2dig proc
 	; displays 2 digit number in AX
