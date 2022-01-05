@@ -70,6 +70,8 @@
 	ActualSecondNameSize db ?
 	SecondNameData db 20 dup('$')
 
+    myflag db 1 ;;to use it to indicate end of sending name and points
+
 	;;;;;;;;;-----------------positions----------;;;;
      ;;for the left
 		ax_rec_l dw 0104h
@@ -405,6 +407,7 @@
     EXIT_MSG2 DB 'PLAYER 1 POINTS: $'
     EXIT_MSG3 DB 'PLAYER 2 POINTS: $'
     EXIT_MSG4 DB 'THE WINNER OF THE GAME IS: $'
+    
 
 
     IS_USED_POWERUP3 db 0 ;;TO INDICATE IF USED BEFORE
@@ -433,7 +436,11 @@
 
         VALID_SHIFT DB 'SHL','SHR','SAR','ROR','RCL','RCR','ROL'
         ISSHIFTING DB 0
- 
+    ;;;;;;;;;;;;;;;
+    ;;;; serial ;;;;;;
+    ;;;;;;;;;;;;;;;
+    byteToSend db 0
+    byteReceived db 0
 
 
 .code
@@ -446,7 +453,8 @@
 	DisplayAgain:
 	CLR_Screen_with_Scrolling_TEXT_MODE 
 	
-    call NAME_VALIDATION
+   ; call sendandreceivepoints
+
     DisplayString_AT_position_not_moving_cursor Enter_Points_message 0518h ; show mes
     MoveCursorTo 0621h
     ReadNumberhexa_in_ax ;; Read points and put it in ax ;; TODO: See if you want this in hexa
@@ -454,13 +462,10 @@
     ;; Todo: get min and initialize the points
     mov playerPoints,ax
 
+    call NAME_VALIDATION
+    call sendandreceivename
     ;;PLAYER 2
-    call NAME_VALIDATION2
-    DisplayString_AT_position_not_moving_cursor Enter_other_Points_message 0A18h ; show mes
-    MoveCursorTo 0B21h
-    ReadNumberhexa_in_ax ;; Read points and put it in ax ;; TODO: See if you want this in hexa
-    mov right_playerPoints,ax
-
+    ;; send and rec the name
     FIX_POINTS_MIN
 
 
@@ -547,6 +552,7 @@
 
 	include Ex.asm
     include validate.asm
+    include serial.asm
 	;To validate The input NAME
 NAME_VALIDATION PROC
 		DisplayString_AT_position_not_moving_cursor Enter_Name_message 0318h 
@@ -576,43 +582,50 @@ NAME_VALIDATION PROC
 		ret
 	NAME_VALIDATION ENDP
 
-NAME_VALIDATION2 PROC
-        RENTER_FAFA:
-        mov ax, 0600h                ;Scroll Screen AH=07(Scroll DOWN), AL=1 one line
-        mov bh, 07h                   ;Normal attributes -> 07 ;; 0E-> yellow text
-        mov cx, 0800H                  ;from row 17h col 0
-        mov dx, 1850H                ;To end of screen
-        int 10h                      ;Clear the first line
 
+sendandreceivename PROC near
+      mov si,offset FirstName+1 ;;send from accual size
+      mov di,offset SecondName+1
+      mov cl, FirstName+1 ;;accual size
+      inc cl ;; we will send actual size with us
+      mov ch,0
+     
+     TrySendingAndRecAgain: 
+       ;; try sending
+       checkIftoSend
+        JZ Recivestring ;Go try recieving 
+        cmp cx,0 ;If empty, you sent all data already
+        jz flagstring
+        mov dx , 3F8H ; Transmit data register
+        mov al,[si]
+        out dx , al
+        inc si
+        dec cx
+        jmp Recivestring
+    ;Receiving a value
+    ;Check that Data is Ready
+     flagstring:
+       mov dx,3f8h
+       mov al,0ffh   ;;;as an end flag
+      out dx , al
+      mov myflag,0h
+    Recivestring:
+        checkIfToRec
+        JZ  TrySendingAndRecAgain
+        mov dx , 03F8H
+        in al , dx
+        cmp al,0ffh ;; end of text came
+        je checkmyflag
+        mov [di],al
+        inc di
+        JMP  TrySendingAndRecAgain 
 
-
-		DisplayString_AT_position_not_moving_cursor Enter_SECOND_Name_message 0818h 
-		MoveCursorTo 0921h
-		ReadString SecondName
-		
-		cmp SecondNameData,'A'   ;check if first character is letter ;;we only allow range (A-Z and a-z)
-		jl  TRY_AGAIN_INPUT2       
-		cmp SecondNameData,'z'
-		jg  TRY_AGAIN_INPUT2
-		cmp SecondNameData,'`'
-		jg  NAME2_IS_VALID
-		cmp SecondNameData,'['
-		jl  NAME2_IS_VALID
-		TRY_AGAIN_INPUT2:            ; if first character isn't a letter, clear screen and display a message to user
-		DisplayString_AT_position_not_moving_cursor Enter_Name_message2 0C04h
-		DisplayString_AT_position_not_moving_cursor Press_any_Key_message 0b04h 
-		mov al,'$'
-		mov di,offset SecondNameData  ;DI points to the target
-		mov cx,0                     ;count
-		mov cl,ActualSecondNameSize	 ; no need to reset The whole String
-		rep stosb                    ;copy $ into FirstNameData to reset it to all $
-		Read_KEY
-		jmp RENTER_FAFA             ;Display first screen again
-
-		NAME2_IS_VALID:
-		ret
-	NAME_VALIDATION2 ENDP
-
+    checkmyflag:
+     cmp myflag,0H
+      jnz TrySendingAndRecAgain  
+        ret
+    
+sendandreceivename ENDP
 
 dis2dig proc
 	; displays 2 digit number in AX
@@ -1062,9 +1075,9 @@ midDraw:
 BIRDGAME ENDP
 
 GetCommand PROC
-    mov ah,1
-    int 16h ;-> looks at the buffer
-    jz FinishedTakingChar ;nothing is clicked
+mov ah,1
+int 16h ;-> looks at the buffer
+jz FinishedTakingChar ;nothing is clicked
 
     cmp al,20H  ;;a space 
     jb CHECK_IF_ENTER11 
