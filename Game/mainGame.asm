@@ -29,7 +29,9 @@
     INSTRUCTIONS_msg8 db 'F8 TO CLEAR ALL REGISTERS -30 POINTS (USED ONCE)$'
     INSTRUCTIONS_msg9 db 'F9 TO CHANGE THE TARGET VALUE -7 POINTS (USED ONCE)$'
 	Sent_CHAT_INV_msg db 'You sent a chat Invitation','$'
+	rec_CHAT_INV_msg db 'You recieved a chat Invitation','$'
 	Sent_Game_INV_msg db 'You sent a Game Invitation','$'
+	rec_Game_INV_msg db 'You recieved a Game Invitation','$'
 	level1_msg db 'LEVEL 1 -- PRESS F1$' 
 	level2_msg db 'LEVEL 2 -- PRESS F2$' 
 	choose_hidden_char db 'Choose A Forbidden char: $'
@@ -498,41 +500,80 @@
             int 16h           ;Get key pressed (do not wait for a key - AH:scancode, AL:ASCII)
 
             jnz _continue ;; something is clicked
-            jmp no_thing_clicked
+            jmp CheckIfOtherPlayerSent
             _continue:
             
             ;; check the type of the key
             cmp ah,1h ; esc
             jne check_f1 
+            mov byteToSend,'E'
+            call sendByteproc
+            SendByte bl
             jmp QUIT_THIS_GAME
             check_f1:
             cmp ah,3bh ;f1
             jne check_f2
             ;in case of F1
             UPDATE_notification_bar Sent_CHAT_INV_msg
-            mov is_player_1_ready_for_chat,1 ;; make me ready and see if the other is ready to
-            cmp is_player_1_ready_for_chat,1
             ;;je LETS_Chat 	;;Player 2 is Ready TOO
-            mov is_player_2_ready_for_chat,1 ;; TODO: temproraly in PHASE 1 -> Pressing Twice Starts THE Chat Room
-
-
-            jmp remove_key_from_buffer
+            mov byteToSend,'C'
+            call sendByteproc
+            call ReceiveByteproc
+                           ;Send C, if C was received by the other party then check if they would like accept the invitation
+            cmp byteReceived, 'C'                    ; If the other party accepted the invitation then print a message,  wait for a key then go to chat.
+            JNE remove_key_from_buffer   
+            jmp LETS_Chat       
             
             check_f2:
             cmp ah,3ch ; F2
             jne remove_key_from_buffer
             ;in case of F2
             UPDATE_notification_bar Sent_Game_INV_msg   ;; 
-            mov is_player_1_ready_for_game,1 ;; make me ready and see if the other is ready to
-            cmp is_player_2_ready_for_game,1
-            je LETS_PLAY 	;;Player 2 is Ready TOO
-            mov is_player_2_ready_for_game,1 ;; TODO: temproraly in PHASE 1 -> Pressing Twice Starts THE GAME
-
+            mov byteToSend,'G'
+            call sendByteproc
+            call ReceiveByteproc
+            cmp byteReceived, 'G'                  ;Send C, if C was received by the other party then check if they would like accept the invitation
+            JNE remove_key_from_buffer   ;;declined
+            jmp LETS_PLAY       
+            
             remove_key_from_buffer:
             ;; delete The key from buffer
             empitify_buffer
-            no_thing_clicked:
-            ;; the second loop is here but nothing to display now
+           ; jmp check_key_pressed1
+            CheckIfOtherPlayerSent:
+            ;;check Received
+            ;; G -> Game invite     ;;; C -> Chat invite    ;; E esc
+            receiveByte ah
+            cmp ah,'E'      ;;escape
+            je escapefromGame
+            cmp ah,'G'
+            je rec_game_invite
+            cmp ah,'C'
+            je rec_chat_invite
+            jmp check_key_pressed1 ;;otherwise then what the fuck did you send
+            escapefromGame:
+            jmp QUIT_THIS_GAME
+            rec_chat_invite:
+            UPDATE_notification_bar rec_chat_INV_msg   ;; 
+            ;je LETS_chat
+            jmp check_key_pressed1
+            rec_game_invite:
+            UPDATE_notification_bar rec_Game_INV_msg   
+            mov bl,0ffh
+            Read_KEY
+            cmp ah,3ch ;f2
+            jne decline
+            mov byteToSend,'G'
+            call sendByteproc
+            jmp LETS_PLAY
+            decline:
+            sendByte bl
+            jmp check_key_pressed1
+
+            
+
+
+            NoThingRec:
         jmp check_key_pressed1
         
         LETS_PLAY:
