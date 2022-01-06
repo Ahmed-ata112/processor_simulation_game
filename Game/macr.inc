@@ -499,14 +499,6 @@ LEVEL_PROCESSING macro
 	mov ah,2     ;; to display the the char into screen (echo)
 	int 21h
 
-
-    DisplayString_AT_position_and_move_cursor choose_hidden_char2 032Ah
-    Read_KEY
-    mov right_forbidden_char,al
-    mov dl,al
-	mov ah,2     ;; to display the the char into screen (echo)
-	int 21h
-
     ;; send and recieve The CHAR
 
     
@@ -541,47 +533,67 @@ LEVEL_PROCESSING macro
     ReadNumberhexa_in_ax 
     mov L_BP,AX
 
-    
-    DisplayString_AT_position_and_move_cursor HIS_REGs_msg 043Ah
-    DisplayString_AT_position_and_move_cursor AX_msg 053Ah
-    ReadNumberhexa_in_ax 
-    mov R_AX,AX
-    DisplayString_AT_position_and_move_cursor BX_msg 063Ah
-    ReadNumberhexa_in_ax 
-    mov R_BX,AX
-    DisplayString_AT_position_and_move_cursor CX_msg 073Ah
-    ReadNumberhexa_in_ax 
-    mov R_CX,AX
-    DisplayString_AT_position_and_move_cursor DX_msg 083Ah
-    ReadNumberhexa_in_ax 
-    mov R_DX,AX
-    DisplayString_AT_position_and_move_cursor SI_msg 093Ah
-    ReadNumberhexa_in_ax 
-    mov R_SI,AX
-    DisplayString_AT_position_and_move_cursor DI_msg 0a3Ah
-    ReadNumberhexa_in_ax 
-    mov R_DI,AX
-    DisplayString_AT_position_and_move_cursor SP_msg 0b3Ah
-    ReadNumberhexa_in_ax 
-    mov R_SP,AX
-    DisplayString_AT_position_and_move_cursor Bp_msg 0c3Ah
-    ReadNumberhexa_in_ax 
-    mov R_BP,AX
 
     SKIP_ASSIGNMENT:
     DisplayString_AT_position_and_move_cursor Press_any_Key_message 1004h 
     Read_KEY
 
+    INSTRUCTIONS_PAGE
+    ;; while its showing send the chars and Regs if needed
+    mov al,forbidden_char
+    mov byteToSend,al
+    call sendByteproc
+    call receiveByteproc
+    mov al, byteReceived
+    mov  right_forbidden_char,al   
+    
+
+
+    
+
+   Exchange_Regs L_Ax R_AX
+   Exchange_Regs L_Bx R_BX
+   Exchange_Regs L_Cx R_CX
+   Exchange_Regs L_Dx R_DX
+   Exchange_Regs L_SI R_SI
+   Exchange_Regs L_DI R_DI
+   Exchange_Regs L_SP R_SP
+   Exchange_Regs L_BP R_BP
 endm LEVEL_PROCESSING
 
+Exchange_Regs MACRO REG ,REG2
+    ;;sends one and receive the other
+    mov ax,REG
+    mov byteToSend,al
+    call sendByteproc
+    ;;Receive it
+    call receiveByteproc
+    mov bl, byteReceived
+
+    mov ax,REG
+    mov byteToSend,ah
+    call sendByteproc
+    ;;Receive it
+    call receiveByteproc
+    mov bh, byteReceived
+    mov REG2,bx
+ENDM Exchange_Regs
+
 WAIT_10_seconds_TIME MACRO 
-    local L1
     ;; waits for 10 seconds
     mov dx,9680
     mov cx,98
     mov ah,86h
     int 15h
 ENDM WAIT_10_seconds_TIME
+
+WAIT_5_seconds_TIME MACRO 
+    ;; waits for 10 seconds
+    mov dx,4b40h
+    mov cx,4ch
+    mov ah,86h
+    int 15h
+ENDM WAIT_5_seconds_TIME
 
 WAIT_One_centi_second_TIME MACRO 
     local L1
@@ -622,7 +634,11 @@ INSTRUCTIONS_PAGE macro
     DisplayString_AT_position_and_move_cursor INSTRUCTIONS_msg9 0A00h
     NOT_TODAY_BITC:
     ;;should display different messages 
-    WAIT_10_seconds_TIME  ;; WAITS FOR 10 SECONDS
+    WAIT_5_seconds_TIME  ;; WAITS FOR 5 SECONDS
+    ;;Send And Receive The Forbidden Char
+    
+  
+
     ;;
 endm INSTRUCTIONS_PAGE
 

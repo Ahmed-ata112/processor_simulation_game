@@ -34,6 +34,7 @@
 	rec_Game_INV_msg db 'You recieved a Game Invitation','$'
 	level1_msg db 'LEVEL 1 -- PRESS F1$' 
 	level2_msg db 'LEVEL 2 -- PRESS F2$' 
+	levelswait_msg db 'Please Wait while the other chooses the Level$' 
 	choose_hidden_char db 'Choose A Forbidden char: $'
 	choose_hidden_char2 db 'Choose SECOND Forbidden char: $'
 	forbidden_char db '?'       ;; The hiddden char chosen by current player
@@ -443,7 +444,7 @@
     ;;;;;;;;;;;;;;;
     byteToSend db 0
     byteReceived db 0
-
+    TheOneWhoKnocks db 0
 
 .code
 	main proc far
@@ -521,7 +522,9 @@
             call ReceiveByteproc
                            ;Send C, if C was received by the other party then check if they would like accept the invitation
             cmp byteReceived, 'C'                    ; If the other party accepted the invitation then print a message,  wait for a key then go to chat.
-            JNE remove_key_from_buffer   
+            je ararararar
+            jmp remove_key_from_buffer  
+            ararararar: 
             jmp LETS_Chat       
             
             check_f2:
@@ -534,6 +537,7 @@
             call ReceiveByteproc
             cmp byteReceived, 'G'                  ;Send C, if C was received by the other party then check if they would like accept the invitation
             JNE remove_key_from_buffer   ;;declined
+            mov TheOneWhoKnocks, 1 ;to indicate the player who sent the invitation
             jmp LETS_PLAY       
             
             remove_key_from_buffer:
@@ -578,6 +582,11 @@
         
         LETS_PLAY:
         empitify_buffer			;; To make Sure That no bat chars are saved in Buffer
+	    ChangeVideoMode 3h ;;clears screen and starts Video mode	
+        
+        
+        
+        call Level_select
         CALL GAME_WELCOME_PAGES 	;; For level selection and continue To GAME
         empitify_buffer			;; To make Sure That no bat chars are saved in Buffer
         CALL START_My_GAME
@@ -688,21 +697,35 @@ dis2dig proc
 ;THE GAME AND LEVEL SELECTION
 GAME_WELCOME_PAGES PROC
 
-	ChangeVideoMode 3h ;;clears screen and starts Video mode	
-
-	DisplayString_AT_position_not_moving_cursor level1_msg 0a20h
-	DisplayString_AT_position_not_moving_cursor level2_msg 0c20h
-
-	;;LEVEL SELECTION  -> keep looping till a F1 or F2 Is Pressed
-	LEVEL_SELECTION 	; just you choose the the level
 	LEVEL_PROCESSING	; according to the chosen -> you do that shit
-	INSTRUCTIONS_PAGE	;just to show The instructions of THE game for 10 seconds
+		;just to show The instructions of THE game for 10 seconds
 	;; let the Game begin
 	;; just to stop the program
 	;sis: jmp sis
 	ret
 GAME_WELCOME_PAGES ENDP
 
+
+;description
+Level_select PROC
+    cmp TheOneWhoKnocks,1 ;;the player wo sent the inv
+        je MeTheOne
+        jmp notMEAndFucku
+        MeTheOne:
+        DisplayString_AT_position_not_moving_cursor level1_msg 0a20h
+	    DisplayString_AT_position_not_moving_cursor level2_msg 0c20h
+	    LEVEL_SELECTION  ;-> keep looping till a F1 or F2 Is Pressed
+        mov al,game_level
+        mov byteToSend,al
+        call sendByteproc
+        ret
+        notMEAndFucku:
+        DisplayString_AT_position_not_moving_cursor  levelswait_msg 0a10h
+        call receiveByteproc
+        mov al,byteReceived
+        mov game_level,al
+    ret
+Level_select ENDP
 
 ;description
 CHAT_ROOM PROC
