@@ -131,18 +131,19 @@ AGAIN:  	In al , dx
 ret
 send endp
 
-receiver proc near
-    
-    mov dx , 3FDH
-    CHK: in al , dx
-    test al , 1
-    JnZ loo
-    jmp FinishedrecChar_mess
-    loo: 
+receiver proc
 
+    mov dx , 3FDH		; Line Status Register
+	in al , dx 
+  	test al , 1
+  	JZ CHK
+    ;If Ready read the VALUE in Receive data register
     mov dx , 03F8H
-    in al , dx
-    mov VALUE , al
+  	in al , dx 
+  	mov VALUE , al
+    Displaychar VALUE
+    CHK:
+    
     ret
     receiver endp
 
@@ -180,6 +181,12 @@ out_range:
     CALL send
     INC SI
     LOOP SENT_LOOP
+
+    ; send new line
+    mov VALUE,10
+    CALL send
+    mov VALUE,13
+    CALL send
 
     MOV AL,'$'
     MOV DI, offset THE_messege_sent
@@ -287,7 +294,7 @@ out_range:
     set
 
     CONT_NO_SCROLL:
-;;receiving
+;;receiving ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
     mov dh,y2
     mov dl,x2
@@ -295,15 +302,14 @@ out_range:
     
     call receiver
 
-    Displaychar VALUE
 
     get
     mov x2,dl
     mov y2,dh
 
-    FinishedrecChar_mess:
+    ;FinishedrecChar_mess:
     ;; SEE IF I WANT TO SCROLL
-    CMP y1,14H
+    CMP y1,13H
     JNE CONT_NO_SCROLL1
 
     mov ah,6       ; function 6
