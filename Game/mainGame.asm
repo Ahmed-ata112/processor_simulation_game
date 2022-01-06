@@ -538,6 +538,7 @@
             cmp byteReceived, 'G'                  ;Send C, if C was received by the other party then check if they would like accept the invitation
             JNE remove_key_from_buffer   ;;declined
             mov TheOneWhoKnocks, 1 ;to indicate the player who sent the invitation
+            mov Game_turn,1 ;; I starts the Game
             jmp LETS_PLAY       
             
             remove_key_from_buffer:
@@ -569,6 +570,7 @@
             jne decline
             mov byteToSend,'G'
             call sendByteproc
+            mov Game_turn,2 ;; player right starts the Game
             jmp LETS_PLAY
             decline:
             sendByte bl
@@ -737,15 +739,16 @@ CHAT_ROOM ENDP
 START_My_GAME PROC
 
 	ChangeVideoMode 13h   ;; CLEARS tHE SCREEN and start video mode
-
-    mov Game_turn,1 ;; player left starts the Game
 	GAME_LOOP:
 	CLR_Screen_with_Scrolling_GRAPHICS_MODE   ;; CLEARS tHE SCREEN  
     call READ_BUFFER_IF_NOT_USED
     MOV AH,1
     INT 16H
     cmp ah,3eh ; F4
+
+    
     jne not_finshed_for_noww
+    MOV byteToSend,4EH
     jmp QUIT_GAME_LOOP
     not_finshed_for_noww:
 	;; WE DRAW THE BACKGROUND - THE Values - 
