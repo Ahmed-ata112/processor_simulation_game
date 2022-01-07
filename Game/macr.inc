@@ -579,6 +579,35 @@ Exchange_Regs MACRO REG ,REG2
     mov REG2,bx
 ENDM Exchange_Regs
 
+RecWord MACRO REG2
+    call receiveByteproc
+    mov bl, byteReceived
+    call sendByteproc
+    call receiveByteproc
+    mov bh, byteReceived
+    LEA SI,REG2
+    MOV [SI],BL ;FIRST BYTE
+    INC SI
+    MOV [SI],BH ;SECOND BYTE
+    call sendByteproc
+
+ENDM
+
+SendWord macro REG
+    mov SI, OFFSET REG
+    MOV AL,[SI]
+    mov byteToSend,al
+    call sendByteproc
+    ;;rec to relax
+    call receiveByteproc
+    ;;Receive it
+    INC SI ;;THE OTHER BYTE
+    MOV AL,[SI]
+    mov byteToSend,aL
+    call sendByteproc
+
+    call receiveByteproc
+endm SendWord
 WAIT_10_seconds_TIME MACRO 
     ;; waits for 10 seconds
     mov dx,9680

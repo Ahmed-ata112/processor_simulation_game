@@ -735,89 +735,63 @@ CHAT_ROOM PROC
 CHAT_ROOM ENDP
 
 
+
+
 ;would add another Your_Game ig i the one who recieved the invitation
 START_My_GAME PROC
 
 	ChangeVideoMode 13h   ;; CLEARS tHE SCREEN and start video mode
-	GAME_LOOP:
-	CLR_Screen_with_Scrolling_GRAPHICS_MODE   ;; CLEARS tHE SCREEN  
+	GAME_LOOPP:
+    CLR_Screen_with_Scrolling_GRAPHICS_MODE   ;; CLEARS tHE SCREEN  
     call READ_BUFFER_IF_NOT_USED
     MOV AH,1
     INT 16H
-    cmp ah,3eh ; F4
-
-    
+    cmp ah,3eh ; F4 ;;TODO: SEND A SIGNAL TO THE OTHER
     jne not_finshed_for_noww
     MOV byteToSend,4EH
-    jmp QUIT_GAME_LOOP
+    jmp QUIT_GAME_LOOPP
     not_finshed_for_noww:
-	;; WE DRAW THE BACKGROUND - THE Values - 
+    ;; WE DRAW THE BACKGROUND - THE Values - 
 	call DRAW_BACKGROUND     ;;Draws The BackGround Image
     call UPDATE_VALUES_Displayed  ;; Update values displayed with ones in variables
 	call BIRDGAME
-    call CHECK_POWERUPS
-    call GetCommand
-    Update_the_Commands         ;; to be displayed in its place (L or R)
-    CMP finished_taking_input,1           
-    je hhhheeeeeeee
-    Jmp NOT_FINISHED_INPUT_YET
-    hhhheeeeeeee:
-    ;; THE PLAYER FINSHED TYPING
-    ;; WE WILL UPDATE chosen players Regs
-    mov Command_valid,1
-    call Check_valid
-    cmp Command_valid,0H ;;invalid
-    jne execute_command_valid
-    ;; command is not valid 
-    ;;dec points
+   
     
+	
     cmp game_turn,1
-    jne dec_other_player
-    DEC playerpoints
-    jmp FINISHED_EXECUTING
-    dec_other_player:
-    DEC right_playerpoints
-    jmp FINISHED_EXECUTING
-    execute_command_valid:
-    CMP EXECUTE_REVESED,1
-    JNE EXECUTE_NORMALLY
-    cmp game_turn, 1
-    jne executrtheOther
-    EXECUTE_THECOMMAND_AT_SIDE 2 ;;EXECCUTE IN OPPONENT REGS
-    MOV EXECUTE_REVESED,0
-    JMP FINISHED_EXECUTING
-    executrtheOther:
-    ;;player 2 is playing
-    EXECUTE_THECOMMAND_AT_SIDE 1 ;;EXECCUTE IN OPPONENT REGS
-    ;; 
-    MOV EXECUTE_REVESED,0
-    JMP FINISHED_EXECUTING
-    EXECUTE_NORMALLY:
-    EXECUTE_THECOMMAND_AT_SIDE game_turn
-    
-    FINISHED_EXECUTING:
-    Reset_Command   
-    MOV finished_taking_input,0    ;;to reset it
-    ;;swap turns
-    SWAP_TURNS
-    NOT_FINISHED_INPUT_YET:
+    jne OtherisPlaying
+
+    call PlayAsMain
+    jmp Heyyyy
+    OtherisPlaying:
+    call PlayAsSec
+    Heyyyy:
+    Wait_centi_seconds 1
+
+
+
+
     CALL checkValuesInRegisters
     CALL checkIfAnyPlayerLost
-    
     CMP playersStatus,1 ;; LEFT LOST
     JNE CHECK_IF_RIGHT_LOST
-    JMP QUIT_GAME_LOOP
+    JMP QUIT_GAME_LOOPP
     CHECK_IF_RIGHT_LOST:
     CMP playersStatus,2 ;; Right LOST
     JNE no_ONE_LOST_YET
-    JMP QUIT_GAME_LOOP
+    JMP QUIT_GAME_LOOPP
     no_ONE_LOST_YET:
+	JMP GAME_LOOPP
+	QUIT_GAME_LOOPP:
+    call ExitandRestart
 
-    Wait_centi_seconds 1
-	JMP GAME_LOOP
+	RET
+START_My_GAME ENDP
 
-	QUIT_GAME_LOOP:
 
+
+;description
+ExitandRestart PROC
     ChangeVideoMode 3H
     DisplayString_AT_position_and_move_cursor EXIT_MSG 0409H
 
@@ -839,11 +813,222 @@ START_My_GAME PROC
     WAIT_10_seconds_TIME
     CALL RESET_ALL_VARS
     JMP Main_Screen
+    ret    
+ExitandRestart ENDP
+
+;would add another Your_Game ig i the one who recieved the invitation
+
+;description
+PlayAsMain PROC
+	call CHECK_POWERUPS
+    call GetCommand
+    Update_the_Commands         ;; to be displayed in its place (L or R)
+    CMP finished_taking_input,1           
+    je hhhheeeeeeee
+    Jmp NOT_FINISHED_INPUT_YET
+    hhhheeeeeeee:
+    ;; THE PLAYER FINSHED TYPING
+    ;; WE WILL UPDATE chosen players Regs
+    mov Command_valid,1
+    call Check_valid
+    cmp Command_valid,0H ;;invalid
+    jne execute_command_valid
+    ;; command is not valid 
+    ;;dec points
+    DEC playerpoints
+    jmp FINISHED_EXECUTING
+    execute_command_valid:
+    CMP EXECUTE_REVESED,1
+    JNE EXECUTE_NORMALLY
+    ;;EXECUTE ON 2
+    EXECUTE_THECOMMAND_AT_SIDE 2 ;;EXECCUTE IN OPPONENT REGS
+    MOV EXECUTE_REVESED,0
+    JMP FINISHED_EXECUTING
+    EXECUTE_NORMALLY:
+    EXECUTE_THECOMMAND_AT_SIDE game_turn
+    FINISHED_EXECUTING:
+    Reset_Command   
+    mov byteToSend,'R'
+    call sendByteproc ;;SIGNAL TO MAKE HIM REALIZE 
+    CALL SendUpdatedRegs
+    MOV finished_taking_input,0    ;;to reset it
+    ;;swap turns
+    SWAP_TURNS
+    NOT_FINISHED_INPUT_YET:
+    
+    ret    
+PlayAsMain ENDP
 
 
-	RET
-START_My_GAME ENDP
 
+;description
+PlayAsSec PROC
+
+    
+	MOV DX,3FDh     ;;LineStatus
+	IN AL,DX
+	TEST AL,1
+	JZ NoThingReceived22
+
+    ;rec the first letter to know what to do
+    MOV DX,3F8h
+	IN AL,DX
+    CALL RecUpdatedRegs
+    CALL RecUpdatedRegs_AFTER_POWERUPS
+    NoThingReceived22:
+    ret
+PlayAsSec ENDP
+
+RecUpdatedRegs proc
+
+    cmp al,'R'
+    je cntinueRecandSwap 
+    ret
+    cntinueRecandSwap:
+
+    call sendByteproc       ;;SEND A REPLY you are ready to get data
+    RecWord L_Ax
+    RecWord L_Bx
+    RecWord L_Cx
+    RecWord L_Dx
+    RecWord L_SI
+    RecWord L_DI
+    RecWord L_SP
+    RecWord L_BP
+    
+    RecWord L_00        ;;REC L_00 AND L_01 AND ETC
+    RecWord L_02
+    RecWord L_04
+    RecWord L_06
+    RecWord L_08
+    RecWord L_A
+    RecWord L_C
+    RecWord L_E
+
+
+    RecWord R_Ax
+    RecWord R_Bx
+    RecWord R_Cx
+    RecWord R_Dx
+    RecWord R_SI
+    RecWord R_DI
+    RecWord R_SP
+    RecWord R_BP
+
+    RecWord R_00        ;;REC L_00 AND L_01 AND ETC
+    RecWord R_02
+    RecWord R_04
+    RecWord R_06
+    RecWord R_08
+    RecWord R_A
+    RecWord R_C
+    RecWord R_E
+    RecWord right_playerPoints
+    RecWord playerPoints
+    
+    Swap_Turns  ;;my game has started
+
+
+    ret
+RecUpdatedRegs ENDP
+
+
+RecUpdatedRegs_AFTER_POWERUPS proc
+    ;; NO SWAPING AFTER FINISHED
+    cmp al,'P'
+    je cntinueRecandP 
+    ret
+    cntinueRecandP:
+
+    call sendByteproc       ;;SEND A REPLY you are ready to get data
+    RecWord L_Ax
+    RecWord L_Bx
+    RecWord L_Cx
+    RecWord L_Dx
+    RecWord L_SI
+    RecWord L_DI
+    RecWord L_SP
+    RecWord L_BP
+    
+    RecWord L_00        ;;REC L_00 AND L_01 AND ETC
+    RecWord L_02
+    RecWord L_04
+    RecWord L_06
+    RecWord L_08
+    RecWord L_A
+    RecWord L_C
+    RecWord L_E
+
+
+    RecWord R_Ax
+    RecWord R_Bx
+    RecWord R_Cx
+    RecWord R_Dx
+    RecWord R_SI
+    RecWord R_DI
+    RecWord R_SP
+    RecWord R_BP
+
+    RecWord R_00        ;;REC L_00 AND L_01 AND ETC
+    RecWord R_02
+    RecWord R_04
+    RecWord R_06
+    RecWord R_08
+    RecWord R_A
+    RecWord R_C
+    RecWord R_E
+    RecWord right_playerPoints
+    RecWord playerPoints
+    
+  
+    ret
+RecUpdatedRegs_AFTER_POWERUPS ENDP
+
+
+
+SendUpdatedRegs PROC
+    ;; will send all the Regs available at that time
+    call receiveByteproc
+    SendWord R_AX
+    SendWord R_BX
+    SendWord R_CX
+    SendWord R_DX
+    SendWord R_SI
+    SendWord R_DI
+    SendWord R_SP
+    SendWord R_BP
+    
+    SendWord R_00
+    SendWord R_02
+    SendWord R_04
+    SendWord R_06
+    SendWord R_08
+    SendWord R_A
+    SendWord R_C
+    SendWord R_E
+
+
+    SendWord L_AX
+    SendWord L_BX
+    SendWord L_CX
+    SendWord L_DX
+    SendWord L_SI
+    SendWord L_DI
+    SendWord L_SP
+    SendWord L_BP
+    SendWord L_00
+    SendWord L_02
+    SendWord L_04
+    SendWord L_06
+    SendWord L_08
+    SendWord L_A
+    SendWord L_C
+    SendWord L_E
+    SendWord playerPoints
+    SendWord right_playerPoints
+
+    ret
+SendUpdatedRegs ENDP
 
 
 UPDATE_VALUES_Displayed PROC 
@@ -1608,10 +1793,7 @@ CHECK_POWERUPS ENDP
 
 ;execute a command at your proceccor
 powerUp_1 PROC
-    cmp game_turn,1
-    JE RTRTRTRTASAS
-    JMP exec_on_other1
-    RTRTRTRTASAS:
+    
     cmp playerPoints,5 ;;consumes 3 points
     JNB EDCESDAD
     JMP NOT_POWERUP_1
@@ -1624,20 +1806,10 @@ powerUp_1 PROC
     EXECUTE_THECOMMAND_AT_SIDE 2
     SUB playerPoints,5
     Reset_Command
-    JMP NOT_POWERUP_1
-    exec_on_other1:
-    cmp right_playerPoints,5 ;;consumes 3 points
-    JNB ASDASDASD
-    JMP NOT_POWERUP_1
-    ASDASDASD:
-    Draw_blank_line
-    DisplayString_AT_position_not_moving_cursor POWERUP1_MSG, 0B09h
-    DisplayString_AT_position_not_moving_cursor POWERUP1_MSG2, 0c05h
-    MoveCursorTo 0E09h
-    ReadString COMMAND
-    EXECUTE_THECOMMAND_AT_SIDE 1
-    SUB right_playerPoints,5
-    Reset_Command
+    mov byteToSend,'P'
+    call sendByteproc ;;SIGNAL TO MAKE HIM REALIZE 
+    CALL SendUpdatedRegs
+
  NOT_POWERUP_1:
     RET
 powerUp_1 endP  
@@ -2084,6 +2256,7 @@ READ_BUFFER_IF_NOT_USED PROC
     RET
 READ_BUFFER_IF_NOT_USED ENDP
 
+;description
 
 
 
