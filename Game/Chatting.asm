@@ -309,22 +309,22 @@ out_range:
 
     ;FinishedrecChar_mess:
     ;; SEE IF I WANT TO SCROLL
-    CMP y1,13H
+    CMP y2,13H
     JNE CONT_NO_SCROLL1
 
     mov ah,6       ; function 6
-    mov al,1        ; scroll by 1 line    
+    mov al,1       ; scroll by 1 line    
     mov bh,7       ; normal video attribute         
-    mov ch,0BH       ; upper left Y
-    mov cl,0H        ; upper left X
-    mov dh,15H     ; lower right Y
+    mov ch,0BH     ; upper left Y
+    mov cl,0H      ; upper left X
+    mov dh,13H     ; lower right Y
     mov dl,79      ; lower right X 
     int 10h           
 
-    DEC y1
-    MOV X1,0
-    mov dh,y1
-    mov dl,x1
+    DEC y2
+    MOV X2,0
+    mov dh,y2
+    mov dl,x2
     set
 
     CONT_NO_SCROLL1:
