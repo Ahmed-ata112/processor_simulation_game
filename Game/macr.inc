@@ -591,7 +591,21 @@ RecWord MACRO REG2
     MOV [SI],BH ;SECOND BYTE
     call sendByteproc
 
-ENDM
+ENDM RecWord
+
+RecWordwithoffset MACRO offs
+    call receiveByteproc
+    mov bl, byteReceived
+    call sendByteproc
+    call receiveByteproc
+    mov bh, byteReceived
+    mov SI,offs 
+    MOV [SI],BL ;FIRST BYTE
+    INC SI
+    MOV [SI],BH ;SECOND BYTE
+    call sendByteproc
+
+ENDM RecWordwithoffset
 
 SendWord macro REG
     mov SI, OFFSET REG
@@ -608,6 +622,23 @@ SendWord macro REG
 
     call receiveByteproc
 endm SendWord
+
+SendWordwithOffs macro offs
+    mov SI, offs
+    MOV AL,[SI]
+    mov byteToSend,al
+    call sendByteproc
+    ;;rec to relax
+    call receiveByteproc
+    ;;Receive it
+    INC SI ;;THE OTHER BYTE
+    MOV AL,[SI]
+    mov byteToSend,aL
+    call sendByteproc
+
+    call receiveByteproc
+endm SendWord
+
 WAIT_10_seconds_TIME MACRO 
     ;; waits for 10 seconds
     mov dx,9680

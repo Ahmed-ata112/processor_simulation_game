@@ -754,7 +754,9 @@ START_My_GAME PROC
     ;; WE DRAW THE BACKGROUND - THE Values - 
 	call DRAW_BACKGROUND     ;;Draws The BackGround Image
     call UPDATE_VALUES_Displayed  ;; Update values displayed with ones in variables
-	call BIRDGAME
+    Update_the_Commands         ;; to be displayed in its place (L or R)
+	
+    call BIRDGAME
    
     
 	
@@ -847,7 +849,8 @@ PlayAsMain PROC
     EXECUTE_NORMALLY:
     EXECUTE_THECOMMAND_AT_SIDE game_turn
     FINISHED_EXECUTING:
-    Reset_Command   
+    Reset_Command  
+
     mov byteToSend,'R'
     call sendByteproc ;;SIGNAL TO MAKE HIM REALIZE 
     CALL SendUpdatedRegs
@@ -855,7 +858,7 @@ PlayAsMain PROC
     ;;swap turns
     SWAP_TURNS
     NOT_FINISHED_INPUT_YET:
-    
+   
     ret    
 PlayAsMain ENDP
 
@@ -873,8 +876,25 @@ PlayAsSec PROC
     ;rec the first letter to know what to do
     MOV DX,3F8h
 	IN AL,DX
+
+    MOV BL,4FH      ;;IF CHANGED THEN I found the wanted  
     CALL RecUpdatedRegs
+    cmp bl, 4fh 
+    jne NoThingReceived22 ;; consumed
+
+    MOV BL,4FH      ;;IF CHANGED THEN I found the wanted  
     CALL RecUpdatedRegs_AFTER_POWERUPS
+
+    cmp bl, 4fh 
+    jne NoThingReceived22 ;; consumed
+
+    MOV BL,4FH      ;;IF CHANGED THEN I found the wanted  
+    CALL RecUpdatedCommand
+
+    cmp bl, 4fh 
+    jne NoThingReceived22 ;; consumed
+
+
     NoThingReceived22:
     ret
 PlayAsSec ENDP
@@ -925,10 +945,19 @@ RecUpdatedRegs proc
     RecWord R_E
     RecWord right_playerPoints
     RecWord playerPoints
+
+    RecWord target_value
+    RecWord forbidden_char
+
+    MOV AL,forbidden_char
+    MOV AH,RIGHT_forbidden_char
+    XCHG AH,AL
+    MOV forbidden_char,AL
+    MOV RIGHT_forbidden_char,AH
     
     Swap_Turns  ;;my game has started
-
-
+    Reset_Command
+    mov bl,0eah
     ret
 RecUpdatedRegs ENDP
 
@@ -979,13 +1008,35 @@ RecUpdatedRegs_AFTER_POWERUPS proc
     RecWord R_E
     RecWord right_playerPoints
     RecWord playerPoints
-    
-  
+    RecWord target_value
+    RecWord forbidden_char
+    MOV AL,forbidden_char
+    MOV AH,RIGHT_forbidden_char
+    XCHG AH,AL
+    MOV forbidden_char,AL
+    MOV RIGHT_forbidden_char,AH
+    mov bl,0eah
     ret
 RecUpdatedRegs_AFTER_POWERUPS ENDP
 
+RecUpdatedCommand proc
+    cmp al,'C'
+    je cntinueRecandC 
+    ret
+    cntinueRecandC:
+    call sendByteproc       ;;SEND A REPLY you are ready to get data
+    lea DI, actualcommand_Size ;;start from here
+    mov cx,8 ;;16 bytes to send
+    LL1L:
+    RecWordwithoffset DI
+    inc DI
+    inc DI
+    Loop LL1L
 
-
+    mov bl,0eah
+ret
+RecUpdatedCommand endp
+   
 SendUpdatedRegs PROC
     ;; will send all the Regs available at that time
     call receiveByteproc
@@ -1026,9 +1077,27 @@ SendUpdatedRegs PROC
     SendWord L_E
     SendWord playerPoints
     SendWord right_playerPoints
+    ;; TARGET VALUE AND FORBIDDEN KEY
+    SendWord target_value
+    SendWord forbidden_char
 
     ret
 SendUpdatedRegs ENDP
+
+;description
+sendCommand PROC
+    call receiveByteproc
+    
+    lea DI, actualcommand_Size ;;start from here
+    mov cx,8 ;;16 bytes to send
+    LL1LL:
+    SendWordwithoffs DI
+    inc DI
+    inc DI
+    Loop LL1LL
+    
+    ret
+sendCommand ENDP
 
 
 UPDATE_VALUES_Displayed PROC 
@@ -1318,10 +1387,11 @@ midDraw:
 BIRDGAME ENDP
 
 GetCommand PROC
-mov ah,1
-int 16h ;-> looks at the buffer
-jz FinishedTakingChar ;nothing is clicked
-
+    mov ah,1
+    int 16h ;-> looks at the buffer
+    JNZ ASDASDASDAS
+    JMP FinishedTakingChar ;nothing is clicked
+    ASDASDASDAS:
     cmp al,20H  ;;a space 
     jb CHECK_IF_ENTER11 
     cmp al, ']'
@@ -1358,8 +1428,13 @@ jz FinishedTakingChar ;nothing is clicked
     add di,bx
     mov byte ptr [di], '$'   
     dec actualcommand_Size
+    mov byteToSend,'C'
+    call sendByteproc ;;SIGNAL TO MAKE HIM REALIZE 
+    CALL sendCommand
+   
     jmp FinishedTakingChar 
     ADD_TO_COMMAND:
+
     READ_KEY
     ;then store The char and print it then inc the size
    cmp actualcommand_Size,15  ;; command is full  -> in order to not delete $ at the end
@@ -1370,6 +1445,10 @@ jz FinishedTakingChar ;nothing is clicked
     add di,bx
     mov [di],al ;;the char is moved to the end of string
     inc actualcommand_Size
+    mov byteToSend,'C'
+    call sendByteproc ;;SIGNAL TO MAKE HIM REALIZE 
+    CALL sendCommand
+    
     FinishedTakingChar:
     ret
 GetCommand ENDP
@@ -1815,9 +1894,6 @@ powerUp_1 PROC
 powerUp_1 endP  
 powerUp_2 PROC
     cmp game_turn,1
-    JE RTRTRTRTASASAS
-    JMP exec_on_other2
-    RTRTRTRTASASAS:
     cmp playerPoints,3 ;;consumes 3 points
     JNB SARAH112
     JMP NOT_POWERUP_2
@@ -1834,25 +1910,9 @@ powerUp_2 PROC
     dont_on_other:
     SUB playerPoints,3
     Reset_Command
-    JMP NOT_POWERUP_2
-
-    exec_on_other2:
-    cmp right_playerPoints,3 ;;consumes 3 points
-    JNB RETSARAHTER
-    JMP NOT_POWERUP_2
-    RETSARAHTER:
-    Draw_blank_line
-    DisplayString_AT_position_not_moving_cursor POWERUP2_MSG, 0B09h
-    DisplayString_AT_position_not_moving_cursor POWERUP2_MSG2, 0c05h
-    MoveCursorTo 0E09h
-    ReadString COMMAND
-    EXECUTE_THECOMMAND_AT_SIDE 2
-    cmp contains_forbidden,1
-    je dont_on_other2
-    EXECUTE_THECOMMAND_AT_SIDE 1
-    dont_on_other2:
-    SUB right_playerPoints,3
-    Reset_Command
+    mov byteToSend,'P'
+    call sendByteproc ;;SIGNAL TO MAKE HIM REALIZE 
+    CALL SendUpdatedRegs
  NOT_POWERUP_2:
     RET
 powerUp_2 endP  
@@ -1860,7 +1920,6 @@ powerUp_2 endP
 
 powerUp_3 PROC
     cmp game_turn,1
-    jne exec_on_other3
     cmp playerPoints,8 ;;consumes 3 points
     JNB SARAH1112
     JMP NOT_POWERUP_3
@@ -1876,34 +1935,17 @@ powerUp_3 PROC
 	int 21h
     READ_KEY
     sub playerPoints,8
+     mov byteToSend,'P'
+    call sendByteproc ;;SIGNAL TO MAKE HIM REALIZE 
+    CALL SendUpdatedRegs
     mov IS_USED_POWERUP3,1
-
-    JMP NOT_POWERUP_3
-    exec_on_other3:
-    cmp right_playerPoints,8 ;;consumes 3 points
-    JNB RETSARAHTERR
-    JMP NOT_POWERUP_3
-    RETSARAHTERR:
-    Draw_blank_line
-    DisplayString_AT_position_not_moving_cursor POWERUP3_MSG, 0B09h
-    DisplayString_AT_position_not_moving_cursor POWERUP3_MSG2, 0c05h
-    READ_KEY
-    MoveCursorTo 0E14h  ;;MIGHT CAUSE A PROBLEM
-    mov dl,al
-	mov ah,2     ;; to display the the char into screen (echo)
-	int 21h
-    READ_KEY
-    MOV right_forbidden_char ,AL
-    sub RIGHT_playerPoints,8
-    mov right_IS_USED_POWERUP3,1
     NOT_POWERUP_3:
     RET
 powerUp_3 endP  
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 powerUp_4 PROC
-    cmp game_turn,1 ;checks if it's left player's turn 
-    jne checkIfItsRightPlayerTurn_powerUp_4
+    
     cmp playerPoints,30
     jnb  skipme1
     jmp exitPowerUp_4
@@ -1911,18 +1953,7 @@ powerUp_4 PROC
     sub playerPoints,30
     MOV IS_USED_POWERUP4,1
     jmp clearAllRegisters
-
-
-checkIfItsRightPlayerTurn_powerUp_4:
-
-    cmp right_playerPoints,30
-    jnb  SKIPME2
-    jmp exitPowerUp_4
-    SKIPME2:
-    MOV right_IS_USED_POWERUP4,1
-    sub RIGHT_playerPoints,30
 clearAllRegisters:
-
     mov L_AX,0
     mov L_BX,0
     mov L_CX,0
@@ -1939,6 +1970,9 @@ clearAllRegisters:
     mov R_DI,0
     mov R_SP,0
     mov R_BP,0
+    mov byteToSend,'P'
+    call sendByteproc ;;SIGNAL TO MAKE HIM REALIZE 
+    CALL SendUpdatedRegs
 exitPowerUp_4:
 ret
 powerUp_4 endp
@@ -1946,21 +1980,10 @@ powerUp_4 endp
 
 
 powerUp_6 proc 
-    cmp game_turn,1
-    jne checkIfItsRightPlayerTurn_powerUp_6
+    
     cmp playerPoints,7
-    JNB SKIPSARAH1
+    JNB changeTargetValue
     jmp exitPowerUp_6
-    SKIPSARAH1:
-    jmp changeTargetValue
-
-checkIfItsRightPlayerTurn_powerUp_6:
-    cmp right_playerPoints,7
-    JNB SKIPSARAH2
-    jmp exitPowerUp_6
-    SKIPSARAH2:
-
-
 changeTargetValue:
     Draw_blank_line
     DisplayString_AT_position_not_moving_cursor POWERUP5_MSG, 0B09h
@@ -2000,15 +2023,12 @@ changeTargetValue:
     cmp R_BP,ax
     je exitPowerUp_6
     mov target_value,ax
-
-    CMP GAME_TURN,1
-    JNE other_player_is_playing
     sub playerPoints,7
     mov IS_USED_POWERUP6,1
-    jmp exitPowerUp_6
-    other_player_is_playing:
-    mov right_IS_USED_POWERUP6,1
-    sub right_playerPoints,7
+     mov byteToSend,'P'     ;;TODO SEND TARGET VALUE AND FORBIDDEN CHAR
+    call sendByteproc ;;SIGNAL TO MAKE HIM REALIZE 
+    CALL SendUpdatedRegs
+    
 exitPowerUp_6:
     RET
 powerUp_6 endp
