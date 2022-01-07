@@ -28,7 +28,9 @@ _LINE DB '-'
 _sign DB ':'
 VALUE db 'A'
 FirstNameData db 'Ahmed$$$$$$$$$$$$$$$'
-SecondNameData db 'Mena$$$$$$$$$$$$$$$$'
+SecondNameData db 'Hany$$$$$$$$$$$$$$$$'
+exit_string db 'Press F3 To exit:$'
+exit_string1 db 'You will be returned to The main screen$'
 
 Flag_exit DB 0
 
@@ -88,6 +90,17 @@ LINE:
 Displaychar _LINE
 loop LINE
 
+mov dh,016H
+mov dl,0H
+set
+
+DisplayString exit_string
+
+mov dh,017H
+mov dl,0H
+set
+
+DisplayString exit_string1
 
 ret
 Draw_chat endp
@@ -140,6 +153,11 @@ receiver proc
     ;If Ready read the VALUE in Receive data register
     mov dx , 03F8H
   	in al , dx 
+    cmp al,0FFH
+    jne contkoko93
+    mov Flag_exit,1
+    jmp CHK
+    contkoko93:
   	mov VALUE , al
     Displaychar VALUE
     CHK:
@@ -201,6 +219,11 @@ out_range:
     cmp ah,61 ;; check if F3 is pressed
     jne NO_EXIT
     mov Flag_exit,1
+
+    ;send stop signal
+    ; send new line
+    mov VALUE,0FFH
+    CALL send
 
     MOV AL,'$'
     MOV DI, offset THE_messege_sent
@@ -309,13 +332,13 @@ out_range:
 
     ;FinishedrecChar_mess:
     ;; SEE IF I WANT TO SCROLL
-    CMP y2,13H
+    CMP y2,14H
     JNE CONT_NO_SCROLL1
 
     mov ah,6       ; function 6
     mov al,1       ; scroll by 1 line    
     mov bh,7       ; normal video attribute         
-    mov ch,0BH     ; upper left Y
+    mov ch,0CH     ; upper left Y
     mov cl,0H      ; upper left X
     mov dh,13H     ; lower right Y
     mov dl,79      ; lower right X 
@@ -328,6 +351,8 @@ out_range:
     set
 
     CONT_NO_SCROLL1:
+
+    ; scan code for up arrow -> 38
 
 
     ret
