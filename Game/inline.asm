@@ -98,12 +98,15 @@ send endp
 
 receiver proc
 
-
     mov dx , 3FDH		; Line Status Register
 	  in al , dx 
   	test al , 1
   	JZ CHK
     ;If Ready read the VALUE in Receive data register
+    mov dx , 03F8H
+  	in al , dx 
+    cmp al,0FFH
+    jne contkoko93
     mov dh,18h
     mov dl,7
     set
@@ -113,20 +116,14 @@ receiver proc
     Loop_space:
     Displaychar al
     loop Loop_space
+    mov dh,18h
     mov dl,7
     set
-    recieve_again:
-    mov dx , 03F8H
-  	in al , dx 
-    cmp al,0FFH
-    jne contkoko93
     jmp CHK
     contkoko93:
-  	mov VALUE , al
+    mov VALUE , al
     Displaychar VALUE
-    jmp recieve_again
     CHK:
-    
     ret
     receiver endp
 
@@ -148,7 +145,7 @@ out_range:
     ;check for enter
     cmp ah,28
     jne not_finished_yet ;THE_messege_sent IS THE DATA TO BE SENT
-    ; for new line
+    
  
     CMP actualmessege_sent_Size,0
     JNE EMPTY_MESS
@@ -157,15 +154,17 @@ out_range:
     xor ch,ch
     MOV Cl,actualmessege_sent_Size
     MOV SI,OFFSET THE_messege_sent
-                     
+
+
+    mov Value ,0FFh
+    Call send                 
     SENT_LOOP:
     MOV AL,[SI]
     mov VALUE,al
     CALL send
     INC SI
     LOOP SENT_LOOP
-    mov Value ,0FFh
-    Call send
+    
     ; send new line
   
     MOV AL,'$'
@@ -179,9 +178,9 @@ out_range:
     mov al,' '
     mov cl, actualmessege_sent_Size
     mov ch,0
-    Loop_space:
+    Loop_space1:
     Displaychar al
-    loop Loop_space
+    loop Loop_space1
      mov actualmessege_sent_Size,0
     jmp FinishedTakingChar_mess
     
@@ -243,16 +242,12 @@ out_range:
     mov [di],al ;;the char is moved to the end of string
     inc actualmessege_sent_Size
     Displaychar al
-    ;; to get last position
-    ; get
-    ; mov x1,dl
-    ; mov y1,dh
-
+   
     FinishedTakingChar_mess:
-    ;; SEE IF I WANT TO SCROLL
+  
     
 
-;;receiving ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;receiving 
 
     mov dl,x2
     mov dh,18h
@@ -269,16 +264,6 @@ out_range:
           
     get
     mov x2,dl
-
-
-    ;FinishedrecChar_mess:
-    ;; SEE IF I WANT TO SCROLL
-    
-
-
-
-    ; scan code for up arrow -> 38
-
 
     ret
 Mess ENDP
