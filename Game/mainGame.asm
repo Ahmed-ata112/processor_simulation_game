@@ -1,4 +1,5 @@
-	include macr.inc
+	
+    include macr.inc
     include ex_macr.inc
 	.286
 	.model small
@@ -29,9 +30,12 @@
     INSTRUCTIONS_msg8 db 'F8 TO CLEAR ALL REGISTERS -30 POINTS (USED ONCE)$'
     INSTRUCTIONS_msg9 db 'F9 TO CHANGE THE TARGET VALUE -7 POINTS (USED ONCE)$'
 	Sent_CHAT_INV_msg db 'You sent a chat Invitation','$'
+	rec_CHAT_INV_msg db 'You recieved a chat Invitation--F1 to Accept','$'
 	Sent_Game_INV_msg db 'You sent a Game Invitation','$'
+	rec_Game_INV_msg db 'You recieved a Game Invitation--F2 to Accept','$'
 	level1_msg db 'LEVEL 1 -- PRESS F1$' 
 	level2_msg db 'LEVEL 2 -- PRESS F2$' 
+	levelswait_msg db 'Please Wait while the other chooses the Level$' 
 	choose_hidden_char db 'Choose A Forbidden char: $'
 	choose_hidden_char2 db 'Choose SECOND Forbidden char: $'
 	forbidden_char db '?'       ;; The hiddden char chosen by current player
@@ -211,11 +215,10 @@
      ;; balls values
         balls label byte
 		ball_0 db 0 ;;green
-		ball_1 db 0 ;;magenta
-		ball_2 db 0 ;;red
 		ball_3 db 0 ;;blue
 		ball_4 db 0 ;;yellow
-
+		ball_1 db 0 ;;magenta
+		ball_2 db 0 ;;red
 
      ;; Values in regs
 		R_AX dw 0 
@@ -262,7 +265,7 @@
 
 
 
-    right_birdX dw 147
+    right_birdX dw 171
     right_birdY dw 0Ah
     right_BirdWidth dw 13
     right_birdVelocity dw 4
@@ -312,10 +315,12 @@
     right_fireScanCode db  04eh
 
             ;green, light magenta, red, blue, yellow
-    colors db  47,           36, 41,  54,    43
+    ; colors db  47,           36, 41,  54,    43
+    ; pointsOfColors db       1,            2,   3,    4,      5  
+    colors db  47,           54, 43,  36,    41
+    pointsOfColors db       1,            4,   5,    2,      3 
             
                     ;green, light magenta, red, blue, yellow
-    pointsOfColors db       1,            2,   3,    4,      5  
 
     numOfShotBalls db 0,0,0,0,0
 
@@ -323,6 +328,7 @@
     birdColor db 47
     birdStatus db 1
     birdPoints db 1
+    RANDOMBIRDINDEX DB 0
 
     right_colorIndex db 0
     right_birdColor db 47
@@ -336,8 +342,8 @@
 
     gameStatus db 1
     prevTime db 0 ;variable used when checking if the time has changed
-    timeInterval db 8 ;the shooting game apears/disappears every time interval
-
+    timeInterval dB 8 ;the shooting game apears/disappears every time interval
+  
 ;;;;-------------Comand Line Input------------;;;;;;
     command LABEL BYTE ; named the next it the same name 
 	commandSize db 30
@@ -441,7 +447,8 @@
     ;;;;;;;;;;;;;;;
     byteToSend db 0
     byteReceived db 0
-
+    TheOneWhoKnocks db 0
+    isInlineChatting db 0
 
 .code
 	main proc far
@@ -450,10 +457,14 @@
 	mov ES,AX ;; for string operations
 	;ChangeVideoMode 13h ;;clears screen and starts Video mode	
 	;call START_GAME
+    CALL init_comm
 	DisplayAgain:
 	CLR_Screen_with_Scrolling_TEXT_MODE 
 	
    ; call sendandreceivepoints
+
+
+    call NAME_VALIDATION
 
     DisplayString_AT_position_not_moving_cursor Enter_Points_message 0518h ; show mes
     MoveCursorTo 0621h
@@ -461,11 +472,10 @@
     mov My_Initial_points,ax ;; initialize initial points
     ;; Todo: get min and initialize the points
     mov playerPoints,ax
-
-    call NAME_VALIDATION
-    call sendandreceivename
+    call SendRecNames
     ;;PLAYER 2
     ;; send and rec the name
+    call SendRecPoints      ;;EXCHANGE POINTS
     FIX_POINTS_MIN
 
 
@@ -495,45 +505,103 @@
             int 16h           ;Get key pressed (do not wait for a key - AH:scancode, AL:ASCII)
 
             jnz _continue ;; something is clicked
-            jmp no_thing_clicked
+            jmp CheckIfOtherPlayerSent
             _continue:
             
             ;; check the type of the key
             cmp ah,1h ; esc
             jne check_f1 
+            mov byteToSend,'E'
+            call sendByteproc
+            SendByte bl
             jmp QUIT_THIS_GAME
             check_f1:
             cmp ah,3bh ;f1
             jne check_f2
             ;in case of F1
             UPDATE_notification_bar Sent_CHAT_INV_msg
-            mov is_player_1_ready_for_chat,1 ;; make me ready and see if the other is ready to
-            cmp is_player_1_ready_for_chat,1
             ;;je LETS_Chat 	;;Player 2 is Ready TOO
-            mov is_player_2_ready_for_chat,1 ;; TODO: temproraly in PHASE 1 -> Pressing Twice Starts THE Chat Room
-
-
-            jmp remove_key_from_buffer
+            mov byteToSend,'C'
+            call sendByteproc
+            call ReceiveByteproc
+                           ;Send C, if C was received by the other party then check if they would like accept the invitation
+            cmp byteReceived, 'C'                    ; If the other party accepted the invitation then print a message,  wait for a key then go to chat.
+            
+            jmp LETS_Chat       
             
             check_f2:
             cmp ah,3ch ; F2
             jne remove_key_from_buffer
             ;in case of F2
             UPDATE_notification_bar Sent_Game_INV_msg   ;; 
-            mov is_player_1_ready_for_game,1 ;; make me ready and see if the other is ready to
-            cmp is_player_2_ready_for_game,1
-            je LETS_PLAY 	;;Player 2 is Ready TOO
-            mov is_player_2_ready_for_game,1 ;; TODO: temproraly in PHASE 1 -> Pressing Twice Starts THE GAME
-
+            mov byteToSend,'G'
+            call sendByteproc
+            call ReceiveByteproc
+            cmp byteReceived, 'G'                  ;Send C, if C was received by the other party then check if they would like accept the invitation
+            JNE remove_key_from_buffer   ;;declined
+            mov TheOneWhoKnocks, 1 ;to indicate the player who sent the invitation
+            mov Game_turn,1 ;; I starts the Game
+            jmp LETS_PLAY       
+            
             remove_key_from_buffer:
             ;; delete The key from buffer
             empitify_buffer
-            no_thing_clicked:
-            ;; the second loop is here but nothing to display now
+           ; jmp check_key_pressed1
+            CheckIfOtherPlayerSent:
+            ;;check Received
+            ;; G -> Game invite     ;;; C -> Chat invite    ;; E esc
+            receiveByte ah
+            cmp ah,'E'      ;;escape
+            je escapefromGame
+            cmp ah,'G'
+            jne fsfsdfsdfsd
+            jmp rec_game_invite
+            fsfsdfsdfsd:
+            cmp ah,'C'
+            je rec_chat_invite
+            jmp check_key_pressed1 ;;otherwise then what the fuck did you send
+            escapefromGame:
+            jmp QUIT_THIS_GAME
+            rec_chat_invite:
+            UPDATE_notification_bar rec_chat_INV_msg   ;; 
+            mov bl,0ffh
+            Read_KEY
+            cmp ah,3ch ;f2
+            jne decline2
+            mov byteToSend,'C'
+            call sendByteproc
+            jmp LETS_chat
+            decline2:
+            sendByte bl
+            ;je LETS_chat
+            jmp check_key_pressed1
+            rec_game_invite:
+            UPDATE_notification_bar rec_Game_INV_msg   
+            mov bl,0ffh
+            Read_KEY
+            cmp ah,3ch ;f2
+            jne decline
+            mov byteToSend,'G'
+            call sendByteproc
+            mov Game_turn,2 ;; player right starts the Game
+            jmp LETS_PLAY
+            decline:
+            sendByte bl
+            jmp check_key_pressed1
+
+            
+
+
+            NoThingRec:
         jmp check_key_pressed1
         
         LETS_PLAY:
         empitify_buffer			;; To make Sure That no bat chars are saved in Buffer
+	    ChangeVideoMode 3h ;;clears screen and starts Video mode	
+        
+        
+        
+        call Level_select
         CALL GAME_WELCOME_PAGES 	;; For level selection and continue To GAME
         empitify_buffer			;; To make Sure That no bat chars are saved in Buffer
         CALL START_My_GAME
@@ -542,7 +610,7 @@
         LETS_Chat:
             empitify_buffer   ;; To make Sure That no bat chars are saved in Buffer
             CAll CHAT_ROOM 		;;should BE THE CHAT.ASM but just For now 
-        jmp QUIT_THIS_GAME
+        jmp Main_Screen
 
 		QUIT_THIS_GAME:
 		MOV AH,4CH
@@ -583,49 +651,37 @@ NAME_VALIDATION PROC
 	NAME_VALIDATION ENDP
 
 
-sendandreceivename PROC near
+SendRecNames PROC near
       mov si,offset FirstName+1 ;;send from accual size
       mov di,offset SecondName+1
-      mov cl, FirstName+1 ;;accual size
-      inc cl ;; we will send actual size with us
-      mov ch,0
-     
-     TrySendingAndRecAgain: 
-       ;; try sending
-       checkIftoSend
-        JZ Recivestring ;Go try recieving 
-        cmp cx,0 ;If empty, you sent all data already
-        jz flagstring
-        mov dx , 3F8H ; Transmit data register
-        mov al,[si]
-        out dx , al
-        inc si
-        dec cx
-        jmp Recivestring
-    ;Receiving a value
-    ;Check that Data is Ready
-     flagstring:
-       mov dx,3f8h
-       mov al,0ffh   ;;;as an end flag
-      out dx , al
-      mov myflag,0h
-    Recivestring:
-        checkIfToRec
-        JZ  TrySendingAndRecAgain
-        mov dx , 03F8H
-        in al , dx
-        cmp al,0ffh ;; end of text came
-        je checkmyflag
-        mov [di],al
-        inc di
-        JMP  TrySendingAndRecAgain 
+      ;inc cl ;; we will send actual size with us
+      mov cx,21 ;; actual size and name
+    KeepComm:
+    sendByte [si]
+    receiveByteG [di]
+    inc si
+    inc di
+    loop KeepComm
+SendRecNames ENDP
 
-    checkmyflag:
-     cmp myflag,0H
-      jnz TrySendingAndRecAgain  
-        ret
-    
-sendandreceivename ENDP
+;description
+SendRecPoints PROC
+      mov si,offset playerpoints ;;send from accual size
+      mov di,offset right_playerpoints
+      ;inc cl ;; we will send actual size with us
+      mov cx,2 ;;points are 2 Bytes
+    KeepComm2:
+    sendByte [si]
+    receiveByteG [di]
+    inc si
+    inc di
+    loop KeepComm2
+
+    ret
+SendRecPoints ENDP
+
+
+
 
 dis2dig proc
 	; displays 2 digit number in AX
@@ -656,15 +712,8 @@ dis2dig proc
 ;THE GAME AND LEVEL SELECTION
 GAME_WELCOME_PAGES PROC
 
-	ChangeVideoMode 3h ;;clears screen and starts Video mode	
-
-	DisplayString_AT_position_not_moving_cursor level1_msg 0a20h
-	DisplayString_AT_position_not_moving_cursor level2_msg 0c20h
-
-	;;LEVEL SELECTION  -> keep looping till a F1 or F2 Is Pressed
-	LEVEL_SELECTION 	; just you choose the the level
 	LEVEL_PROCESSING	; according to the chosen -> you do that shit
-	INSTRUCTIONS_PAGE	;just to show The instructions of THE game for 10 seconds
+		;just to show The instructions of THE game for 10 seconds
 	;; let the Game begin
 	;; just to stop the program
 	;sis: jmp sis
@@ -673,93 +722,97 @@ GAME_WELCOME_PAGES ENDP
 
 
 ;description
+Level_select PROC
+    cmp TheOneWhoKnocks,1 ;;the player wo sent the inv
+        je MeTheOne
+        jmp notMEAndFucku
+        MeTheOne:
+        DisplayString_AT_position_not_moving_cursor level1_msg 0a20h
+	    DisplayString_AT_position_not_moving_cursor level2_msg 0c20h
+	    LEVEL_SELECTION  ;-> keep looping till a F1 or F2 Is Pressed
+        mov al,game_level
+        mov byteToSend,al
+        call sendByteproc
+        ret
+        notMEAndFucku:
+        DisplayString_AT_position_not_moving_cursor  levelswait_msg 0a10h
+        call receiveByteproc
+        mov al,byteReceived
+        mov game_level,al
+    ret
+Level_select ENDP
+
+;description
 CHAT_ROOM PROC
 	ret
 CHAT_ROOM ENDP
+
+
 
 
 ;would add another Your_Game ig i the one who recieved the invitation
 START_My_GAME PROC
 
 	ChangeVideoMode 13h   ;; CLEARS tHE SCREEN and start video mode
-
-    mov Game_turn,1 ;; player left starts the Game
-	GAME_LOOP:
-	CLR_Screen_with_Scrolling_GRAPHICS_MODE   ;; CLEARS tHE SCREEN  
+  
+	GAME_LOOPP:
+    CLR_Screen_with_Scrolling_GRAPHICS_MODE   ;; CLEARS tHE SCREEN  
     call READ_BUFFER_IF_NOT_USED
     MOV AH,1
     INT 16H
-    cmp ah,3eh ; F4
-    jne not_finshed_for_noww
-    jmp QUIT_GAME_LOOP
-    not_finshed_for_noww:
-	;; WE DRAW THE BACKGROUND - THE Values - 
+    cmp ah,3eh ; F4 ;;TODO: SEND A SIGNAL TO THE OTHER
+    jne CheckIf_F3
+    MOV byteToSend,'E'
+    call sendByteproc
+    jmp QUIT_GAME_LOOPP
+    CheckIf_F3:
+    cmp ah,3dh
+    jne NO_FOR_NOW_YET
+    NOT isInlineChatting
+    NO_FOR_NOW_YET:
+    ;; WE DRAW THE BACKGROUND - THE Values - 
 	call DRAW_BACKGROUND     ;;Draws The BackGround Image
     call UPDATE_VALUES_Displayed  ;; Update values displayed with ones in variables
-	call BIRDGAME
-    call CHECK_POWERUPS
-    call GetCommand
     Update_the_Commands         ;; to be displayed in its place (L or R)
-    CMP finished_taking_input,1           
-    je hhhheeeeeeee
-    Jmp NOT_FINISHED_INPUT_YET
-    hhhheeeeeeee:
-    ;; THE PLAYER FINSHED TYPING
-    ;; WE WILL UPDATE chosen players Regs
-    mov Command_valid,1
-    call Check_valid
-    cmp Command_valid,0H ;;invalid
-    jne execute_command_valid
-    ;; command is not valid 
-    ;;dec points
+	
+    call BIRDGAME
+   
     
+	
     cmp game_turn,1
-    jne dec_other_player
-    DEC playerpoints
-    jmp FINISHED_EXECUTING
-    dec_other_player:
-    DEC right_playerpoints
-    jmp FINISHED_EXECUTING
-    execute_command_valid:
-    CMP EXECUTE_REVESED,1
-    JNE EXECUTE_NORMALLY
-    cmp game_turn, 1
-    jne executrtheOther
-    EXECUTE_THECOMMAND_AT_SIDE 2 ;;EXECCUTE IN OPPONENT REGS
-    MOV EXECUTE_REVESED,0
-    JMP FINISHED_EXECUTING
-    executrtheOther:
-    ;;player 2 is playing
-    EXECUTE_THECOMMAND_AT_SIDE 1 ;;EXECCUTE IN OPPONENT REGS
-    ;; 
-    MOV EXECUTE_REVESED,0
-    JMP FINISHED_EXECUTING
-    EXECUTE_NORMALLY:
-    EXECUTE_THECOMMAND_AT_SIDE game_turn
-    
-    FINISHED_EXECUTING:
-    Reset_Command   
-    MOV finished_taking_input,0    ;;to reset it
-    ;;swap turns
-    SWAP_TURNS
-    NOT_FINISHED_INPUT_YET:
+    jne OtherisPlaying
+
+    call PlayAsMain
+    jmp Heyyyy
+    OtherisPlaying:
+    call PlayAsSec
+    Heyyyy:
+    Wait_centi_seconds 1
+
+
+
+
     CALL checkValuesInRegisters
     CALL checkIfAnyPlayerLost
-    
     CMP playersStatus,1 ;; LEFT LOST
     JNE CHECK_IF_RIGHT_LOST
-    JMP QUIT_GAME_LOOP
+    JMP QUIT_GAME_LOOPP
     CHECK_IF_RIGHT_LOST:
     CMP playersStatus,2 ;; Right LOST
     JNE no_ONE_LOST_YET
-    JMP QUIT_GAME_LOOP
+    JMP QUIT_GAME_LOOPP
     no_ONE_LOST_YET:
+	JMP GAME_LOOPP
+	QUIT_GAME_LOOPP:
+    call ExitandRestart
 
-    Wait_centi_seconds 1
-	JMP GAME_LOOP
+	RET
+START_My_GAME ENDP
 
-	QUIT_GAME_LOOP:
 
+
+;description
+ExitandRestart PROC
     ChangeVideoMode 3H
     DisplayString_AT_position_and_move_cursor EXIT_MSG 0409H
 
@@ -767,6 +820,8 @@ START_My_GAME PROC
     DISPLAY_num_in_HEX_ 0709h 4  playerPoints
     DisplayString_AT_position_and_move_cursor EXIT_MSG3 0621H
     DISPLAY_num_in_HEX_ 0721h 4 right_playerPoints
+
+
     CMP playersStatus,1 ;; RIGHT WINS
     JNE CHECK_IF_THE_OTHER_WINS
     DisplayString_AT_position_and_move_cursor EXIT_MSG4 0F1AH
@@ -781,11 +836,445 @@ START_My_GAME PROC
     WAIT_10_seconds_TIME
     CALL RESET_ALL_VARS
     JMP Main_Screen
+    ret    
+ExitandRestart ENDP
+
+;would add another Your_Game ig i the one who recieved the invitation
+
+;description
+PlayAsMain PROC
+  
+	call CHECK_POWERUPS
+    cmp isInlineChatting,0
+    jne meChatting
+    call GetCommand
+    Update_the_Commands         ;; to be displayed in its place (L or R)
+    meChatting:
+
+    CMP finished_taking_input,1           
+    je hhhheeeeeeee
+    Jmp NOT_FINISHED_INPUT_YET
+    hhhheeeeeeee:
+    ;; THE PLAYER FINSHED TYPING
+    ;; WE WILL UPDATE chosen players Regs
+    mov Command_valid,1
+    call Check_valid
+    cmp Command_valid,0H ;;invalid
+    jne execute_command_valid
+    ;; command is not valid 
+    ;;dec points
+    DEC playerpoints
+    jmp FINISHED_EXECUTING
+    execute_command_valid:
+    CMP EXECUTE_REVESED,1
+    JNE EXECUTE_NORMALLY
+    ;;EXECUTE ON 2
+    EXECUTE_THECOMMAND_AT_SIDE 2 ;;EXECCUTE IN OPPONENT REGS
+    MOV EXECUTE_REVESED,0
+    JMP FINISHED_EXECUTING
+    EXECUTE_NORMALLY:
+    EXECUTE_THECOMMAND_AT_SIDE game_turn
+    FINISHED_EXECUTING:
+    Reset_Command  
+
+    mov byteToSend,'R'
+    call sendByteproc ;;SIGNAL TO MAKE HIM REALIZE 
+    CALL SendUpdatedRegs
+    MOV finished_taking_input,0    ;;to reset it
+    ;;swap turns
+    SWAP_TURNS
+    NOT_FINISHED_INPUT_YET:
+    
+    MOV DX,3FDh     ;;LineStatus
+	IN AL,DX
+	TEST AL,1
+	JZ NoThingReceived122
+
+    ;rec the first letter to know what to do
+    MOV DX,3F8h
+	IN AL,DX
+
+    MOV BL,4FH      ;;IF CHANGED THEN I found the wanted  
+    CALL RecBirdGame
+    cmp bl, 4fh 
+    jne NoThingReceived122 ;; consumed
+   
+    
+    MOV BL,4FH      ;;IF CHANGED THEN I found the wanted  
+    CALL FireIsPressedThere
+    cmp bl, 4fh 
+    jne NoThingReceived122 ;; consumed
+
+    MOV BL,4FH      ;;IF CHANGED THEN I found the wanted  
+    CALL CheckIfEndISPressed
+    cmp bl, 4fh 
+    jne NoThingReceived122 ;; consumed
 
 
-	RET
-START_My_GAME ENDP
 
+    NoThingReceived122:
+
+
+    ret    
+PlayAsMain ENDP
+
+
+
+;description
+PlayAsSec PROC
+
+    
+	MOV DX,3FDh     ;;LineStatus
+	IN AL,DX
+	TEST AL,1
+	JZ NoThingReceived22
+
+    ;rec the first letter to know what to do
+    MOV DX,3F8h
+	IN AL,DX
+
+    MOV BL,4FH      ;;IF CHANGED THEN I found the wanted  
+    CALL RecUpdatedRegs
+    cmp bl, 4fh 
+    jne NoThingReceived22 ;; consumed
+
+    MOV BL,4FH      ;;IF CHANGED THEN I found the wanted  
+    CALL RecUpdatedRegs_AFTER_POWERUPS
+
+    cmp bl, 4fh 
+    jne NoThingReceived22 ;; consumed
+
+    MOV BL,4FH      ;;IF CHANGED THEN I found the wanted  
+    CALL RecUpdatedCommand
+    cmp bl, 4fh 
+    jne NoThingReceived22 ;; consumed
+    
+    MOV BL,4FH      ;;IF CHANGED THEN I found the wanted  
+    CALL RecBirdGame
+    cmp bl, 4fh 
+    jne NoThingReceived22 ;; consumed
+   
+    
+    MOV BL,4FH      ;;IF CHANGED THEN I found the wanted  
+    CALL FireIsPressedThere
+    cmp bl, 4fh 
+    jne NoThingReceived22 ;; consumed
+    
+   
+    MOV BL,4FH      ;;IF CHANGED THEN I found the wanted  
+    CALL RecBirdTrigger
+    cmp bl, 4fh 
+    jne NoThingReceived22 ;; consumed
+    
+    MOV BL,4FH      ;;IF CHANGED THEN I found the wanted  
+    CALL CheckIfEndISPressed
+    cmp bl, 4fh 
+    jne NoThingReceived22 ;; consumed
+
+    
+
+    NoThingReceived22:
+    ret
+PlayAsSec ENDP
+
+;description
+;description
+FireIsPressedThere PROC
+    cmp al,'F'
+    je cntinueRecandSwapF 
+    ret
+    cntinueRecandSwapF:
+     cmp right_ifFireIsPressed,1
+    jne asdasdddasdas        ;;already one is present
+    ret
+    asdasdddasdas:        
+
+    ;we reached here, meaning the key pressed is down arrow
+   
+    ;we need to get the center x coordinate of the paddle, make the ball fire starting from that point 
+    ;using the y coordinte of the paddle (192) to avoid the ball touching the paddle
+    mov ax,right_paddle_x
+    mov bx,right_paddle_width
+    shr bx,1
+    add ax,bx
+    mov bx,Ballsize
+    shr bx,2
+    sub ax,bx
+  
+    mov right_fireBall_x,ax
+    mov ax,right_paddle_y
+    mov right_fireBall_y,ax
+    mov right_ifFireIsPressed,1
+
+    ret
+FireIsPressedThere ENDP
+
+RecBirdGame PROC
+    cmp al,'S'
+    je cntinueRecandSwaps 
+    ret
+    cntinueRecandSwaps:
+
+    call sendByteproc       ;;SEND A REPLY you are ready to get data
+    RecWord right_paddle_x
+    RecWord right_paddle_y
+    ADD right_paddle_x,176
+
+
+
+
+    ; RecWord right_fireBall_x
+    ; RecWord right_fireBall_y
+    ; add right_fireBall_x,160
+
+    RecWord right_playerPoints 
+    
+   ;RecByteH right_ifFireIsPressed
+   
+    ;;TODO: COLOR INDEX
+    ;; balls 
+
+    RET
+RecBirdGame ENDP
+
+;description
+CheckIfEndISPressed PROC
+    cmp al,'E'
+    je cntinueRecandSwapE 
+    ret
+    cntinueRecandSwapE:
+
+    jmp QUIT_GAME_LOOPP 
+
+    ret
+CheckIfEndISPressed ENDP
+
+
+RecBirdTrigger PROC
+    cmp al,'T'
+    je cntinueRecandSwapT 
+    ret
+    cntinueRecandSwapT:
+
+    mov gameStatus,1
+
+    RET
+RecBirdTrigger ENDP
+
+
+RecUpdatedRegs proc
+
+    cmp al,'R'
+    je cntinueRecandSwap 
+    ret
+    cntinueRecandSwap:
+
+    call sendByteproc       ;;SEND A REPLY you are ready to get data
+    RecWord L_Ax
+    RecWord L_Bx
+    RecWord L_Cx
+    RecWord L_Dx
+    RecWord L_SI
+    RecWord L_DI
+    RecWord L_SP
+    RecWord L_BP
+    
+    RecWord L_00        ;;REC L_00 AND L_01 AND ETC
+    RecWord L_02
+    RecWord L_04
+    RecWord L_06
+    RecWord L_08
+    RecWord L_A
+    RecWord L_C
+    RecWord L_E
+
+
+    RecWord R_Ax
+    RecWord R_Bx
+    RecWord R_Cx
+    RecWord R_Dx
+    RecWord R_SI
+    RecWord R_DI
+    RecWord R_SP
+    RecWord R_BP
+
+    RecWord R_00        ;;REC L_00 AND L_01 AND ETC
+    RecWord R_02
+    RecWord R_04
+    RecWord R_06
+    RecWord R_08
+    RecWord R_A
+    RecWord R_C
+    RecWord R_E
+    RecWord right_playerPoints
+    RecWord playerPoints
+
+    RecWord target_value
+    RecWord forbidden_char
+
+    MOV AL,forbidden_char
+    MOV AH,RIGHT_forbidden_char
+    XCHG AH,AL
+    MOV forbidden_char,AL
+    MOV RIGHT_forbidden_char,AH
+    
+    Swap_Turns  ;;my game has started
+    Reset_Command
+    mov bl,0eah
+    ret
+RecUpdatedRegs ENDP
+
+
+RecUpdatedRegs_AFTER_POWERUPS proc
+    ;; NO SWAPING AFTER FINISHED
+    cmp al,'P'
+    je cntinueRecandP 
+    ret
+    cntinueRecandP:
+
+    call sendByteproc       ;;SEND A REPLY you are ready to get data
+    RecWord L_Ax
+    RecWord L_Bx
+    RecWord L_Cx
+    RecWord L_Dx
+    RecWord L_SI
+    RecWord L_DI
+    RecWord L_SP
+    RecWord L_BP
+    
+    RecWord L_00        ;;REC L_00 AND L_01 AND ETC
+    RecWord L_02
+    RecWord L_04
+    RecWord L_06
+    RecWord L_08
+    RecWord L_A
+    RecWord L_C
+    RecWord L_E
+
+
+    RecWord R_Ax
+    RecWord R_Bx
+    RecWord R_Cx
+    RecWord R_Dx
+    RecWord R_SI
+    RecWord R_DI
+    RecWord R_SP
+    RecWord R_BP
+
+    RecWord R_00        ;;REC L_00 AND L_01 AND ETC
+    RecWord R_02
+    RecWord R_04
+    RecWord R_06
+    RecWord R_08
+    RecWord R_A
+    RecWord R_C
+    RecWord R_E
+    RecWord right_playerPoints
+    RecWord playerPoints
+    RecWord target_value
+    RecWord forbidden_char
+    MOV AL,forbidden_char
+    MOV AH,RIGHT_forbidden_char
+    XCHG AH,AL
+    MOV forbidden_char,AL
+    MOV RIGHT_forbidden_char,AH
+    mov bl,0eah
+    ret
+RecUpdatedRegs_AFTER_POWERUPS ENDP
+
+RecUpdatedCommand proc
+    cmp al,'C'
+    je cntinueRecandC 
+    ret
+    cntinueRecandC:
+    call sendByteproc       ;;SEND A REPLY you are ready to get data
+    lea DI, actualcommand_Size ;;start from here
+    mov cx,8 ;;16 bytes to send
+    LL1L:
+    RecWordwithoffset DI
+    inc DI
+    inc DI
+    Loop LL1L
+
+    mov bl,0eah
+ret
+RecUpdatedCommand endp
+
+SendBirdGame PROC
+    call receiveByteproc
+    sendWord paddle_x
+    sendWord paddle_y
+    
+    ;sendWord fireBall_x
+    ;sendWord fireBall_y
+
+    sendWord playerPoints
+   ; sendbyteH ifFireIsPressed
+   
+    ret
+SendBirdGame ENDP
+
+SendUpdatedRegs PROC
+    ;; will send all the Regs available at that time
+    call receiveByteproc
+    SendWord R_AX
+    SendWord R_BX
+    SendWord R_CX
+    SendWord R_DX
+    SendWord R_SI
+    SendWord R_DI
+    SendWord R_SP
+    SendWord R_BP
+    
+    SendWord R_00
+    SendWord R_02
+    SendWord R_04
+    SendWord R_06
+    SendWord R_08
+    SendWord R_A
+    SendWord R_C
+    SendWord R_E
+
+
+    SendWord L_AX
+    SendWord L_BX
+    SendWord L_CX
+    SendWord L_DX
+    SendWord L_SI
+    SendWord L_DI
+    SendWord L_SP
+    SendWord L_BP
+    SendWord L_00
+    SendWord L_02
+    SendWord L_04
+    SendWord L_06
+    SendWord L_08
+    SendWord L_A
+    SendWord L_C
+    SendWord L_E
+    SendWord playerPoints
+    SendWord right_playerPoints
+    ;; TARGET VALUE AND FORBIDDEN KEY
+    SendWord target_value
+    SendWord forbidden_char
+
+    ret
+SendUpdatedRegs ENDP
+
+;description
+sendCommand PROC
+    call receiveByteproc
+    
+    lea DI, actualcommand_Size ;;start from here
+    mov cx,8 ;;16 bytes to send
+    LL1LL:
+    SendWordwithoffs DI
+    inc DI
+    inc DI
+    Loop LL1LL
+    
+    ret
+sendCommand ENDP
 
 
 UPDATE_VALUES_Displayed PROC 
@@ -1017,8 +1506,8 @@ BIRDGAME PROC
     Draw_IMG_with_color paddle_x,paddle_y,paddleImg,paddleColor,paddleSize
     Draw_IMG_with_color right_paddle_x,right_paddle_y,right_paddleImg,right_paddleColor,right_paddleSize
 
-    movePaddle paddle_x,paddle_velocity_x,paddle_y,paddle_velocity_y,paddleUp,paddleDown,paddleRight,paddleLeft,135,0
-    movePaddle right_paddle_x,right_paddle_velocity_x,right_paddle_y,right_paddle_velocity_y,right_paddleUp,right_paddleDown,right_paddleRight,right_paddleLeft,295,165
+    movePaddle paddle_x,paddle_velocity_x,paddle_y,paddle_velocity_y,paddleUp,paddleDown,paddleRight,paddleLeft,122,0
+    ;movePaddle right_paddle_x,right_paddle_velocity_x,right_paddle_y,right_paddle_velocity_y,right_paddleUp,right_paddleDown,right_paddleRight,right_paddleLeft,295,165
 
     ;checkTime
 
@@ -1038,12 +1527,12 @@ BIRDGAME PROC
 
     ;left bird
     Draw_IMG_with_color birdX,birdY,BirdImg,birdcolor,BirdSize
+    moveBird 130,0,birdVelocity,birdX
 
 
     ;right bird
-    ;moveBird 304,180,right_birdVelocity,right_birdX
     Draw_IMG_with_color right_birdX,right_birdY,right_BirdImg,birdcolor,right_BirdSize
-    moveBird 135,0,birdVelocity,birdX
+    moveBird 301,171,right_birdVelocity,right_birdX
    
     skipDrawingBirds:
     
@@ -1058,7 +1547,7 @@ BIRDGAME PROC
     compareBirdWithBall birdX,fireBall_x,fireBall_y,BirdSize,0,birdStatus,playerPoints,birdPoints,colorIndex
     checkRight: 
 
-    checkForFire right_fireScancode,right_paddle_x,right_paddle_width,BallSize,right_fireBall_x,right_fireBall_y,right_ifFireIsPressed,right_paddle_y
+    ;checkForFire right_fireScancode,right_paddle_x,right_paddle_width,BallSize,right_fireBall_x,right_fireBall_y,right_ifFireIsPressed,right_paddle_y
 
     cmp right_ifFireIsPressed,0
     jne skipJmp
@@ -1070,15 +1559,19 @@ BIRDGAME PROC
     compareBirdWithBall right_birdX,right_fireBall_x,right_fireBall_y,right_BirdSize,160,birdStatus,right_playerPoints,right_birdPoints,colorIndex
 
 midDraw:
+    CMP TheOneWhoKnocks,0
+    JE not_ME_FUCK_YOU
     checkTimeInterval gamestatus, prevTime, timeInterval
+    not_ME_FUCK_YOU:
     RET
 BIRDGAME ENDP
 
 GetCommand PROC
-mov ah,1
-int 16h ;-> looks at the buffer
-jz FinishedTakingChar ;nothing is clicked
-
+    mov ah,1
+    int 16h ;-> looks at the buffer
+    JNZ ASDASDASDAS
+    JMP FinishedTakingChar ;nothing is clicked
+    ASDASDASDAS:
     cmp al,20H  ;;a space 
     jb CHECK_IF_ENTER11 
     cmp al, ']'
@@ -1115,8 +1608,13 @@ jz FinishedTakingChar ;nothing is clicked
     add di,bx
     mov byte ptr [di], '$'   
     dec actualcommand_Size
+    mov byteToSend,'C'
+    call sendByteproc ;;SIGNAL TO MAKE HIM REALIZE 
+    CALL sendCommand
+   
     jmp FinishedTakingChar 
     ADD_TO_COMMAND:
+
     READ_KEY
     ;then store The char and print it then inc the size
    cmp actualcommand_Size,15  ;; command is full  -> in order to not delete $ at the end
@@ -1127,6 +1625,10 @@ jz FinishedTakingChar ;nothing is clicked
     add di,bx
     mov [di],al ;;the char is moved to the end of string
     inc actualcommand_Size
+    mov byteToSend,'C'
+    call sendByteproc ;;SIGNAL TO MAKE HIM REALIZE 
+    CALL sendCommand
+    
     FinishedTakingChar:
     ret
 GetCommand ENDP
@@ -1550,10 +2052,7 @@ CHECK_POWERUPS ENDP
 
 ;execute a command at your proceccor
 powerUp_1 PROC
-    cmp game_turn,1
-    JE RTRTRTRTASAS
-    JMP exec_on_other1
-    RTRTRTRTASAS:
+    
     cmp playerPoints,5 ;;consumes 3 points
     JNB EDCESDAD
     JMP NOT_POWERUP_1
@@ -1566,28 +2065,15 @@ powerUp_1 PROC
     EXECUTE_THECOMMAND_AT_SIDE 2
     SUB playerPoints,5
     Reset_Command
-    JMP NOT_POWERUP_1
-    exec_on_other1:
-    cmp right_playerPoints,5 ;;consumes 3 points
-    JNB ASDASDASD
-    JMP NOT_POWERUP_1
-    ASDASDASD:
-    Draw_blank_line
-    DisplayString_AT_position_not_moving_cursor POWERUP1_MSG, 0B09h
-    DisplayString_AT_position_not_moving_cursor POWERUP1_MSG2, 0c05h
-    MoveCursorTo 0E09h
-    ReadString COMMAND
-    EXECUTE_THECOMMAND_AT_SIDE 1
-    SUB right_playerPoints,5
-    Reset_Command
+    mov byteToSend,'P'
+    call sendByteproc ;;SIGNAL TO MAKE HIM REALIZE 
+    CALL SendUpdatedRegs
+
  NOT_POWERUP_1:
     RET
 powerUp_1 endP  
 powerUp_2 PROC
     cmp game_turn,1
-    JE RTRTRTRTASASAS
-    JMP exec_on_other2
-    RTRTRTRTASASAS:
     cmp playerPoints,3 ;;consumes 3 points
     JNB SARAH112
     JMP NOT_POWERUP_2
@@ -1604,25 +2090,9 @@ powerUp_2 PROC
     dont_on_other:
     SUB playerPoints,3
     Reset_Command
-    JMP NOT_POWERUP_2
-
-    exec_on_other2:
-    cmp right_playerPoints,3 ;;consumes 3 points
-    JNB RETSARAHTER
-    JMP NOT_POWERUP_2
-    RETSARAHTER:
-    Draw_blank_line
-    DisplayString_AT_position_not_moving_cursor POWERUP2_MSG, 0B09h
-    DisplayString_AT_position_not_moving_cursor POWERUP2_MSG2, 0c05h
-    MoveCursorTo 0E09h
-    ReadString COMMAND
-    EXECUTE_THECOMMAND_AT_SIDE 2
-    cmp contains_forbidden,1
-    je dont_on_other2
-    EXECUTE_THECOMMAND_AT_SIDE 1
-    dont_on_other2:
-    SUB right_playerPoints,3
-    Reset_Command
+    mov byteToSend,'P'
+    call sendByteproc ;;SIGNAL TO MAKE HIM REALIZE 
+    CALL SendUpdatedRegs
  NOT_POWERUP_2:
     RET
 powerUp_2 endP  
@@ -1630,7 +2100,6 @@ powerUp_2 endP
 
 powerUp_3 PROC
     cmp game_turn,1
-    jne exec_on_other3
     cmp playerPoints,8 ;;consumes 3 points
     JNB SARAH1112
     JMP NOT_POWERUP_3
@@ -1646,34 +2115,17 @@ powerUp_3 PROC
 	int 21h
     READ_KEY
     sub playerPoints,8
+     mov byteToSend,'P'
+    call sendByteproc ;;SIGNAL TO MAKE HIM REALIZE 
+    CALL SendUpdatedRegs
     mov IS_USED_POWERUP3,1
-
-    JMP NOT_POWERUP_3
-    exec_on_other3:
-    cmp right_playerPoints,8 ;;consumes 3 points
-    JNB RETSARAHTERR
-    JMP NOT_POWERUP_3
-    RETSARAHTERR:
-    Draw_blank_line
-    DisplayString_AT_position_not_moving_cursor POWERUP3_MSG, 0B09h
-    DisplayString_AT_position_not_moving_cursor POWERUP3_MSG2, 0c05h
-    READ_KEY
-    MoveCursorTo 0E14h  ;;MIGHT CAUSE A PROBLEM
-    mov dl,al
-	mov ah,2     ;; to display the the char into screen (echo)
-	int 21h
-    READ_KEY
-    MOV right_forbidden_char ,AL
-    sub RIGHT_playerPoints,8
-    mov right_IS_USED_POWERUP3,1
     NOT_POWERUP_3:
     RET
 powerUp_3 endP  
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 powerUp_4 PROC
-    cmp game_turn,1 ;checks if it's left player's turn 
-    jne checkIfItsRightPlayerTurn_powerUp_4
+    
     cmp playerPoints,30
     jnb  skipme1
     jmp exitPowerUp_4
@@ -1681,18 +2133,7 @@ powerUp_4 PROC
     sub playerPoints,30
     MOV IS_USED_POWERUP4,1
     jmp clearAllRegisters
-
-
-checkIfItsRightPlayerTurn_powerUp_4:
-
-    cmp right_playerPoints,30
-    jnb  SKIPME2
-    jmp exitPowerUp_4
-    SKIPME2:
-    MOV right_IS_USED_POWERUP4,1
-    sub RIGHT_playerPoints,30
 clearAllRegisters:
-
     mov L_AX,0
     mov L_BX,0
     mov L_CX,0
@@ -1709,6 +2150,9 @@ clearAllRegisters:
     mov R_DI,0
     mov R_SP,0
     mov R_BP,0
+    mov byteToSend,'P'
+    call sendByteproc ;;SIGNAL TO MAKE HIM REALIZE 
+    CALL SendUpdatedRegs
 exitPowerUp_4:
 ret
 powerUp_4 endp
@@ -1716,21 +2160,10 @@ powerUp_4 endp
 
 
 powerUp_6 proc 
-    cmp game_turn,1
-    jne checkIfItsRightPlayerTurn_powerUp_6
+    
     cmp playerPoints,7
-    JNB SKIPSARAH1
+    JNB changeTargetValue
     jmp exitPowerUp_6
-    SKIPSARAH1:
-    jmp changeTargetValue
-
-checkIfItsRightPlayerTurn_powerUp_6:
-    cmp right_playerPoints,7
-    JNB SKIPSARAH2
-    jmp exitPowerUp_6
-    SKIPSARAH2:
-
-
 changeTargetValue:
     Draw_blank_line
     DisplayString_AT_position_not_moving_cursor POWERUP5_MSG, 0B09h
@@ -1770,15 +2203,12 @@ changeTargetValue:
     cmp R_BP,ax
     je exitPowerUp_6
     mov target_value,ax
-
-    CMP GAME_TURN,1
-    JNE other_player_is_playing
     sub playerPoints,7
     mov IS_USED_POWERUP6,1
-    jmp exitPowerUp_6
-    other_player_is_playing:
-    mov right_IS_USED_POWERUP6,1
-    sub right_playerPoints,7
+     mov byteToSend,'P'     ;;TODO SEND TARGET VALUE AND FORBIDDEN CHAR
+    call sendByteproc ;;SIGNAL TO MAKE HIM REALIZE 
+    CALL SendUpdatedRegs
+    
 exitPowerUp_6:
     RET
 powerUp_6 endp
@@ -1906,6 +2336,14 @@ RESET_ALL_VARS PROC
     MOV right_IS_USED_POWERUP6, 0 ;;TO INDICATE IF USED BEFORE
     MOV EXECUTE_REVESED, 0 ;;IN LEVEL 2 IT INDECATES IF YOU CHOSED TO EXECUTE ON OTHER 
 
+    MOV ISSHIFTING, 0
+    MOV Command_valid, 1 
+
+    MOV TheOneWhoKnocks,0
+    MOV isInlineChatting, 0
+
+    MOV byteToSend , 0
+    MOV byteReceived , 0
 
     RET
 RESET_ALL_VARS ENDP
@@ -2026,6 +2464,7 @@ READ_BUFFER_IF_NOT_USED PROC
     RET
 READ_BUFFER_IF_NOT_USED ENDP
 
+;description
 
 
 

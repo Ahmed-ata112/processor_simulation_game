@@ -499,14 +499,6 @@ LEVEL_PROCESSING macro
 	mov ah,2     ;; to display the the char into screen (echo)
 	int 21h
 
-
-    DisplayString_AT_position_and_move_cursor choose_hidden_char2 032Ah
-    Read_KEY
-    mov right_forbidden_char,al
-    mov dl,al
-	mov ah,2     ;; to display the the char into screen (echo)
-	int 21h
-
     ;; send and recieve The CHAR
 
     
@@ -541,47 +533,144 @@ LEVEL_PROCESSING macro
     ReadNumberhexa_in_ax 
     mov L_BP,AX
 
-    
-    DisplayString_AT_position_and_move_cursor HIS_REGs_msg 043Ah
-    DisplayString_AT_position_and_move_cursor AX_msg 053Ah
-    ReadNumberhexa_in_ax 
-    mov R_AX,AX
-    DisplayString_AT_position_and_move_cursor BX_msg 063Ah
-    ReadNumberhexa_in_ax 
-    mov R_BX,AX
-    DisplayString_AT_position_and_move_cursor CX_msg 073Ah
-    ReadNumberhexa_in_ax 
-    mov R_CX,AX
-    DisplayString_AT_position_and_move_cursor DX_msg 083Ah
-    ReadNumberhexa_in_ax 
-    mov R_DX,AX
-    DisplayString_AT_position_and_move_cursor SI_msg 093Ah
-    ReadNumberhexa_in_ax 
-    mov R_SI,AX
-    DisplayString_AT_position_and_move_cursor DI_msg 0a3Ah
-    ReadNumberhexa_in_ax 
-    mov R_DI,AX
-    DisplayString_AT_position_and_move_cursor SP_msg 0b3Ah
-    ReadNumberhexa_in_ax 
-    mov R_SP,AX
-    DisplayString_AT_position_and_move_cursor Bp_msg 0c3Ah
-    ReadNumberhexa_in_ax 
-    mov R_BP,AX
 
     SKIP_ASSIGNMENT:
     DisplayString_AT_position_and_move_cursor Press_any_Key_message 1004h 
     Read_KEY
 
+    INSTRUCTIONS_PAGE
+    ;; while its showing send the chars and Regs if needed
+    mov al,forbidden_char
+    mov byteToSend,al
+    call sendByteproc
+    call receiveByteproc
+    mov al, byteReceived
+    mov  right_forbidden_char,al   
+    
+
+
+    
+
+   Exchange_Regs L_Ax R_AX
+   Exchange_Regs L_Bx R_BX
+   Exchange_Regs L_Cx R_CX
+   Exchange_Regs L_Dx R_DX
+   Exchange_Regs L_SI R_SI
+   Exchange_Regs L_DI R_DI
+   Exchange_Regs L_SP R_SP
+   Exchange_Regs L_BP R_BP
 endm LEVEL_PROCESSING
 
+Exchange_Regs MACRO REG ,REG2
+    ;;sends one and receive the other
+    mov ax,REG
+    mov byteToSend,al
+    call sendByteproc
+    ;;Receive it
+    call receiveByteproc
+    mov bl, byteReceived
+
+    mov ax,REG
+    mov byteToSend,ah
+    call sendByteproc
+    ;;Receive it
+    call receiveByteproc
+    mov bh, byteReceived
+    mov REG2,bx
+ENDM Exchange_Regs
+
+RecWord MACRO REG2
+    call receiveByteproc
+    mov bl, byteReceived
+    call sendByteproc
+    call receiveByteproc
+    mov bh, byteReceived
+    LEA SI,REG2
+    MOV [SI],BL ;FIRST BYTE
+    INC SI
+    MOV [SI],BH ;SECOND BYTE
+    call sendByteproc
+
+ENDM RecWord
+RecByteH MACRO REG2
+    call receiveByteproc
+    mov bl, byteReceived
+    call sendByteproc
+    LEA SI,REG2
+    MOV [SI],BL ;FIRST BYTE
+
+ENDM RecByteH
+
+RecWordwithoffset MACRO offs
+    call receiveByteproc
+    mov bl, byteReceived
+    call sendByteproc
+    call receiveByteproc
+    mov bh, byteReceived
+    mov SI,offs 
+    MOV [SI],BL ;FIRST BYTE
+    INC SI
+    MOV [SI],BH ;SECOND BYTE
+    call sendByteproc
+
+ENDM RecWordwithoffset
+
+SendWord macro REG
+    mov SI, OFFSET REG
+    MOV AL,[SI]
+    mov byteToSend,al
+    call sendByteproc
+    ;;rec to relax
+    call receiveByteproc
+    ;;Receive it
+    INC SI ;;THE OTHER BYTE
+    MOV AL,[SI]
+    mov byteToSend,aL
+    call sendByteproc
+
+    call receiveByteproc
+endm SendWord
+
+sendByteH MACRO REG
+    mov SI, OFFSET REG
+    MOV AL,[SI]
+    mov byteToSend,al
+    call sendByteproc
+    ;;rec to relax
+    call receiveByteproc
+ENDM sendByteH
+
+SendWordwithOffs macro offs
+    mov SI, offs
+    MOV AL,[SI]
+    mov byteToSend,al
+    call sendByteproc
+    ;;rec to relax
+    call receiveByteproc
+    ;;Receive it
+    INC SI ;;THE OTHER BYTE
+    MOV AL,[SI]
+    mov byteToSend,aL
+    call sendByteproc
+
+    call receiveByteproc
+endm SendWord
+
 WAIT_10_seconds_TIME MACRO 
-    local L1
     ;; waits for 10 seconds
     mov dx,9680
     mov cx,98
     mov ah,86h
     int 15h
 ENDM WAIT_10_seconds_TIME
+
+WAIT_5_seconds_TIME MACRO 
+    ;; waits for 10 seconds
+    mov dx,4b40h
+    mov cx,4ch
+    mov ah,86h
+    int 15h
+ENDM WAIT_5_seconds_TIME
 
 WAIT_One_centi_second_TIME MACRO 
     local L1
@@ -622,7 +711,11 @@ INSTRUCTIONS_PAGE macro
     DisplayString_AT_position_and_move_cursor INSTRUCTIONS_msg9 0A00h
     NOT_TODAY_BITC:
     ;;should display different messages 
-    WAIT_10_seconds_TIME  ;; WAITS FOR 10 SECONDS
+    WAIT_5_seconds_TIME  ;; WAITS FOR 5 SECONDS
+    ;;Send And Receive The Forbidden Char
+    
+  
+
     ;;
 endm INSTRUCTIONS_PAGE
 
@@ -731,17 +824,16 @@ local finish,clearGame
     cmp bx,limit
     ja clearGame
     mov x_coordinate,bx
-    mov right_birdX,bx
+    ;mov right_birdX,bx
    
     jmp finish
 
 clearGame:
     mov gamestatus,0
     mov x_coordinate,start
-    mov right_birdX,start
-   
+  ;;  mov right_birdX,start
     finish:
-    add right_birdX,160
+    ;add right_birdX,160
 endm moveBird
 
 
@@ -766,8 +858,9 @@ movePaddle macro paddle_x,paddle_velocity_x,paddle_y,paddle_velocity_y,upControl
     ;zf =0 -> a key is pressed  
     mov ah,1
     int 16h
-    jz exitMacro ;exists the macro since no key is pressed
-    
+    jnz sdasfdasdf
+    jmp exitMacro ;exists the macro since no key is pressed
+    sdasfdasdf:
     
 
 ;checks right control
@@ -781,8 +874,14 @@ movePaddle macro paddle_x,paddle_velocity_x,paddle_y,paddle_velocity_y,upControl
     mov bx,paddle_x
     add bx,ax
     cmp bx,rightlimit
-    ja exitmacro
+    jna sdfsdfdfgdf
+    jmp exitmacro
+    sdfsdfdfgdf:
     add paddle_x,ax ;increases the paddle x-coordinate with the corresponding velocity --> moves it to the right
+    mov byteToSend,'S'
+    call sendByteproc ;;SIGNAL TO MAKE HIM REALIZE 
+    CAll SendBirdGame
+
     jmp exitMacro
 checkLeft:
     cmp ah,leftControl ;75 -> scan code of left arrow
@@ -794,8 +893,14 @@ checkLeft:
     mov bx,paddle_x
     sub bx,ax
     cmp bx,leftlimit
-    jle exitMacro
+    jg adsfsdfsdfsd
+    jmp exitMacro
+    adsfsdfsdfsd:
     sub paddle_x,ax ;decreases the paddle x-coordinate with the corresponding velocity --> moves it to the left
+    mov byteToSend,'S'
+    call sendByteproc ;;SIGNAL TO MAKE HIM REALIZE 
+    CAll SendBirdGame
+
     jmp exitMacro
 checkUp:
     cmp ah,upControl ;72 -> scan code of up arrow
@@ -809,6 +914,10 @@ checkUp:
     cmp bx,20
     jle exitMacro
     sub paddle_y,ax ;decreases the paddle y-coordinate with the corresponding velocity --> moves it to the left
+    mov byteToSend,'S'
+    call sendByteproc ;;SIGNAL TO MAKE HIM REALIZE 
+    CAll SendBirdGame
+
     jmp exitMacro
 
 checkDown:
@@ -823,6 +932,10 @@ checkDown:
     cmp bx,188
     jae exitMacro
     add paddle_y,ax ;decreases the paddle x-coordinate with the corresponding velocity --> moves it to the left
+    mov byteToSend,'S'
+    call sendByteproc ;;SIGNAL TO MAKE HIM REALIZE 
+    CAll SendBirdGame
+
 
 exitMacro:
   
@@ -863,14 +976,14 @@ checkForFire macro fireScanCode,paddle_x,paddle_width,Ballsize,fireBall_x,fireBa
     mov ax,paddle_y
     mov fireBall_y,ax
     mov ifFireIsPressed,1
-   
+    mov byteToSend,'F'
+    call sendByteproc ;;SIGNAL TO MAKE HIM REALIZE 
     exitMacro:
 
 endm checkForFire
 
 compareBirdWithBall macro ball_x,fireBall_x,fireBall_y,BALL_SIZE,startOfBird,birdStatus,playerPoints,birdPoints,colorIndex
 local notInTheRangeOfTheBird
-    
     cmp fireBall_y,20
     ja notInTheRangeOfTheBird
     ;still haven't reached top of the screen
@@ -898,7 +1011,8 @@ local notInTheRangeOfTheBird
     inc byte ptr [si]
     mov gamestatus,0
     mov birdX,0
-    mov right_birdX,160
+    mov right_birdX,171
+    INC COLORindex
     notInTheRangeOfTheBird:
 
 endm compareBirdWithBall
@@ -912,16 +1026,24 @@ local exitMacro
     ; cmp right_birdStatus,0
     ; jne exitmacro
     
-    mov ah,2ch ;get the system time
-    int 21h    ;ch=hour  cl=minute  dh=seconds  dl=1/100seconds 
+    ; mov ah,2ch ;get the system time
+    ; int 21h    ;ch=hour  cl=minute  dh=seconds  dl=1/100seconds 
   
    
-    mov  ax, dx
-    xor  dx, dx
-    mov  cx, 5    
-    div  cx       ; here dx contains the remainder of the division - from 0 to 4
-    mov di,dx
-    mov colorIndex,dl
+    ; mov  ax, dx
+    ; xor  dx, dx
+    ; mov  cx, 5    
+    ; div  cx       ; here dx contains the remainder of the division - from 0 to 4
+    ; mov di,dx
+    mov ah,0
+    mov al,colorIndex
+    mov bl,5
+    div bl 
+
+    mov colorIndex,ah
+    mov al,0
+    xchg al,ah
+    mov di,AX       ;;index in di
     mov ah,colors[di]  
     mov birdcolor,ah
     mov birdStatus,1
@@ -963,15 +1085,8 @@ local exit
     ;jne changeToOne ;--> if the game status isn't 1 (is 0), change it to one
     jne exit
     mov gameStatus,1
-    ; mov ax,birdX
-    ; xchg right_birdX,ax
-    ; xchg ax,birdx
-    ;jmp exit
-
-    ; changeToOne:
-    ; mov gameStatus,1
-
-
+    MOV byteToSend,'T'
+    call sendByteproc
     exit:
 
 endm checkTimeInterval
@@ -1148,8 +1263,74 @@ endm check_if_in_array
 
 
 
+sendByte macro happyByte                    ;The byte to be sent.
+    local whileHolding
+        mov dx , 3FDH                           ;Line Status Register
+        whileHolding: 
+            In al , dx                          ;Read Line Status , to guarantee that the holder register is empty
+            test al , 00100000b                 ;If zero then it's not empty, otherwise:
+            JZ whileHolding      
+        mov dx , 3F8H                           ;Transmit data register
+        mov al, happybyte
+        out dx , al
+endm sendByte
 
 
+receiveByte macro freshByte         ;The byte to be received would be in freshByte, the Restart tells it where to go in case data isn't ready to be received.       
+    local whileNotDataReady, Reset
+        mov dx , 3FDH                           ;Line Status Register
+        whileNotDataReady:
+            in al, dx
+            test al, 1                          ;In fact is 00000001b
+            JZ  Reset                         ;Not ready, otherwise: 
+            mov dx, 3F8H
+            in al, dx
+            mov freshByte, al
+            Reset:
+    Mov al, 0ffh                        ;In case not ready put 0ffh in al (flag)
+    endm receiveByte
+    
+receiveByteG macro freshByte         ;The byte to be received would be in freshByte, the Restart tells it where to go in case data isn't ready to be received.       
+        local whileDataNotReady
+        mov dx , 3FDH                           ;Line Status Register
+        whileDataNotReady:
+            in al, dx
+            test al, 1                          ;In fact is 00000001b
+            JZ  whileDataNotReady                ;Not ready, otherwise: 
+            mov dx, 3F8H
+            in al, dx
+            mov freshByte, al
+    endm receiveByteG
+
+
+checkIftoSend MACRO 
+    mov dx , 3FDH                           ;Line Status Register
+    In al , dx                          ;Read Line Status , to guarantee that the holder register is empty
+    test al , 00100000b                 ;If zero then it's not available
+ENDM checkIftoSend
+
+
+checkIfToRec MACRO 
+    MOV DX,3FDh     ;;LineStatus
+	IN AL,DX
+	TEST AL,1   ;jz after it to know if something is pending to be received
+ENDM checkIfToRec
+
+
+
+CALC_TIME MACRO REG
+    
+    mov ah,2ch ;get the system time
+    int 21h    ;ch=hour  cl=minute  dh=seconds  dl=1/100seconds 
+    xor ax,ax
+    mov al,cl
+    mov bl,60
+    mul bl
+    mov dl,0
+    xchg dl,dh
+    add ax,dx
+    mov reg ,ax
+ENDM CALC_TIME
 
 
 
