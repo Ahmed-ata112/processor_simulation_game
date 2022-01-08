@@ -104,7 +104,9 @@ receiver proc
   	JZ CHK
     ;If Ready read the VALUE in Receive data register
     mov dx , 03F8H
-  	in al , dx 
+  	in al , dx
+    cmp al,0FEH;->;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  char to deternmine chatting
+    je CHK
     cmp al,0FFH
     jne contkoko93
     mov dh,18h
@@ -156,9 +158,15 @@ out_range:
     MOV SI,OFFSET THE_messege_sent
 
 
+    mov ah,0FEH ;->;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  char to deternmine chatting
+    mov Value,ah
+    Call send
     mov Value ,0FFh
-    Call send                 
+    Call send
+                   
     SENT_LOOP:
+    mov Value,ah
+    Call send
     MOV AL,[SI]
     mov VALUE,al
     CALL send
