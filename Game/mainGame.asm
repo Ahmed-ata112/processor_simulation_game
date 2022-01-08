@@ -1,4 +1,6 @@
-	include macr.inc
+	EXTRN mainChat: far 
+    public SecondNameData, FirstNameData
+    include macr.inc
     include ex_macr.inc
 	.286
 	.model small
@@ -29,9 +31,9 @@
     INSTRUCTIONS_msg8 db 'F8 TO CLEAR ALL REGISTERS -30 POINTS (USED ONCE)$'
     INSTRUCTIONS_msg9 db 'F9 TO CHANGE THE TARGET VALUE -7 POINTS (USED ONCE)$'
 	Sent_CHAT_INV_msg db 'You sent a chat Invitation','$'
-	rec_CHAT_INV_msg db 'You recieved a chat Invitation','$'
+	rec_CHAT_INV_msg db 'You recieved a chat Invitation--F1 to Accept','$'
 	Sent_Game_INV_msg db 'You sent a Game Invitation','$'
-	rec_Game_INV_msg db 'You recieved a Game Invitation','$'
+	rec_Game_INV_msg db 'You recieved a Game Invitation--F2 to Accept','$'
 	level1_msg db 'LEVEL 1 -- PRESS F1$' 
 	level2_msg db 'LEVEL 2 -- PRESS F2$' 
 	levelswait_msg db 'Please Wait while the other chooses the Level$' 
@@ -461,6 +463,10 @@
 
     call NAME_VALIDATION
 
+    mov al,ActualFirstNameSize
+    mov ah,0
+    mov di,ax
+    mov FirstNameData[di], byte ptr '$'
     DisplayString_AT_position_not_moving_cursor Enter_Points_message 0518h ; show mes
     MoveCursorTo 0621h
     ReadNumberhexa_in_ax ;; Read points and put it in ax ;; TODO: See if you want this in hexa
@@ -521,9 +527,9 @@
             call ReceiveByteproc
                            ;Send C, if C was received by the other party then check if they would like accept the invitation
             cmp byteReceived, 'C'                    ; If the other party accepted the invitation then print a message,  wait for a key then go to chat.
-            je ararararar
-            jmp remove_key_from_buffer  
-            ararararar: 
+            je sarahsarah
+            jmp remove_key_from_buffer   ;;declined
+            sarahsarah:
             jmp LETS_Chat       
             
             check_f2:
@@ -551,7 +557,9 @@
             cmp ah,'E'      ;;escape
             je escapefromGame
             cmp ah,'G'
-            je rec_game_invite
+            jne fsfsdfsdfsd
+            jmp rec_game_invite
+            fsfsdfsdfsd:
             cmp ah,'C'
             je rec_chat_invite
             jmp check_key_pressed1 ;;otherwise then what the fuck did you send
@@ -559,7 +567,15 @@
             jmp QUIT_THIS_GAME
             rec_chat_invite:
             UPDATE_notification_bar rec_chat_INV_msg   ;; 
-            ;je LETS_chat
+            mov bl,0ffh
+            Read_KEY
+            cmp ah,3Bh ;f2
+            jne decline2
+            mov byteToSend,'C'
+            call sendByteproc
+            jmp LETS_chat
+            decline2:
+            sendByte bl
             jmp check_key_pressed1
             rec_game_invite:
             UPDATE_notification_bar rec_Game_INV_msg   
@@ -595,8 +611,8 @@
 
         LETS_Chat:
             empitify_buffer   ;; To make Sure That no bat chars are saved in Buffer
-            CAll CHAT_ROOM 		;;should BE THE CHAT.ASM but just For now 
-        jmp QUIT_THIS_GAME
+            CAll mainChat 		;;should BE THE CHAT.ASM but just For now 
+        jmp Main_Screen
 
 		QUIT_THIS_GAME:
 		MOV AH,4CH
@@ -728,14 +744,6 @@ Level_select PROC
     ret
 Level_select ENDP
 
-;description
-CHAT_ROOM PROC
-	ret
-CHAT_ROOM ENDP
-
-
-
-
 ;would add another Your_Game ig i the one who recieved the invitation
 START_My_GAME PROC
 
@@ -748,7 +756,8 @@ START_My_GAME PROC
     INT 16H
     cmp ah,3eh ; F4 ;;TODO: SEND A SIGNAL TO THE OTHER
     jne CheckIf_F3
-    MOV byteToSend,4EH
+    MOV byteToSend,'E'
+    call sendByteproc
     jmp QUIT_GAME_LOOPP
     CheckIf_F3:
     cmp ah,3dh
@@ -805,6 +814,8 @@ ExitandRestart PROC
     DISPLAY_num_in_HEX_ 0709h 4  playerPoints
     DisplayString_AT_position_and_move_cursor EXIT_MSG3 0621H
     DISPLAY_num_in_HEX_ 0721h 4 right_playerPoints
+
+
     CMP playersStatus,1 ;; RIGHT WINS
     JNE CHECK_IF_THE_OTHER_WINS
     DisplayString_AT_position_and_move_cursor EXIT_MSG4 0F1AH
@@ -880,13 +891,21 @@ PlayAsMain PROC
     MOV BL,4FH      ;;IF CHANGED THEN I found the wanted  
     CALL RecBirdGame
     cmp bl, 4fh 
-    jne NoThingReceived22 ;; consumed
+    jne NoThingReceived122 ;; consumed
    
     
     MOV BL,4FH      ;;IF CHANGED THEN I found the wanted  
     CALL FireIsPressedThere
     cmp bl, 4fh 
-    jne NoThingReceived22 ;; consumed
+    jne NoThingReceived122 ;; consumed
+
+    MOV BL,4FH      ;;IF CHANGED THEN I found the wanted  
+    CALL CheckIfEndISPressed
+    cmp bl, 4fh 
+    jne NoThingReceived122 ;; consumed
+
+
+
     NoThingReceived122:
 
 
@@ -941,7 +960,11 @@ PlayAsSec PROC
     cmp bl, 4fh 
     jne NoThingReceived22 ;; consumed
     
-    
+    MOV BL,4FH      ;;IF CHANGED THEN I found the wanted  
+    CALL CheckIfEndISPressed
+    cmp bl, 4fh 
+    jne NoThingReceived22 ;; consumed
+
     
 
     NoThingReceived22:
@@ -1007,6 +1030,19 @@ RecBirdGame PROC
 
     RET
 RecBirdGame ENDP
+
+;description
+CheckIfEndISPressed PROC
+    cmp al,'E'
+    je cntinueRecandSwapE 
+    ret
+    cntinueRecandSwapE:
+
+    jmp QUIT_GAME_LOOPP 
+
+    ret
+CheckIfEndISPressed ENDP
+
 
 RecBirdTrigger PROC
     cmp al,'T'
@@ -2288,6 +2324,14 @@ RESET_ALL_VARS PROC
     MOV right_IS_USED_POWERUP6, 0 ;;TO INDICATE IF USED BEFORE
     MOV EXECUTE_REVESED, 0 ;;IN LEVEL 2 IT INDECATES IF YOU CHOSED TO EXECUTE ON OTHER 
 
+    MOV ISSHIFTING, 0
+    MOV Command_valid, 1 
+
+    MOV TheOneWhoKnocks,0
+    MOV isInlineChatting, 0
+
+    MOV byteToSend , 0
+    MOV byteReceived , 0
 
     RET
 RESET_ALL_VARS ENDP
