@@ -1,4 +1,5 @@
-	;EXTRN 
+	EXTRN mainChat: far 
+    public SecondNameData, FirstNameData
     include macr.inc
     include ex_macr.inc
 	.286
@@ -466,6 +467,10 @@
 
     call NAME_VALIDATION
 
+    mov al,ActualFirstNameSize
+    mov ah,0
+    mov di,ax
+    mov FirstNameData[di], byte ptr '$'
     DisplayString_AT_position_not_moving_cursor Enter_Points_message 0518h ; show mes
     MoveCursorTo 0621h
     ReadNumberhexa_in_ax ;; Read points and put it in ax ;; TODO: See if you want this in hexa
@@ -526,7 +531,9 @@
             call ReceiveByteproc
                            ;Send C, if C was received by the other party then check if they would like accept the invitation
             cmp byteReceived, 'C'                    ; If the other party accepted the invitation then print a message,  wait for a key then go to chat.
-            
+            je sarahsarah
+            jmp remove_key_from_buffer   ;;declined
+            sarahsarah:
             jmp LETS_Chat       
             
             check_f2:
@@ -566,14 +573,13 @@
             UPDATE_notification_bar rec_chat_INV_msg   ;; 
             mov bl,0ffh
             Read_KEY
-            cmp ah,3ch ;f2
+            cmp ah,3Bh ;f2
             jne decline2
             mov byteToSend,'C'
             call sendByteproc
             jmp LETS_chat
             decline2:
             sendByte bl
-            ;je LETS_chat
             jmp check_key_pressed1
             rec_game_invite:
             UPDATE_notification_bar rec_Game_INV_msg   
@@ -609,7 +615,7 @@
 
         LETS_Chat:
             empitify_buffer   ;; To make Sure That no bat chars are saved in Buffer
-            CAll CHAT_ROOM 		;;should BE THE CHAT.ASM but just For now 
+            CAll mainChat 		;;should BE THE CHAT.ASM but just For now 
         jmp Main_Screen
 
 		QUIT_THIS_GAME:
@@ -741,14 +747,6 @@ Level_select PROC
         mov game_level,al
     ret
 Level_select ENDP
-
-;description
-CHAT_ROOM PROC
-	ret
-CHAT_ROOM ENDP
-
-
-
 
 ;would add another Your_Game ig i the one who recieved the invitation
 START_My_GAME PROC
