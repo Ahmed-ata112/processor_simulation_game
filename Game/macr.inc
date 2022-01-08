@@ -984,7 +984,6 @@ endm checkForFire
 
 compareBirdWithBall macro ball_x,fireBall_x,fireBall_y,BALL_SIZE,startOfBird,birdStatus,playerPoints,birdPoints,colorIndex
 local notInTheRangeOfTheBird
-    
     cmp fireBall_y,20
     ja notInTheRangeOfTheBird
     ;still haven't reached top of the screen
@@ -1012,7 +1011,8 @@ local notInTheRangeOfTheBird
     inc byte ptr [si]
     mov gamestatus,0
     mov birdX,0
-    mov right_birdX,160
+    mov right_birdX,171
+    INC COLORindex
     notInTheRangeOfTheBird:
 
 endm compareBirdWithBall
@@ -1026,16 +1026,24 @@ local exitMacro
     ; cmp right_birdStatus,0
     ; jne exitmacro
     
-    mov ah,2ch ;get the system time
-    int 21h    ;ch=hour  cl=minute  dh=seconds  dl=1/100seconds 
+    ; mov ah,2ch ;get the system time
+    ; int 21h    ;ch=hour  cl=minute  dh=seconds  dl=1/100seconds 
   
    
-    mov  ax, dx
-    xor  dx, dx
-    mov  cx, 5    
-    div  cx       ; here dx contains the remainder of the division - from 0 to 4
-    mov di,dx
-    mov colorIndex,dl
+    ; mov  ax, dx
+    ; xor  dx, dx
+    ; mov  cx, 5    
+    ; div  cx       ; here dx contains the remainder of the division - from 0 to 4
+    ; mov di,dx
+    mov ah,0
+    mov al,colorIndex
+    mov bl,5
+    div bl 
+
+    mov colorIndex,ah
+    mov al,0
+    xchg al,ah
+    mov di,AX       ;;index in di
     mov ah,colors[di]  
     mov birdcolor,ah
     mov birdStatus,1
