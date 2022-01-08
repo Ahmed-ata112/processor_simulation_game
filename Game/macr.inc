@@ -51,55 +51,8 @@ ReadString MACRO PromptMessage
 	mov dx, offset PromptMessage
 	int 21h
 ENDM ReadString
-ReadNumberdec_in_ax MACRO 
-    local l1, l2, enter_pressed_1
-    ;; Read number and put in ax
-    mov cx,0
-    l1:
-    mov ah, 00   ;get key pressed (waits)
-	int 16h      ; ah -> scan code  ;; al-> ascii code if found
-    ;; enter key is ScanCode 1C
-    cmp ah,1ch
-    je enter_pressed_1
-    inc cl
-	mov dl,al
-	mov ah,2     ;; to display the the char into screen (echo)
-	int 21h
-    sub dl,'0'
-    push dx
-    jmp l1
-    enter_pressed_1:
 
 
-    mov bx,1
-    mov di,0 ; to store result
-     l2:
-    ; pop and multi then add to dx
-    pop ax
-    mul bx
-    add di,ax
-    mov ax,bx
-    mov bx,10
-    mul bx
-    mov bx,ax
-    loop l2
-    mov ax,di
-
-ENDM ReadNumberdec_in_ax
-
-
-INC_CURSOR MACRO N
-    ;pos is row-col
-    mov bh,0       ;page number
-    mov ah,3
-    int 10h ;; get cursor in dh-dl   
-    add dl,N
-    INC DL   
-    mov bh,0       ;page number
-    mov ah,2
-    int 10h ;; mov cursor 
-
-ENDM INC_CURSOR
 
 Reset_Command macro
     xor CX,CX
@@ -252,15 +205,6 @@ DEAW_STATUS_BAR MACRO
     DisplayString_AT_position_not_moving_cursor STATUS_BAR_MSG ,1600h ;print in the next row
     
 ENDM
-
-
-;;There should be another clear with scrolling 
-;; impelement it if needed
-CLR_Screen_with_text_mode macro
-    mov ah, 0                    ;Change video mode (Text MODE)
-	mov al, 03h
-	int 10h
-endm CLR_Screen_with_text_mode
 
 ;;had to split modes as the color to fill the space is different 07-TM and 00-GM
 CLR_Screen_with_Scrolling_TEXT_MODE macro
@@ -1316,21 +1260,19 @@ checkIfToRec MACRO
 	TEST AL,1   ;jz after it to know if something is pending to be received
 ENDM checkIfToRec
 
-
-
-CALC_TIME MACRO REG
+; CALC_TIME MACRO REG
     
-    mov ah,2ch ;get the system time
-    int 21h    ;ch=hour  cl=minute  dh=seconds  dl=1/100seconds 
-    xor ax,ax
-    mov al,cl
-    mov bl,60
-    mul bl
-    mov dl,0
-    xchg dl,dh
-    add ax,dx
-    mov reg ,ax
-ENDM CALC_TIME
+;     mov ah,2ch ;get the system time
+;     int 21h    ;ch=hour  cl=minute  dh=seconds  dl=1/100seconds 
+;     xor ax,ax
+;     mov al,cl
+;     mov bl,60
+;     mul bl
+;     mov dl,0
+;     xchg dl,dh
+;     add ax,dx
+;     mov reg ,ax
+; ENDM CALC_TIME
 
 
 
