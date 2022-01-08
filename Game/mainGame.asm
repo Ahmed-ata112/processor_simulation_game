@@ -214,10 +214,10 @@
      ;; balls values
         balls label byte
 		ball_0 db 0 ;;green
-		ball_1 db 0 ;;magenta
-		ball_2 db 0 ;;red
 		ball_3 db 0 ;;blue
 		ball_4 db 0 ;;yellow
+		ball_1 db 0 ;;magenta
+		ball_2 db 0 ;;red
 
      ;; Values in regs
 		R_AX dw 0 
@@ -264,7 +264,7 @@
 
 
 
-    right_birdX dw 147
+    right_birdX dw 171
     right_birdY dw 0Ah
     right_BirdWidth dw 13
     right_birdVelocity dw 4
@@ -314,10 +314,12 @@
     right_fireScanCode db  04eh
 
             ;green, light magenta, red, blue, yellow
-    colors db  47,           36, 41,  54,    43
+    ; colors db  47,           36, 41,  54,    43
+    ; pointsOfColors db       1,            2,   3,    4,      5  
+    colors db  47,           54, 43,  36,    41
+    pointsOfColors db       1,            4,   5,    2,      3 
             
                     ;green, light magenta, red, blue, yellow
-    pointsOfColors db       1,            2,   3,    4,      5  
 
     numOfShotBalls db 0,0,0,0,0
 
@@ -325,6 +327,7 @@
     birdColor db 47
     birdStatus db 1
     birdPoints db 1
+    RANDOMBIRDINDEX DB 0
 
     right_colorIndex db 0
     right_birdColor db 47
@@ -869,7 +872,28 @@ PlayAsMain PROC
     SWAP_TURNS
     NOT_FINISHED_INPUT_YET:
     
+    MOV DX,3FDh     ;;LineStatus
+	IN AL,DX
+	TEST AL,1
+	JZ NoThingReceived122
+
+    ;rec the first letter to know what to do
+    MOV DX,3F8h
+	IN AL,DX
+
+    MOV BL,4FH      ;;IF CHANGED THEN I found the wanted  
+    CALL RecBirdGame
+    cmp bl, 4fh 
+    jne NoThingReceived22 ;; consumed
    
+    
+    MOV BL,4FH      ;;IF CHANGED THEN I found the wanted  
+    CALL FireIsPressedThere
+    cmp bl, 4fh 
+    jne NoThingReceived22 ;; consumed
+    NoThingReceived122:
+
+
     ret    
 PlayAsMain ENDP
 
@@ -908,12 +932,6 @@ PlayAsSec PROC
     CALL RecBirdGame
     cmp bl, 4fh 
     jne NoThingReceived22 ;; consumed
-
-    MOV BL,4FH      ;;IF CHANGED THEN I found the wanted  
-    CALL RecBirdGame
-    cmp bl, 4fh 
-    jne NoThingReceived22 ;; consumed
-    
    
     
     MOV BL,4FH      ;;IF CHANGED THEN I found the wanted  
@@ -1450,7 +1468,7 @@ BIRDGAME PROC
     Draw_IMG_with_color paddle_x,paddle_y,paddleImg,paddleColor,paddleSize
     Draw_IMG_with_color right_paddle_x,right_paddle_y,right_paddleImg,right_paddleColor,right_paddleSize
 
-    movePaddle paddle_x,paddle_velocity_x,paddle_y,paddle_velocity_y,paddleUp,paddleDown,paddleRight,paddleLeft,127,0
+    movePaddle paddle_x,paddle_velocity_x,paddle_y,paddle_velocity_y,paddleUp,paddleDown,paddleRight,paddleLeft,122,0
     ;movePaddle right_paddle_x,right_paddle_velocity_x,right_paddle_y,right_paddle_velocity_y,right_paddleUp,right_paddleDown,right_paddleRight,right_paddleLeft,295,165
 
     ;checkTime
@@ -1471,12 +1489,12 @@ BIRDGAME PROC
 
     ;left bird
     Draw_IMG_with_color birdX,birdY,BirdImg,birdcolor,BirdSize
+    moveBird 130,0,birdVelocity,birdX
 
 
     ;right bird
-    moveBird 306,171,right_birdVelocity,right_birdX
     Draw_IMG_with_color right_birdX,right_birdY,right_BirdImg,birdcolor,right_BirdSize
-    moveBird 135,0,birdVelocity,birdX
+    moveBird 301,171,right_birdVelocity,right_birdX
    
     skipDrawingBirds:
     
