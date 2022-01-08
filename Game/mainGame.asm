@@ -219,7 +219,6 @@
 		ball_3 db 0 ;;blue
 		ball_4 db 0 ;;yellow
 
-
      ;; Values in regs
 		R_AX dw 0 
 		R_BX dw 0
@@ -445,6 +444,7 @@
     byteToSend db 0
     byteReceived db 0
     TheOneWhoKnocks db 0
+    isInlineChatting db 0
 
 .code
 	main proc far
@@ -747,10 +747,14 @@ START_My_GAME PROC
     MOV AH,1
     INT 16H
     cmp ah,3eh ; F4 ;;TODO: SEND A SIGNAL TO THE OTHER
-    jne not_finshed_for_noww
+    jne CheckIf_F3
     MOV byteToSend,4EH
     jmp QUIT_GAME_LOOPP
-    not_finshed_for_noww:
+    CheckIf_F3:
+    cmp ah,3dh
+    jne NO_FOR_NOW_YET
+    NOT isInlineChatting
+    NO_FOR_NOW_YET:
     ;; WE DRAW THE BACKGROUND - THE Values - 
 	call DRAW_BACKGROUND     ;;Draws The BackGround Image
     call UPDATE_VALUES_Displayed  ;; Update values displayed with ones in variables
@@ -822,9 +826,17 @@ ExitandRestart ENDP
 
 ;description
 PlayAsMain PROC
+    mov byteToSend,'S'
+    call sendByteproc ;;SIGNAL TO MAKE HIM REALIZE 
+    CAll SendBirdGame
+
 	call CHECK_POWERUPS
+    cmp isInlineChatting,0
+    jne meChatting
     call GetCommand
     Update_the_Commands         ;; to be displayed in its place (L or R)
+    meChatting:
+
     CMP finished_taking_input,1           
     je hhhheeeeeeee
     Jmp NOT_FINISHED_INPUT_YET
@@ -858,6 +870,7 @@ PlayAsMain PROC
     ;;swap turns
     SWAP_TURNS
     NOT_FINISHED_INPUT_YET:
+    
    
     ret    
 PlayAsMain ENDP
@@ -890,7 +903,11 @@ PlayAsSec PROC
 
     MOV BL,4FH      ;;IF CHANGED THEN I found the wanted  
     CALL RecUpdatedCommand
-
+    cmp bl, 4fh 
+    jne NoThingReceived22 ;; consumed
+    
+    MOV BL,4FH      ;;IF CHANGED THEN I found the wanted  
+    CALL RecBirdGame
     cmp bl, 4fh 
     jne NoThingReceived22 ;; consumed
 
@@ -898,6 +915,36 @@ PlayAsSec PROC
     NoThingReceived22:
     ret
 PlayAsSec ENDP
+
+;description
+
+RecBirdGame PROC
+    cmp al,'S'
+    je cntinueRecandSwaps 
+    ret
+    cntinueRecandSwaps:
+
+    call sendByteproc       ;;SEND A REPLY you are ready to get data
+    RecWord right_paddle_x
+    RecWord right_paddle_y
+    ADD right_paddle_x,160
+
+
+
+
+    RecWord right_fireBall_x
+    RecWord right_fireBall_y
+    add right_fireBall_x,160
+    RecWord right_playerPoints 
+    
+    RecByteH right_ifFireIsPressed
+   
+    ;;TODO: COLOR INDEX
+    ;; balls 
+
+    RET
+RecBirdGame ENDP
+
 
 RecUpdatedRegs proc
 
@@ -1036,7 +1083,20 @@ RecUpdatedCommand proc
     mov bl,0eah
 ret
 RecUpdatedCommand endp
-   
+
+SendBirdGame PROC
+    call receiveByteproc
+    sendWord paddle_x
+    sendWord paddle_y
+    
+    sendWord fireBall_x
+    sendWord fireBall_y
+
+    sendWord playerPoints
+    sendbyteH ifFireIsPressed
+    ret
+SendBirdGame ENDP
+
 SendUpdatedRegs PROC
     ;; will send all the Regs available at that time
     call receiveByteproc
@@ -1330,7 +1390,7 @@ BIRDGAME PROC
     Draw_IMG_with_color right_paddle_x,right_paddle_y,right_paddleImg,right_paddleColor,right_paddleSize
 
     movePaddle paddle_x,paddle_velocity_x,paddle_y,paddle_velocity_y,paddleUp,paddleDown,paddleRight,paddleLeft,135,0
-    movePaddle right_paddle_x,right_paddle_velocity_x,right_paddle_y,right_paddle_velocity_y,right_paddleUp,right_paddleDown,right_paddleRight,right_paddleLeft,295,165
+    ;movePaddle right_paddle_x,right_paddle_velocity_x,right_paddle_y,right_paddle_velocity_y,right_paddleUp,right_paddleDown,right_paddleRight,right_paddleLeft,295,165
 
     ;checkTime
 
@@ -1353,7 +1413,7 @@ BIRDGAME PROC
 
 
     ;right bird
-    ;moveBird 304,180,right_birdVelocity,right_birdX
+    moveBird 304,180,right_birdVelocity,right_birdX
     Draw_IMG_with_color right_birdX,right_birdY,right_BirdImg,birdcolor,right_BirdSize
     moveBird 135,0,birdVelocity,birdX
    
@@ -1370,14 +1430,14 @@ BIRDGAME PROC
     compareBirdWithBall birdX,fireBall_x,fireBall_y,BirdSize,0,birdStatus,playerPoints,birdPoints,colorIndex
     checkRight: 
 
-    checkForFire right_fireScancode,right_paddle_x,right_paddle_width,BallSize,right_fireBall_x,right_fireBall_y,right_ifFireIsPressed,right_paddle_y
+    ;checkForFire right_fireScancode,right_paddle_x,right_paddle_width,BallSize,right_fireBall_x,right_fireBall_y,right_ifFireIsPressed,right_paddle_y
 
     cmp right_ifFireIsPressed,0
     jne skipJmp
     jmp midDraw
     skipJmp:
 
-    moveFireBall right_fireBall_velocity_y,right_fireBall_y,right_ifFireIsPressed
+    ;moveFireBall right_fireBall_velocity_y,right_fireBall_y,right_ifFireIsPressed
     Draw_IMG_with_color right_fireBall_x,right_fireBall_y,BallImg,fireballColor,BallSize
     compareBirdWithBall right_birdX,right_fireBall_x,right_fireBall_y,right_BirdSize,160,birdStatus,right_playerPoints,right_birdPoints,colorIndex
 
