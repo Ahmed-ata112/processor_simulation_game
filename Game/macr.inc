@@ -858,8 +858,9 @@ movePaddle macro paddle_x,paddle_velocity_x,paddle_y,paddle_velocity_y,upControl
     ;zf =0 -> a key is pressed  
     mov ah,1
     int 16h
-    jz exitMacro ;exists the macro since no key is pressed
-    
+    jnz sdasfdasdf
+    jmp exitMacro ;exists the macro since no key is pressed
+    sdasfdasdf:
     
 
 ;checks right control
@@ -873,8 +874,14 @@ movePaddle macro paddle_x,paddle_velocity_x,paddle_y,paddle_velocity_y,upControl
     mov bx,paddle_x
     add bx,ax
     cmp bx,rightlimit
-    ja exitmacro
+    jna sdfsdfdfgdf
+    jmp exitmacro
+    sdfsdfdfgdf:
     add paddle_x,ax ;increases the paddle x-coordinate with the corresponding velocity --> moves it to the right
+    mov byteToSend,'S'
+    call sendByteproc ;;SIGNAL TO MAKE HIM REALIZE 
+    CAll SendBirdGame
+
     jmp exitMacro
 checkLeft:
     cmp ah,leftControl ;75 -> scan code of left arrow
@@ -886,8 +893,14 @@ checkLeft:
     mov bx,paddle_x
     sub bx,ax
     cmp bx,leftlimit
-    jle exitMacro
+    jg adsfsdfsdfsd
+    jmp exitMacro
+    adsfsdfsdfsd:
     sub paddle_x,ax ;decreases the paddle x-coordinate with the corresponding velocity --> moves it to the left
+    mov byteToSend,'S'
+    call sendByteproc ;;SIGNAL TO MAKE HIM REALIZE 
+    CAll SendBirdGame
+
     jmp exitMacro
 checkUp:
     cmp ah,upControl ;72 -> scan code of up arrow
@@ -901,6 +914,10 @@ checkUp:
     cmp bx,20
     jle exitMacro
     sub paddle_y,ax ;decreases the paddle y-coordinate with the corresponding velocity --> moves it to the left
+    mov byteToSend,'S'
+    call sendByteproc ;;SIGNAL TO MAKE HIM REALIZE 
+    CAll SendBirdGame
+
     jmp exitMacro
 
 checkDown:
@@ -915,6 +932,10 @@ checkDown:
     cmp bx,188
     jae exitMacro
     add paddle_y,ax ;decreases the paddle x-coordinate with the corresponding velocity --> moves it to the left
+    mov byteToSend,'S'
+    call sendByteproc ;;SIGNAL TO MAKE HIM REALIZE 
+    CAll SendBirdGame
+
 
 exitMacro:
   
@@ -955,7 +976,8 @@ checkForFire macro fireScanCode,paddle_x,paddle_width,Ballsize,fireBall_x,fireBa
     mov ax,paddle_y
     mov fireBall_y,ax
     mov ifFireIsPressed,1
-   
+    mov byteToSend,'F'
+    call sendByteproc ;;SIGNAL TO MAKE HIM REALIZE 
     exitMacro:
 
 endm checkForFire
@@ -1055,7 +1077,8 @@ local exit
     ;jne changeToOne ;--> if the game status isn't 1 (is 0), change it to one
     jne exit
     mov gameStatus,1
-
+    MOV byteToSend,'T'
+    call sendByteproc
     exit:
 
 endm checkTimeInterval
@@ -1286,6 +1309,20 @@ checkIfToRec MACRO
 ENDM checkIfToRec
 
 
+
+CALC_TIME MACRO REG
+    
+    mov ah,2ch ;get the system time
+    int 21h    ;ch=hour  cl=minute  dh=seconds  dl=1/100seconds 
+    xor ax,ax
+    mov al,cl
+    mov bl,60
+    mul bl
+    mov dl,0
+    xchg dl,dh
+    add ax,dx
+    mov reg ,ax
+ENDM CALC_TIME
 
 
 
