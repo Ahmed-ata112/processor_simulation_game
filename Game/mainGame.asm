@@ -290,11 +290,7 @@
     right_paddle_velocity_x dw 10
     right_paddle_velocity_y dw 5
     right_paddleColor db 1101b
-    right_paddleUp db 71 ; scan code of 7 when num lock is turned off
-    right_paddleDown db 73 ; scan code of 9 when num lock is turned off
-    right_paddleRight db 81 ; scan code of 1 when num lock is turned off
-    right_paddleLeft db 79 ;  scan code of 3 when num lock is turned off
-
+    
 
 
     ballWidth dw 9
@@ -311,7 +307,7 @@
     right_fireBall_y dw 190
     right_fireBall_velocity_y dw 20
     right_ifFireIsPressed db 0
-    right_fireScanCode db  04eh
+    
 
             ;green, light magenta, red, blue, yellow
     ; colors db  47,           36, 41,  54,    43
@@ -327,7 +323,7 @@
     birdColor db 47
     birdStatus db 1
     birdPoints db 1
-    RANDOMBIRDINDEX DB 0
+   
 
     right_colorIndex db 0
     right_birdColor db 47
@@ -1469,17 +1465,12 @@ BIRDGAME PROC
     Draw_IMG_with_color right_paddle_x,right_paddle_y,right_paddleImg,right_paddleColor,right_paddleSize
 
     movePaddle paddle_x,paddle_velocity_x,paddle_y,paddle_velocity_y,paddleUp,paddleDown,paddleRight,paddleLeft,122,0
-    ;movePaddle right_paddle_x,right_paddle_velocity_x,right_paddle_y,right_paddle_velocity_y,right_paddleUp,right_paddleDown,right_paddleRight,right_paddleLeft,295,165
-
-    ;checkTime
+    
 
     randomBirdColor birdColor,colorIndex
     setBirdPointsWithTheCorrespondingColor colorIndex,birdPoints,pointsOfColors
 
-    ;randomBirdColor right_birdStatus,right_birdColor,colorIndex
-    setBirdPointsWithTheCorrespondingColor colorIndex,right_birdPoints,pointsOfColors
-
-    ;clearScreen 
+   
 
     cmp gamestatus,0
     jne skipSkipDrawingBirds
@@ -1509,8 +1500,7 @@ BIRDGAME PROC
     compareBirdWithBall birdX,fireBall_x,fireBall_y,BirdSize,0,birdStatus,playerPoints,birdPoints,colorIndex
     checkRight: 
 
-    ;checkForFire right_fireScancode,right_paddle_x,right_paddle_width,BallSize,right_fireBall_x,right_fireBall_y,right_ifFireIsPressed,right_paddle_y
-
+    
     cmp right_ifFireIsPressed,0
     jne skipJmp
     jmp midDraw
@@ -1518,7 +1508,7 @@ BIRDGAME PROC
 
     moveFireBall right_fireBall_velocity_y,right_fireBall_y,right_ifFireIsPressed
     Draw_IMG_with_color right_fireBall_x,right_fireBall_y,BallImg,fireballColor,BallSize
-    compareBirdWithBall right_birdX,right_fireBall_x,right_fireBall_y,right_BirdSize,160,birdStatus,right_playerPoints,right_birdPoints,colorIndex
+    compareBirdWithBall right_birdX,right_fireBall_x,right_fireBall_y,right_BirdSize,160,birdStatus,right_playerPoints,birdPoints,colorIndex
 
 midDraw:
     CMP TheOneWhoKnocks,0
@@ -2350,25 +2340,7 @@ READ_BUFFER_IF_NOT_USED PROC
     ret
     checkNexttttttt:
 
-    cmp ah,right_paddleUp
-    jne checkNexttttt1
-    ret
-    checkNexttttt1:
 
-    cmp ah,right_paddleDown
-    jne checkNextttttttttttttt
-    ret
-    checkNextttttttttttttt:
-
-    cmp ah,right_paddleRight
-    jne checkNexttttttttt
-    ret
-    checkNexttttttttt:
-
-    cmp ah,right_paddleLeft
-    jne checkNexttttttttttt
-    ret
-    checkNexttttttttttt:
 
     cmp ah,fireScanCode
     jne checkNextttttttttttt
@@ -2376,8 +2348,7 @@ READ_BUFFER_IF_NOT_USED PROC
     checkNextttttttttttt:
 
 
-    cmp ah,right_fireScanCode
-    jne checkNexttttttttttttt
+    
     ret
     checkNexttttttttttttt:
     cmp ah,63       ;F5

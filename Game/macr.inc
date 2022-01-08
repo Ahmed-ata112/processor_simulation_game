@@ -1061,6 +1061,7 @@ mov di,bx
 mov al,pointsOfColorsArray[di]
 mov birdPoints,al
 
+
 endm setBirdPointsWithTheCorrespondingColor
 
 checkTimeInterval macro gameStatus,prevTime,timeInterval
