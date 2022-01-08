@@ -338,8 +338,8 @@
 
     gameStatus db 1
     prevTime db 0 ;variable used when checking if the time has changed
-    timeInterval db 8 ;the shooting game apears/disappears every time interval
-
+    timeInterval dB 8 ;the shooting game apears/disappears every time interval
+  
 ;;;;-------------Comand Line Input------------;;;;;;
     command LABEL BYTE ; named the next it the same name 
 	commandSize db 30
@@ -741,6 +741,7 @@ CHAT_ROOM ENDP
 START_My_GAME PROC
 
 	ChangeVideoMode 13h   ;; CLEARS tHE SCREEN and start video mode
+  
 	GAME_LOOPP:
     CLR_Screen_with_Scrolling_GRAPHICS_MODE   ;; CLEARS tHE SCREEN  
     call READ_BUFFER_IF_NOT_USED
@@ -826,10 +827,7 @@ ExitandRestart ENDP
 
 ;description
 PlayAsMain PROC
-    mov byteToSend,'S'
-    call sendByteproc ;;SIGNAL TO MAKE HIM REALIZE 
-    CAll SendBirdGame
-
+  
 	call CHECK_POWERUPS
     cmp isInlineChatting,0
     jne meChatting
@@ -911,12 +909,62 @@ PlayAsSec PROC
     cmp bl, 4fh 
     jne NoThingReceived22 ;; consumed
 
+    MOV BL,4FH      ;;IF CHANGED THEN I found the wanted  
+    CALL RecBirdGame
+    cmp bl, 4fh 
+    jne NoThingReceived22 ;; consumed
+    
+   
+    
+    MOV BL,4FH      ;;IF CHANGED THEN I found the wanted  
+    CALL FireIsPressedThere
+    cmp bl, 4fh 
+    jne NoThingReceived22 ;; consumed
+    
+   
+    MOV BL,4FH      ;;IF CHANGED THEN I found the wanted  
+    CALL RecBirdTrigger
+    cmp bl, 4fh 
+    jne NoThingReceived22 ;; consumed
+    
+    
+    
 
     NoThingReceived22:
     ret
 PlayAsSec ENDP
 
 ;description
+;description
+FireIsPressedThere PROC
+    cmp al,'F'
+    je cntinueRecandSwapF 
+    ret
+    cntinueRecandSwapF:
+     cmp right_ifFireIsPressed,1
+    jne asdasdddasdas        ;;already one is present
+    ret
+    asdasdddasdas:        
+
+    ;we reached here, meaning the key pressed is down arrow
+   
+    ;we need to get the center x coordinate of the paddle, make the ball fire starting from that point 
+    ;using the y coordinte of the paddle (192) to avoid the ball touching the paddle
+    mov ax,right_paddle_x
+    mov bx,right_paddle_width
+    shr bx,1
+    add ax,bx
+    mov bx,Ballsize
+    shr bx,2
+    sub ax,bx
+  
+    mov right_fireBall_x,ax
+    mov ax,right_paddle_y
+    mov right_fireBall_y,ax
+    mov right_ifFireIsPressed,1
+
+    ret
+FireIsPressedThere ENDP
 
 RecBirdGame PROC
     cmp al,'S'
@@ -927,23 +975,35 @@ RecBirdGame PROC
     call sendByteproc       ;;SEND A REPLY you are ready to get data
     RecWord right_paddle_x
     RecWord right_paddle_y
-    ADD right_paddle_x,160
+    ADD right_paddle_x,176
 
 
 
 
-    RecWord right_fireBall_x
-    RecWord right_fireBall_y
-    add right_fireBall_x,160
+    ; RecWord right_fireBall_x
+    ; RecWord right_fireBall_y
+    ; add right_fireBall_x,160
+
     RecWord right_playerPoints 
     
-    RecByteH right_ifFireIsPressed
+   ;RecByteH right_ifFireIsPressed
    
     ;;TODO: COLOR INDEX
     ;; balls 
 
     RET
 RecBirdGame ENDP
+
+RecBirdTrigger PROC
+    cmp al,'T'
+    je cntinueRecandSwapT 
+    ret
+    cntinueRecandSwapT:
+
+    mov gameStatus,1
+
+    RET
+RecBirdTrigger ENDP
 
 
 RecUpdatedRegs proc
@@ -1089,11 +1149,12 @@ SendBirdGame PROC
     sendWord paddle_x
     sendWord paddle_y
     
-    sendWord fireBall_x
-    sendWord fireBall_y
+    ;sendWord fireBall_x
+    ;sendWord fireBall_y
 
     sendWord playerPoints
-    sendbyteH ifFireIsPressed
+   ; sendbyteH ifFireIsPressed
+   
     ret
 SendBirdGame ENDP
 
@@ -1389,7 +1450,7 @@ BIRDGAME PROC
     Draw_IMG_with_color paddle_x,paddle_y,paddleImg,paddleColor,paddleSize
     Draw_IMG_with_color right_paddle_x,right_paddle_y,right_paddleImg,right_paddleColor,right_paddleSize
 
-    movePaddle paddle_x,paddle_velocity_x,paddle_y,paddle_velocity_y,paddleUp,paddleDown,paddleRight,paddleLeft,135,0
+    movePaddle paddle_x,paddle_velocity_x,paddle_y,paddle_velocity_y,paddleUp,paddleDown,paddleRight,paddleLeft,127,0
     ;movePaddle right_paddle_x,right_paddle_velocity_x,right_paddle_y,right_paddle_velocity_y,right_paddleUp,right_paddleDown,right_paddleRight,right_paddleLeft,295,165
 
     ;checkTime
@@ -1413,7 +1474,7 @@ BIRDGAME PROC
 
 
     ;right bird
-    moveBird 304,180,right_birdVelocity,right_birdX
+    moveBird 306,171,right_birdVelocity,right_birdX
     Draw_IMG_with_color right_birdX,right_birdY,right_BirdImg,birdcolor,right_BirdSize
     moveBird 135,0,birdVelocity,birdX
    
@@ -1437,12 +1498,15 @@ BIRDGAME PROC
     jmp midDraw
     skipJmp:
 
-    ;moveFireBall right_fireBall_velocity_y,right_fireBall_y,right_ifFireIsPressed
+    moveFireBall right_fireBall_velocity_y,right_fireBall_y,right_ifFireIsPressed
     Draw_IMG_with_color right_fireBall_x,right_fireBall_y,BallImg,fireballColor,BallSize
     compareBirdWithBall right_birdX,right_fireBall_x,right_fireBall_y,right_BirdSize,160,birdStatus,right_playerPoints,right_birdPoints,colorIndex
 
 midDraw:
+    CMP TheOneWhoKnocks,0
+    JE not_ME_FUCK_YOU
     checkTimeInterval gamestatus, prevTime, timeInterval
+    not_ME_FUCK_YOU:
     RET
 BIRDGAME ENDP
 
