@@ -592,6 +592,14 @@ RecWord MACRO REG2
     call sendByteproc
 
 ENDM RecWord
+RecByteH MACRO REG2
+    call receiveByteproc
+    mov bl, byteReceived
+    call sendByteproc
+    LEA SI,REG2
+    MOV [SI],BL ;FIRST BYTE
+
+ENDM RecByteH
 
 RecWordwithoffset MACRO offs
     call receiveByteproc
@@ -622,6 +630,15 @@ SendWord macro REG
 
     call receiveByteproc
 endm SendWord
+
+sendByteH MACRO REG
+    mov SI, OFFSET REG
+    MOV AL,[SI]
+    mov byteToSend,al
+    call sendByteproc
+    ;;rec to relax
+    call receiveByteproc
+ENDM sendByteH
 
 SendWordwithOffs macro offs
     mov SI, offs
@@ -807,17 +824,16 @@ local finish,clearGame
     cmp bx,limit
     ja clearGame
     mov x_coordinate,bx
-    mov right_birdX,bx
+    ;mov right_birdX,bx
    
     jmp finish
 
 clearGame:
     mov gamestatus,0
     mov x_coordinate,start
-    mov right_birdX,start
-   
+  ;;  mov right_birdX,start
     finish:
-    add right_birdX,160
+    ;add right_birdX,160
 endm moveBird
 
 
@@ -1039,14 +1055,6 @@ local exit
     ;jne changeToOne ;--> if the game status isn't 1 (is 0), change it to one
     jne exit
     mov gameStatus,1
-    ; mov ax,birdX
-    ; xchg right_birdX,ax
-    ; xchg ax,birdx
-    ;jmp exit
-
-    ; changeToOne:
-    ; mov gameStatus,1
-
 
     exit:
 
