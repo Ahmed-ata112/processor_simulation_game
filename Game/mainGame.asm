@@ -1,4 +1,4 @@
-	
+	;EXTRN 
     include macr.inc
     include ex_macr.inc
 	.286
