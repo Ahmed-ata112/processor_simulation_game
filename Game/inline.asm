@@ -1,3 +1,19 @@
+sendByteH MACRO
+    mov byteToSend,al
+    call sendByteproc
+    ;;rec to relax
+    call receiveByteproc
+ENDM sendByteH
+
+RecByteH MACRO REG2
+    call receiveByteproc
+    mov bl, byteReceived
+    call sendByteproc
+    LEA SI,REG2
+    MOV [SI],BL ;FIRST BYTE
+
+ENDM RecByteH
+
 set MACRO ; work on dx ; L-> X  H->Y
 mov bh,0h
 mov ah,2
@@ -38,7 +54,37 @@ actualmessege_sent_Size db 0 ;the actual size of input at the current time
 THE_messege_sent db 140 dup('$')
 finished_taking_input db 0 ; just a flag to indicate we finished entering the string
 x2 db 7 
+
+byteToSend db 0
+byteReceived db 0
+
 .code
+
+
+sendByteproc proc                   
+        mov dx , 3FDH                           ;Line Status Register
+        whileHolding: 
+            In al , dx                          ;Read Line Status , to guarantee that the holder register is empty
+            test al , 00100000b                 ;If zero then it's not empty, otherwise:
+            JZ whileHolding      
+        mov dx , 3F8H                           ;Transmit data register
+        mov al, byteToSend
+        out dx , al
+        ret
+sendByteproc endp 
+
+
+ReceiveByteproc Proc ; return byte in (byteReceived). 
+    NoThingReceived:
+	MOV DX,3FDh     ;;LineStatus
+	IN AL,DX
+	TEST AL,1
+	JZ NoThingReceived
+	MOV DX,3F8h
+	IN AL,DX
+	MOV byteReceived,AL
+	RET
+ReceiveByteproc endp
 
 Draw_chat proc
 
@@ -98,17 +144,7 @@ send endp
 
 receiver proc
 
-    mov dx , 3FDH		; Line Status Register
-	  in al , dx 
-  	test al , 1
-  	JZ CHK
-    ;If Ready read the VALUE in Receive data register
-    mov dx , 03F8H
-  	in al , dx
-    cmp al,0FEH;->;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  char to deternmine chatting
-    je CHK
-    cmp al,0FFH
-    jne contkoko93
+    
     mov dh,18h
     mov dl,7
     set
@@ -121,15 +157,20 @@ receiver proc
     mov dh,18h
     mov dl,7
     set
-    jmp CHK
-    contkoko93:
-    mov VALUE , al
-    Displaychar VALUE
+
+    H_infinite:
+    ; call ReceiveByteproc
+    RecByteH byteReceived
+    mov al,byteReceived
+    cmp al,0FFH
+    je CHK
+    Displaychar byteReceived
+    jmp H_infinite
     CHK:
     ret
     receiver endp
 
-Mess PROC
+Mess_send PROC
      mov bl,actualmessege_sent_Size
     add bl,7
     mov dl,bl
@@ -158,22 +199,24 @@ out_range:
     MOV SI,OFFSET THE_messege_sent
 
 
-    mov ah,0FEH ;->;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  char to deternmine chatting
-    mov Value,ah
-    Call send
-    mov Value ,0FFh
-    Call send
-                   
+    ; mov ah,0FEH ;->;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  char to deternmine chatting
+    ; mov Value,ah
+    ; Call send
+    ; mov Value ,0FFh
+    ; Call send
+
+    mov byteToSend,'H'              ;->;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  char to deternmine start chatting
+    call sendByteproc
+    call receiveByteproc                
     SENT_LOOP:
-    mov Value,ah
-    Call send
     MOV AL,[SI]
-    mov VALUE,al
-    CALL send
+    sendByteH
     INC SI
     LOOP SENT_LOOP
-    
-    ; send new line
+
+    mov byteToSend,0FFH              ;->;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  char to deternmine end chatting
+    call sendByteproc
+
   
     MOV AL,'$'
     MOV DI, offset THE_messege_sent
@@ -252,29 +295,45 @@ out_range:
     Displaychar al
    
     FinishedTakingChar_mess:
-  
-    
+    ret
+Mess_send ENDP
+
+
+Mess_rec proc
 
 ;;receiving 
 
-    mov dl,x2
-    mov dh,18h
-    set
+    ; mov dl,x2
+    ; mov dh,18h
+    ; set
     
 
 
-    mov dl,x2
-    mov dh,18h
-    set
+    ; mov dl,x2
+    ; mov dh,18h
+    ; set
     
+    mov dx , 3FDH		; Line Status Register
+	in al , dx 
+  	test al , 1
+  	JZ CHK_H
+    ;If Ready read the VALUE in Receive data register
+    mov dx , 03F8H
+  	in al , dx
+    cmp al,'H'
+    jne CHK_H
     call receiver
-  
-          
-    get
-    mov x2,dl
+    ; get
+    ; mov x2,dl
 
+    CHK_H:
     ret
-Mess ENDP
+
+
+
+Mess_rec ENDP
+
+
 
 main proc far
 MOV AX,@DATA
@@ -289,7 +348,8 @@ int 10h
 call Draw_chat
 
 chat_loop:
-CALL Mess
+CALL Mess_send
+CALL Mess_rec
 cmp Flag_exit,1
 jne cont_mess
 
