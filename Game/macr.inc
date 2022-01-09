@@ -220,7 +220,7 @@ CLR_Screen_with_Scrolling_GRAPHICS_MODE macro
   	mov ax, 0600h                ;Scroll Screen AH=06 (Scroll), AL=0 Entire Page
 	mov bh, 00                   ;Normal attributes
 	mov cx, 0                    ;from 0, 0
-	mov dx, 1828H                ;To 18h, 28h ;;end of screen
+	mov dx, 1528H                ;To 15h, 28h ;;end of game space
 	int 10h                      ;Clear Screen
 endm CLR_Screen_with_Scrolling_GRAPHICS_MODE
 
@@ -544,7 +544,7 @@ RecByteH MACRO REG2
     MOV [SI],BL ;FIRST BYTE
 
 ENDM RecByteH
-
+;; DI
 RecWordwithoffset MACRO offs
     call receiveByteproc
     mov bl, byteReceived
@@ -583,6 +583,14 @@ sendByteH MACRO REG
     ;;rec to relax
     call receiveByteproc
 ENDM sendByteH
+sendBytewithoffs MACRO offs
+    mov SI, offs
+    MOV AL,[SI]
+    mov byteToSend,al
+    call sendByteproc
+    ;;rec to relax
+    call receiveByteproc
+ENDM sendBsendBytewithoffsyteH
 
 SendWordwithOffs macro offs
     mov SI, offs
@@ -1263,6 +1271,25 @@ ENDM checkIfToRec
 ;     add ax,dx
 ;     mov reg ,ax
 ; ENDM CALC_TIME
+
+    set MACRO ; work on dx ; L-> X  H->Y
+    mov bh,0h
+    mov ah,2
+    int 10h
+        
+    ENDM set
+
+    get  MACRO 
+    mov ah,3h
+    mov bh,0h
+    int 10h 
+    ENDM get
+
+    Displaychar macro str
+    mov ah,2
+    mov dl,str
+    int 21h
+    endm Displaychar
 
 
 

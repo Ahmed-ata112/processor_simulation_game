@@ -52,7 +52,7 @@
 	DI_msg db 'DI: $'
 	SP_msg db 'SP: $'
 	BP_msg db 'BP: $'
-	
+    _sign DB ':'
 	separator_ db ': $'
 	
 	is_player_1_ready_for_game db 0
@@ -74,7 +74,7 @@
 	SecondNameSize db 20
 	ActualSecondNameSize db ?
 	SecondNameData db 20 dup('$')
-
+    
     myflag db 1 ;;to use it to indicate end of sending name and points
 
 	;;;;;;;;;-----------------positions----------;;;;
@@ -447,6 +447,15 @@
     TheOneWhoKnocks db 0
     isInlineChatting db 0
 
+    ;;; INLINE
+    
+    Flag_exit DB 0
+    messege_sent LABEL BYTE ; named the next it the same name 
+    messege_sentSize db 140
+    actualmessege_sent_Size db 0 ;the actual size of input at the current time
+    THE_messege_sent db 140 dup('$')
+    x2 db 7 
+
 .code
 	main proc far
 	mov ax, @data
@@ -747,11 +756,12 @@ Level_select ENDP
 ;would add another Your_Game ig i the one who recieved the invitation
 START_My_GAME PROC
 
+
 	ChangeVideoMode 13h   ;; CLEARS tHE SCREEN and start video mode
-  
 	GAME_LOOPP:
     CLR_Screen_with_Scrolling_GRAPHICS_MODE   ;; CLEARS tHE SCREEN  
-    call READ_BUFFER_IF_NOT_USED
+    CALL Draw_chat
+    
     MOV AH,1
     INT 16H
     cmp ah,3eh ; F4 ;;TODO: SEND A SIGNAL TO THE OTHER
@@ -762,8 +772,11 @@ START_My_GAME PROC
     CheckIf_F3:
     cmp ah,3dh
     jne NO_FOR_NOW_YET
-    NOT isInlineChatting
-    NO_FOR_NOW_YET:
+    CMP isInlineChatting,0
+    JNE NO_FOR_NOW_YET ;;;;ALREARY IN CHAT
+    NOT isInlineChatting            ;; inverse the state if F3 is pressed
+    READ_KEY
+     NO_FOR_NOW_YET:
     ;; WE DRAW THE BACKGROUND - THE Values - 
 	call DRAW_BACKGROUND     ;;Draws The BackGround Image
     call UPDATE_VALUES_Displayed  ;; Update values displayed with ones in variables
@@ -837,13 +850,21 @@ ExitandRestart ENDP
 
 ;description
 PlayAsMain PROC
-  
 	call CHECK_POWERUPS
     cmp isInlineChatting,0
     jne meChatting
+
+    call READ_BUFFER_IF_NOT_USED
     call GetCommand
+
     Update_the_Commands         ;; to be displayed in its place (L or R)
+    
+    jmp continue_Gaming
     meChatting:
+ 
+    call inlineChat
+    continue_Gaming:
+
 
     CMP finished_taking_input,1           
     je hhhheeeeeeee
@@ -905,6 +926,12 @@ PlayAsMain PROC
     jne NoThingReceived122 ;; consumed
 
 
+    MOV BL,4FH      ;;IF CHANGED THEN I found the wanted  
+    CALL CheckifInlineRec
+    cmp bl, 4fh 
+    jne NoThingReceived122 ;; consumed
+
+
 
     NoThingReceived122:
 
@@ -918,6 +945,14 @@ PlayAsMain ENDP
 PlayAsSec PROC
 
     
+    CMP isInlineChatting,0 
+    JE SEC_not_CHATTING
+    call inlineChat
+    JMP LDLSDLSKD
+    SEC_not_CHATTING:
+    CALL READ_BUFFER_IF_NOT_USED_SEC
+    LDLSDLSKD:
+
 	MOV DX,3FDh     ;;LineStatus
 	IN AL,DX
 	TEST AL,1
@@ -965,6 +1000,11 @@ PlayAsSec PROC
     cmp bl, 4fh 
     jne NoThingReceived22 ;; consumed
 
+    MOV BL,4FH      ;;IF CHANGED THEN I found the wanted  
+    CALL CheckifInlineRec
+    cmp bl, 4fh 
+    jne NoThingReceived22 ;; consumed
+
     
 
     NoThingReceived22:
@@ -973,6 +1013,194 @@ PlayAsSec ENDP
 
 ;description
 ;description
+
+;description
+
+ MSGreceiver proc     
+    mov dh,18h
+    mov dl,7
+    set
+    mov al,' '
+    mov cl, 30
+    mov ch,0
+    Loop_space:
+    Displaychar al      ;;clears the space
+    loop Loop_space
+    mov dh,18h
+    mov dl,7
+    set
+    H_infinite:
+    ; call ReceiveByteproc
+    RecByteH byteReceived
+    mov al,byteReceived
+    cmp al,0FFH
+    je CHK_is_end
+    Displaychar byteReceived
+
+    jmp H_infinite
+    CHK_is_end:
+    ret
+    MSGreceiver endp
+
+
+
+    Draw_chat proc
+        mov dh,16H
+        mov dl,0H
+        set
+        DisplayString FirstNameData
+        Displaychar _sign
+        mov dh,18H
+        mov dl,0H
+        set
+        DisplayString SecondNameData
+        Displaychar _sign
+        
+        ret
+    Draw_chat endp
+
+    inlineChat PROC
+
+        mov bl,actualmessege_sent_Size
+        add bl,7
+        mov dl,bl
+        mov ah,1
+        int 16h ;-> looks at the buffer
+        jnz out_range
+        jmp FinishedTakingChar_mess ;nothing is clicked
+        out_range:
+        mov dh,16h
+        set
+
+        mov ah,0 ; get the char from the buffer
+        int 16h
+
+        ;check for enter
+        cmp ah,28
+        jne not_finished_yetttt ;THE_messege_sent IS THE DATA TO BE SENT
+        
+    
+        CMP actualmessege_sent_Size,0
+        JNE EMPTY_MESS
+        JMP FinishedTakingChar_mess
+        EMPTY_MESS:
+        xor ch,ch
+        MOV Cl,actualmessege_sent_Size
+        MOV SI,OFFSET THE_messege_sent
+
+        mov byteToSend,'H'              ;->;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  char to deternmine start chatting
+        call sendByteproc
+        call receiveByteproc                
+        SENT_LOOP:
+        sendBytewithoffs SI              
+        INC SI
+        LOOP SENT_LOOP
+
+        mov byteToSend,0FFH              ;->;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  char to deternmine end chatting
+        call sendByteproc
+        call receiveByteproc                
+
+    
+        MOV AL,'$'
+        MOV DI, offset THE_messege_sent
+        MOV CX,30
+        REP STOSB
+    
+        mov dh,16h
+        mov dl,7
+        set
+        mov al,' '
+        mov cl, actualmessege_sent_Size
+        mov ch,0
+        Loop_space1:
+        Displaychar al
+        loop Loop_space1
+        mov actualmessege_sent_Size,0
+        jmp FinishedTakingChar_mess
+        
+        not_finished_yetttt:
+
+        ; CHECK_IF_ENTER F3 TO EXIT:
+        cmp ah,61 ;; check if F3 is pressed
+        jne NO_EXIT
+        NOT isInlineChatting   
+    
+        MOV AL,'$'
+        MOV DI, offset THE_messege_sent
+        MOV CX,30
+        REP STOSB
+    
+        mov dh,16h
+        mov dl,7
+        set
+        mov al,' '
+        mov cl, actualmessege_sent_Size
+        mov ch,0
+        Loop_space11:
+        Displaychar al
+        loop Loop_space11
+
+        jmp FinishedTakingChar_mess
+        NO_EXIT:
+
+        cmp ah,0eh      ;;backk
+        JE ADD_TO_THE_messege_sent_ERR
+        jMP ADD_TO_THE_messege_sent  ;;NOT ANY OFTHE THREE CASES
+        ADD_TO_THE_messege_sent_ERR:
+        CMP actualmessege_sent_Size,0
+        JNE EMPTY_MESS1
+        JMP FinishedTakingChar_mess
+        EMPTY_MESS1:
+        ;if size>0 then delete the last char and dec string
+        ; READ_KEY
+        cmp actualmessege_sent_Size,0
+        JNE DEL_ERR
+        jMP FinishedTakingChar_mess
+        DEL_ERR:
+        mov di,offset THE_messege_sent 
+        mov bl,actualmessege_sent_Size 
+        dec bl
+        xor bh,bh
+        add di,bx
+        mov byte ptr [di], '$'   
+        dec actualmessege_sent_Size
+        get
+        DEC dl
+        set
+        Displaychar ' '
+        ;over ride on space
+        dec dl
+        set
+        jmp FinishedTakingChar_mess
+        
+        ADD_TO_THE_messege_sent:
+        ; READ_KEY
+        ;then store The char and print it then inc the size
+        cmp actualmessege_sent_Size,29  ;; command is full  -> in order to not delete $ at the end
+        je FinishedTakingChar_mess
+        mov di,offset THE_messege_sent 
+        mov bl,actualmessege_sent_Size
+        xor bh,bh
+        add di,bx
+        mov [di],al ;;the char is moved to the end of string
+        inc actualmessege_sent_Size
+        Displaychar al
+    
+        FinishedTakingChar_mess:
+        ret
+    inlineChat ENDP
+
+CheckifInlineRec PROC
+    cmp al,'H'
+    je cntinueRecandSwapH 
+    ret
+    cntinueRecandSwapH:
+    call sendByteproc ; to make the other know ur ready to rec the next
+    call MSGreceiver
+
+    ret
+CheckifInlineRec ENDP
+
 FireIsPressedThere PROC
     cmp al,'F'
     je cntinueRecandSwapF 
@@ -1189,9 +1417,9 @@ RecUpdatedCommand proc
     inc DI
     inc DI
     Loop LL1L
-
+    
     mov bl,0eah
-ret
+    ret
 RecUpdatedCommand endp
 
 SendBirdGame PROC
@@ -2437,5 +2665,23 @@ READ_BUFFER_IF_NOT_USED ENDP
 ;description
 
 
+READ_BUFFER_IF_NOT_USED_SEC PROC
+    MOV AH,1
+    INT 16H
+    jnz _continue211 ;; something is clicked
+            RET
+    _continue211:
+    cmp ah,3dh ; F3
+    jne JOMP444 
+    RET
+    JOMP444:
+    cmp ah,3eh ; F4
+    jne JOMP555
+    RET
+    JOMP555:
+
+    READ_KEY
+    RET
+READ_BUFFER_IF_NOT_USED_SEC ENDP
 
 end main
