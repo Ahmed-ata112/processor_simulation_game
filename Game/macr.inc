@@ -929,7 +929,7 @@ checkDown:
     mov ax,paddle_velocity_y
     mov bx,paddle_y
     add bx,ax
-    cmp bx,188
+    cmp bx,165
     jae exitMacro
     add paddle_y,ax ;decreases the paddle x-coordinate with the corresponding velocity --> moves it to the left
     mov byteToSend,'S'
@@ -1023,18 +1023,7 @@ randomBirdColor macro birdColor,colorIndex
 local exitMacro
     cmp birdStatus,0
     jne exitMacro
-    ; cmp right_birdStatus,0
-    ; jne exitmacro
-    
-    ; mov ah,2ch ;get the system time
-    ; int 21h    ;ch=hour  cl=minute  dh=seconds  dl=1/100seconds 
   
-   
-    ; mov  ax, dx
-    ; xor  dx, dx
-    ; mov  cx, 5    
-    ; div  cx       ; here dx contains the remainder of the division - from 0 to 4
-    ; mov di,dx
     mov ah,0
     mov al,colorIndex
     mov bl,5

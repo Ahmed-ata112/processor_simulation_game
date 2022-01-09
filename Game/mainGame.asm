@@ -275,7 +275,7 @@
 
     paddle_Width dw 20 
     paddle_x dw 5
-    paddle_y dw 185 ;at the bottom of the 320*200 pixels screen
+    paddle_y dw 161 ;at the bottom of the 320*200 pixels screen
     paddle_velocity_x dw 10
     paddle_velocity_y dw 5
     paddleColor db 1011b
@@ -288,7 +288,7 @@
 
     right_paddle_Width dw 20 
     right_paddle_x dw 170
-    right_paddle_y dw 185 ;at the bottom of the 320*200 pixels screen
+    right_paddle_y dw 161 ;at the bottom of the 320*200 pixels screen
     right_paddle_velocity_x dw 10
     right_paddle_velocity_y dw 5
     right_paddleColor db 1101b
@@ -2295,11 +2295,11 @@ RESET_ALL_VARS PROC
     MOV ball_4 ,0 ;;yellow
 
     MOV paddle_x , 5
-    MOV paddle_y , 185
+    MOV paddle_y , 161
 
 
     MOV right_paddle_x ,170
-    MOV right_paddle_y ,185
+    MOV right_paddle_y ,161
     MOV DI,OFFSET numOfShotBalls
     MOV [DI],BYTE PTR 0
     MOV [DI+1],BYTE PTR 0
