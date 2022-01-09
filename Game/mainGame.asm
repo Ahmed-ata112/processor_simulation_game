@@ -1193,9 +1193,9 @@ RecUpdatedCommand proc
     inc DI
     inc DI
     Loop LL1L
-
+    
     mov bl,0eah
-ret
+    ret
 RecUpdatedCommand endp
 
 SendBirdGame PROC

@@ -544,7 +544,7 @@ RecByteH MACRO REG2
     MOV [SI],BL ;FIRST BYTE
 
 ENDM RecByteH
-
+;; DI
 RecWordwithoffset MACRO offs
     call receiveByteproc
     mov bl, byteReceived
