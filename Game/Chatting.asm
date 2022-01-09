@@ -148,7 +148,7 @@
   ret
   send endp
 
-  receiver proc
+  MSGreceiver proc
 
       mov dx , 3FDH		; Line Status Register
     in al , dx 
@@ -167,7 +167,7 @@
       CHK:
       
       ret
-      receiver endp
+      MSGreceiver endp
 
   Mess PROC
   mov ah,1
@@ -327,7 +327,7 @@
       mov dl,x2
       set
       
-      call receiver
+      call MSGreceiver
 
 
       get
