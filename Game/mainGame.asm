@@ -1983,17 +1983,17 @@ CHECK_POWERUPS PROC
     jne check_if_F8
     READ_KEY ;;READ the f7
 
-    cmp game_turn,1
-    jne check_if_the_other_game_turn
+    ; cmp game_turn,1
+    ; jne check_if_the_other_game_turn
     cmp IS_USED_POWERUP3,1
     je FinishedCheckingPowerUps ;;no more tries
     CALL powerUp_3
     JMP FinishedCheckingPowerUps
-    check_if_the_other_game_turn:
-    cmp right_IS_USED_POWERUP3,1
-    je FinishedCheckingPowerUps ;;no more tries
-    CALL powerUp_3
-    JMP FinishedCheckingPowerUps
+    ; check_if_the_other_game_turn:
+    ; cmp right_IS_USED_POWERUP3,1
+    ; je FinishedCheckingPowerUps ;;no more tries
+    ; CALL powerUp_3
+    ; JMP FinishedCheckingPowerUps
 
 
 check_if_F8:
@@ -2001,36 +2001,37 @@ check_if_F8:
     jne check_if_F9
     READ_KEY ;;READ the f8
 
-    cmp game_turn,1
-    jne check_if_the_other_game_turn2
+    ; cmp game_turn,1
+    ; jne check_if_the_other_game_turn2
+
     cmp IS_USED_POWERUP4,1
     je FinishedCheckingPowerUps ;;no more tries
     CALL powerUp_4
     JMP FinishedCheckingPowerUps
-    check_if_the_other_game_turn2:
-    cmp right_IS_USED_POWERUP4,1
-    je FinishedCheckingPowerUps ;;no more tries
-    CALL powerUp_4
-    JMP FinishedCheckingPowerUps
+    ; check_if_the_other_game_turn2:
+    ; cmp right_IS_USED_POWERUP4,1
+    ; je FinishedCheckingPowerUps ;;no more tries
+    ; CALL powerUp_4
+    ; JMP FinishedCheckingPowerUps
     check_if_F9:
     cmp ah,67       ;F9
-    jne check_if_F10
+    jne FinishedCheckingPowerUps
     READ_KEY ;;READ the f9
     cmp game_level,2
     jne FinishedCheckingPowerUps
-    cmp game_turn,1
-    jne check_if_the_other_game_turn3
+    ; cmp game_turn,1
+    ; jne check_if_the_other_game_turn3
     cmp IS_USED_POWERUP6,1
     je FinishedCheckingPowerUps ;;no more tries
     CALL powerUp_6
-    JMP FinishedCheckingPowerUps
-    check_if_the_other_game_turn3:
-    cmp right_IS_USED_POWERUP6,1
-    je FinishedCheckingPowerUps ;;no more tries
-    CALL powerUp_6
-    JMP FinishedCheckingPowerUps
 
-    check_if_F10:
+    ; JMP FinishedCheckingPowerUps
+    ; check_if_the_other_game_turn3:
+    ; cmp right_IS_USED_POWERUP6,1
+    ; je FinishedCheckingPowerUps ;;no more tries
+    ; CALL powerUp_6
+    ; JMP FinishedCheckingPowerUps
+
 
     FinishedCheckingPowerUps:
     ret
@@ -2061,7 +2062,7 @@ powerUp_1 PROC
     RET
 powerUp_1 endP  
 powerUp_2 PROC
-    cmp game_turn,1
+    
     cmp playerPoints,3 ;;consumes 3 points
     JNB SARAH112
     JMP NOT_POWERUP_2
@@ -2087,7 +2088,7 @@ powerUp_2 endP
 
 
 powerUp_3 PROC
-    cmp game_turn,1
+    
     cmp playerPoints,8 ;;consumes 3 points
     JNB SARAH1112
     JMP NOT_POWERUP_3
