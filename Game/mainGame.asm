@@ -1124,7 +1124,11 @@ PlayAsSec ENDP
         cmp ah,61 ;; check if F3 is pressed
         jne NO_EXIT
         NOT isInlineChatting   
-    
+        CMP actualmessege_sent_Size,0
+        JNE SHANY
+        JMP FinishedTakingChar_mess
+        SHANY:
+
         MOV AL,'$'
         MOV DI, offset THE_messege_sent
         MOV CX,30
@@ -1139,6 +1143,8 @@ PlayAsSec ENDP
         Loop_space11:
         Displaychar al
         loop Loop_space11
+
+        MOV actualmessege_sent_Size,0
 
         jmp FinishedTakingChar_mess
         NO_EXIT:
