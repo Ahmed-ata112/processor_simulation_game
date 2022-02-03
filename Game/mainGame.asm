@@ -969,7 +969,6 @@ PlayAsSec PROC
 
     MOV BL,4FH      ;;IF CHANGED THEN I found the wanted  
     CALL RecUpdatedRegs_AFTER_POWERUPS
-
     cmp bl, 4fh 
     jne NoThingReceived22 ;; consumed
 
@@ -1388,7 +1387,6 @@ RecUpdatedRegs_AFTER_POWERUPS proc
     RecWord R_DI
     RecWord R_SP
     RecWord R_BP
-
     RecWord R_00        ;;REC L_00 AND L_01 AND ETC
     RecWord R_02
     RecWord R_04
